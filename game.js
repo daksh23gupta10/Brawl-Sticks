@@ -1,6 +1,6 @@
 /**
  * BRAWL-STICKS: 1v1 & 2v2 Stickman Fighting Game Engine
- * Fully Crash-Guarded & Hardened Engine (v2.3.2)
+ * Bulletproof Anti-NaN & Smooth Pass-Through Engine (v2.3.3)
  */
 
 // ==========================================
@@ -53,11 +53,8 @@ function loadSavedPreferences() {
                 if (parsed && typeof parsed.p2 === 'string') p2Hat = parsed.p2;
             } catch (e) {}
         }
-    } catch (err) {
-        console.warn("Storage access restricted:", err);
-    }
+    } catch (err) {}
 
-    // Safety Fallbacks
     if (!p1Color) p1Color = '#00f0ff';
     if (!p2Color) p2Color = '#ff0055';
     if (!p1Class) p1Class = 'NINJA';
@@ -328,8 +325,8 @@ const audio = new SoundFX();
 // ==========================================
 class DamageText {
     constructor(x, y, text, color) {
-        this.x = x || 0;
-        this.y = y || 0;
+        this.x = (typeof x === 'number' && !isNaN(x)) ? x : 0;
+        this.y = (typeof y === 'number' && !isNaN(y)) ? y : 0;
         this.text = text || '';
         this.color = color || '#ffffff';
         this.vy = -1.5;
@@ -343,6 +340,7 @@ class DamageText {
     }
 
     draw(ctx) {
+        if (!ctx || isNaN(this.x) || isNaN(this.y)) return;
         const alpha = Math.max(0, this.life / this.maxLife);
         ctx.save();
         ctx.globalAlpha = alpha;
@@ -357,10 +355,10 @@ class DamageText {
 
 class Projectile {
     constructor(x, y, vx, damage, owner) {
-        this.x = x || 0;
-        this.y = y || 0;
-        this.vx = vx || 10;
-        this.damage = damage || 20;
+        this.x = (typeof x === 'number' && !isNaN(x)) ? x : 0;
+        this.y = (typeof y === 'number' && !isNaN(y)) ? y : 0;
+        this.vx = (typeof vx === 'number' && !isNaN(vx)) ? vx : 10;
+        this.damage = (typeof damage === 'number' && !isNaN(damage)) ? damage : 20;
         this.owner = owner;
         this.color = (owner && owner.color) ? owner.color : '#00f0ff';
         this.radius = 18;
@@ -370,10 +368,11 @@ class Projectile {
     update() {
         this.x += this.vx;
         particleSystem.createDust(this.x, this.y);
-        if (this.x < -50 || this.x > 1074) this.active = false;
+        if (this.x < -50 || this.x > 1074 || isNaN(this.x)) this.active = false;
     }
 
     draw(ctx) {
+        if (!ctx || isNaN(this.x) || isNaN(this.y)) return;
         ctx.save();
         ctx.fillStyle = this.color;
         ctx.shadowColor = this.color;
@@ -387,8 +386,8 @@ class Projectile {
 
 class ShockwaveRing {
     constructor(x, y, color) {
-        this.x = x || 0;
-        this.y = y || 0;
+        this.x = (typeof x === 'number' && !isNaN(x)) ? x : 0;
+        this.y = (typeof y === 'number' && !isNaN(y)) ? y : 0;
         this.color = color || '#ffd700';
         this.radius = 10;
         this.maxRadius = 160;
@@ -397,10 +396,11 @@ class ShockwaveRing {
 
     update() {
         this.radius += 12;
-        if (this.radius >= this.maxRadius) this.active = false;
+        if (this.radius >= this.maxRadius || isNaN(this.radius)) this.active = false;
     }
 
     draw(ctx) {
+        if (!ctx || isNaN(this.x) || isNaN(this.y) || isNaN(this.radius)) return;
         const alpha = Math.max(0, 1 - (this.radius / this.maxRadius));
         const radX = Math.max(0.1, this.radius);
         const radY = Math.max(0.1, this.radius * 0.35);
@@ -420,10 +420,10 @@ class ShockwaveRing {
 
 class Particle {
     constructor(x, y, vx, vy, color, size, life) {
-        this.x = x || 0;
-        this.y = y || 0;
-        this.vx = vx || 0;
-        this.vy = vy || 0;
+        this.x = (typeof x === 'number' && !isNaN(x)) ? x : 0;
+        this.y = (typeof y === 'number' && !isNaN(y)) ? y : 0;
+        this.vx = (typeof vx === 'number' && !isNaN(vx)) ? vx : 0;
+        this.vy = (typeof vy === 'number' && !isNaN(vy)) ? vy : 0;
         this.color = color || '#ffffff';
         this.size = size || 3;
         this.maxLife = life || 20;
@@ -435,9 +435,11 @@ class Particle {
         this.y += this.vy;
         this.vy += 0.2;
         this.life--;
+        if (isNaN(this.x) || isNaN(this.y)) this.life = 0;
     }
 
     draw(ctx) {
+        if (!ctx || isNaN(this.x) || isNaN(this.y)) return;
         const alpha = Math.max(0, this.life / this.maxLife);
         ctx.save();
         ctx.globalAlpha = alpha;
@@ -460,11 +462,13 @@ class ParticleSystem {
     }
 
     createHitSparks(x, y, color) {
+        const px = (typeof x === 'number' && !isNaN(x)) ? x : 0;
+        const py = (typeof y === 'number' && !isNaN(y)) ? y : 0;
         for (let i = 0; i < 16; i++) {
             const angle = Math.random() * Math.PI * 2;
             const speed = 2 + Math.random() * 8;
             this.particles.push(new Particle(
-                x, y,
+                px, py,
                 Math.cos(angle) * speed,
                 Math.sin(angle) * speed - 2,
                 color || '#ffffff',
@@ -475,10 +479,12 @@ class ParticleSystem {
     }
 
     createDust(x, y) {
+        const px = (typeof x === 'number' && !isNaN(x)) ? x : 0;
+        const py = (typeof y === 'number' && !isNaN(y)) ? y : 0;
         for (let i = 0; i < 6; i++) {
             this.particles.push(new Particle(
-                x + (Math.random() - 0.5) * 30,
-                y,
+                px + (Math.random() - 0.5) * 30,
+                py,
                 (Math.random() - 0.5) * 2,
                 -Math.random() * 2,
                 'rgba(255, 255, 255, 0.4)',
@@ -489,10 +495,12 @@ class ParticleSystem {
     }
 
     createSlideSparks(x, y, facing, color) {
-        const dir = facing || 1;
+        const px = (typeof x === 'number' && !isNaN(x)) ? x : 0;
+        const py = (typeof y === 'number' && !isNaN(y)) ? y : 0;
+        const dir = (facing === -1) ? -1 : 1;
         for (let i = 0; i < 3; i++) {
             this.particles.push(new Particle(
-                x, y,
+                px, py,
                 -dir * (3 + Math.random() * 4),
                 -Math.random() * 3,
                 color || '#ffffff',
@@ -553,8 +561,8 @@ const particleSystem = new ParticleSystem();
 class Stickman {
     constructor(id, x, y, color, fighterClass, hat, team, isCPU = false) {
         this.id = id;
-        this.x = x || 0;
-        this.y = y || 0;
+        this.x = (typeof x === 'number' && !isNaN(x)) ? x : 200;
+        this.y = (typeof y === 'number' && !isNaN(y)) ? y : 300;
         this.width = 38;
         this.height = 85;
         this.color = color || '#00f0ff';
@@ -590,8 +598,8 @@ class Stickman {
     }
 
     resetPosition(x, y) {
-        this.x = x || 0;
-        this.y = y || 0;
+        this.x = (typeof x === 'number' && !isNaN(x)) ? x : 200;
+        this.y = (typeof y === 'number' && !isNaN(y)) ? y : 300;
         this.vx = 0;
         this.vy = 0;
         this.health = this.maxHealth;
@@ -608,6 +616,14 @@ class Stickman {
 
     update(opponents, allies, keys, difficulty, mode, groundY) {
         this.animFrame++;
+
+        // Bulletproof Safety Safeguards against NaN
+        if (isNaN(this.x) || !isFinite(this.x)) this.x = 200;
+        if (isNaN(this.y) || !isFinite(this.y)) this.y = 300;
+        if (isNaN(this.vx) || !isFinite(this.vx)) this.vx = 0;
+        if (isNaN(this.vy) || !isFinite(this.vy)) this.vy = 0;
+        if (isNaN(this.health) || !isFinite(this.health)) this.health = 100;
+        if (isNaN(this.specialMeter) || !isFinite(this.specialMeter)) this.specialMeter = 0;
 
         if (this.health > 0) {
             this.specialMeter = Math.min(100, this.specialMeter + 0.18);
@@ -627,7 +643,7 @@ class Stickman {
         let minDist = Infinity;
         if (Array.isArray(opponents)) {
             opponents.forEach(opp => {
-                if (opp && opp.health > 0) {
+                if (opp && opp.health > 0 && typeof opp.x === 'number' && !isNaN(opp.x)) {
                     const dist = Math.hypot(opp.x - this.x, opp.y - this.y);
                     if (dist < minDist) {
                         minDist = dist;
@@ -817,30 +833,33 @@ class Stickman {
     }
 
     executeSignatureSpecial(target, damage) {
+        const dmg = (typeof damage === 'number' && !isNaN(damage)) ? damage : 30;
+
         if (this.fighterClass === 'NINJA') {
             particleSystem.createHitSparks(this.x + 20, this.y + 30, this.color);
-            if (target) {
-                this.x = target.x - (target.facing * 50);
+            if (target && typeof target.x === 'number' && !isNaN(target.x)) {
+                const targetFacing = (target.facing === -1) ? -1 : 1;
+                this.x = target.x - (targetFacing * 50);
                 this.facing = (target.x >= this.x) ? 1 : -1;
             }
-            this.startAttack('ultimate', 30, damage);
+            this.startAttack('ultimate', 30, dmg);
             particleSystem.createHitSparks(this.x + 20, this.y + 30, '#ffffff');
             particleSystem.addDamageText(this.x, this.y - 20, 'SHADOW TELEPORT KICK!', this.color);
         } else if (this.fighterClass === 'BRAWLER') {
             this.vy = 8;
-            this.startAttack('ultimate', 35, damage);
+            this.startAttack('ultimate', 35, dmg);
             triggerCameraShake(16, 14);
             particleSystem.addShockwave(this.x + this.width / 2, 460, this.color);
             particleSystem.createDust(this.x, 460);
             particleSystem.addDamageText(this.x, this.y - 20, 'FOOT GROUND SLAM!', '#ffd700');
         } else if (this.fighterClass === 'WEAVER') {
-            this.startAttack('ultimate', 25, damage);
+            this.startAttack('ultimate', 25, dmg);
             const projVx = this.facing * 12;
-            particleSystem.addProjectile(new Projectile(this.x + (this.facing * 35), this.y + 30, projVx, damage, this));
+            particleSystem.addProjectile(new Projectile(this.x + (this.facing * 35), this.y + 30, projVx, dmg, this));
             particleSystem.addDamageText(this.x, this.y - 20, 'PLASMA ORB BLAST!', '#aa00ff');
         } else if (this.fighterClass === 'KNIGHT') {
             this.vx = this.facing * 18;
-            this.startAttack('ultimate', 30, damage);
+            this.startAttack('ultimate', 30, dmg);
             particleSystem.createSlideSparks(this.x, 460, this.facing, this.color);
             particleSystem.addDamageText(this.x, this.y - 20, 'PHANTOM BLADE LUNGE!', '#e60000');
         }
@@ -850,7 +869,7 @@ class Stickman {
         this.isAttacking = true;
         this.attackType = type;
         this.attackTimer = duration;
-        this.currentAttackDamage = damage;
+        this.currentAttackDamage = (typeof damage === 'number' && !isNaN(damage)) ? damage : 10;
         this.hasHitOpponent = false;
     }
 
@@ -862,7 +881,7 @@ class Stickman {
             y: this.y + 20,
             width: reach,
             height: 35,
-            damage: this.currentAttackDamage,
+            damage: this.currentAttackDamage || 10,
             knockback: (this.attackType === 'light') ? 4 : (this.attackType === 'heavy') ? 10 : 16
         };
     }
@@ -870,12 +889,14 @@ class Stickman {
     takeDamage(amount, knockback, attackerFacing) {
         if (this.invincibleTimer > 0 || this.health <= 0) return;
 
-        const face = attackerFacing || 1;
+        const dmg = (typeof amount === 'number' && !isNaN(amount)) ? amount : 10;
+        const kb = (typeof knockback === 'number' && !isNaN(knockback)) ? knockback : 5;
+        const face = (attackerFacing === -1) ? -1 : 1;
 
         if (this.isBlocking || this.isSliding) {
-            const damageTaken = amount * 0.25;
+            const damageTaken = dmg * 0.25;
             this.health = Math.max(0, this.health - damageTaken);
-            this.vx = face * (knockback * 0.4);
+            this.vx = face * (kb * 0.4);
             audio.playBlock();
             particleSystem.createHitSparks(this.x + this.width / 2, this.y + 30, '#ffffff');
             particleSystem.addDamageText(this.x, this.y - 15, `-${Math.round(damageTaken)} (75% BLOCK)`, '#ffffff');
@@ -883,28 +904,28 @@ class Stickman {
             return;
         }
 
-        this.health = Math.max(0, this.health - amount);
-        this.stunTimer = (amount > 20) ? 20 : 12;
+        this.health = Math.max(0, this.health - dmg);
+        this.stunTimer = (dmg > 20) ? 20 : 12;
         this.invincibleTimer = 15;
-        this.vx = face * knockback;
+        this.vx = face * kb;
         this.vy = -3;
         this.specialMeter = Math.min(100, this.specialMeter + 20);
 
-        if (amount >= 20) {
+        if (dmg >= 20) {
             audio.playHeavyHit();
             triggerCameraShake(12, 10);
-            particleSystem.addDamageText(this.x, this.y - 15, `-${amount} CRIT!`, '#ffd700');
+            particleSystem.addDamageText(this.x, this.y - 15, `-${dmg} CRIT!`, '#ffd700');
         } else {
             audio.playPunch();
             triggerCameraShake(5, 5);
-            particleSystem.addDamageText(this.x, this.y - 15, `-${amount}`, this.color);
+            particleSystem.addDamageText(this.x, this.y - 15, `-${dmg}`, this.color);
         }
 
         particleSystem.createHitSparks(this.x + this.width / 2, this.y + 30, this.color);
     }
 
     draw(ctx) {
-        if (this.health <= 0) return;
+        if (this.health <= 0 || isNaN(this.x) || isNaN(this.y)) return;
 
         ctx.save();
         ctx.lineWidth = 4;
@@ -929,6 +950,7 @@ class Stickman {
         ctx.restore();
 
         const drawHat = (hx, hy) => {
+            if (isNaN(hx) || isNaN(hy)) return;
             ctx.save();
             if (this.hat === 'CROWN') {
                 ctx.fillStyle = '#ffd700';
@@ -1035,7 +1057,6 @@ class Stickman {
             rLegX = centerX - runCycle * 16;
         }
 
-        // HEAVY KICK & BRAWLER FOOT SLAM VISUAL RENDERING
         if (this.isAttacking && this.attackType === 'heavy') {
             rLegX = centerX + this.facing * 56;
             rFootY = shoulderY - 12;
@@ -1125,6 +1146,29 @@ class Stickman {
         ctx.stroke();
 
         ctx.restore();
+    }
+}
+
+// SMOOTH CHARACTER OVERLAP & BODY PUSH APART
+function resolveCharacterOverlaps() {
+    if (!Array.isArray(fighters)) return;
+    for (let i = 0; i < fighters.length; i++) {
+        for (let j = i + 1; j < fighters.length; j++) {
+            const f1 = fighters[i];
+            const f2 = fighters[j];
+            if (!f1 || !f2 || f1.health <= 0 || f2.health <= 0) continue;
+
+            const dx = (f2.x + f2.width / 2) - (f1.x + f1.width / 2);
+            const minDistance = (f1.width + f2.width) / 2;
+            if (Math.abs(dx) < minDistance) {
+                const overlap = minDistance - Math.abs(dx);
+                const pushDir = (dx >= 0) ? 1 : -1;
+                f1.x -= pushDir * (overlap / 2);
+                f2.x += pushDir * (overlap / 2);
+                if (f1.x < 30) f1.x = 30;
+                if (f2.x + f2.width > 1024 - 30) f2.x = 1024 - 30 - f2.width;
+            }
+        }
     }
 }
 
@@ -1604,6 +1648,9 @@ function handleMatchEnd(winningTeam) {
 
 function checkCombatCollisions() {
     if (gameState !== 'FIGHT') return;
+
+    // Resolve Body Overlap smoothly
+    resolveCharacterOverlaps();
 
     fighters.forEach(attacker => {
         if (!attacker || attacker.health <= 0) return;
