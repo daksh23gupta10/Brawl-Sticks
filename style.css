@@ -335,8 +335,30 @@ canvas {
     max-width: 840px;
     text-align: center;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9);
-    max-height: 96vh;
+    max-height: 85vh;
     overflow-y: auto;
+    position: relative;
+    scroll-behavior: smooth;
+}
+
+/* CUSTOM SCROLLBAR FOR MODAL */
+.modal-card::-webkit-scrollbar {
+    width: 8px;
+}
+
+.modal-card::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 4px;
+}
+
+.modal-card::-webkit-scrollbar-thumb {
+    background: var(--cyan);
+    border-radius: 4px;
+    box-shadow: 0 0 10px var(--cyan-glow);
+}
+
+.modal-card::-webkit-scrollbar-thumb:hover {
+    background: #00c8ff;
 }
 
 .game-title {
@@ -649,19 +671,28 @@ canvas {
     100% { opacity: 1; box-shadow: 0 0 12px var(--gold); }
 }
 
-/* Buttons */
+/* STICKY FOOTER ACTION BUTTONS */
 .action-buttons {
+    position: sticky;
+    bottom: -16px;
+    background: rgba(16, 20, 38, 0.98);
+    backdrop-filter: blur(8px);
     display: flex;
     justify-content: center;
     gap: 8px;
     flex-wrap: wrap;
+    padding: 10px 0;
+    margin-top: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 0 0 12px 12px;
+    z-index: 20;
 }
 
 .btn {
     font-family: var(--font-heading);
     font-weight: 700;
-    font-size: 0.8rem;
-    padding: 6px 16px;
+    font-size: 0.85rem;
+    padding: 8px 20px;
     border-radius: 6px;
     border: none;
     cursor: pointer;
@@ -672,7 +703,12 @@ canvas {
 .btn-primary {
     background: linear-gradient(135deg, var(--cyan), #0088ff);
     color: #000;
-    box-shadow: 0 0 15px var(--cyan-glow);
+    box-shadow: 0 0 18px var(--cyan-glow);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 28px var(--cyan);
 }
 
 .btn-secondary {
