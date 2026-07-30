@@ -1,6 +1,6 @@
 /**
  * BRAWL-STICKS: 1v1 & 2v2 Stickman Fighting Game Engine
- * Features v2.3.1: Visible Kick Arc Trails, Brawler Foot Ground Slam, Prominent Timer Pause Button
+ * Fully Crash-Guarded & Hardened Engine (v2.3.2)
  */
 
 // ==========================================
@@ -21,52 +21,68 @@ let p1Hat = 'NONE';
 let p2Hat = 'NONE';
 
 function loadSavedPreferences() {
-    const savedKeys = localStorage.getItem('brawl_sticks_keys');
-    if (savedKeys) {
-        try { keyBindings = JSON.parse(savedKeys); } catch (e) { keyBindings = JSON.parse(JSON.stringify(defaultKeyBindings)); }
+    try {
+        const savedKeys = localStorage.getItem('brawl_sticks_keys');
+        if (savedKeys) {
+            try { keyBindings = JSON.parse(savedKeys); } catch (e) { keyBindings = JSON.parse(JSON.stringify(defaultKeyBindings)); }
+        }
+
+        const savedColors = localStorage.getItem('brawl_sticks_colors');
+        if (savedColors) {
+            try {
+                const parsed = JSON.parse(savedColors);
+                if (parsed && typeof parsed.p1 === 'string') p1Color = parsed.p1;
+                if (parsed && typeof parsed.p2 === 'string') p2Color = parsed.p2;
+            } catch (e) {}
+        }
+
+        const savedClasses = localStorage.getItem('brawl_sticks_classes');
+        if (savedClasses) {
+            try {
+                const parsed = JSON.parse(savedClasses);
+                if (parsed && typeof parsed.p1 === 'string') p1Class = parsed.p1;
+                if (parsed && typeof parsed.p2 === 'string') p2Class = parsed.p2;
+            } catch (e) {}
+        }
+
+        const savedHats = localStorage.getItem('brawl_sticks_hats');
+        if (savedHats) {
+            try {
+                const parsed = JSON.parse(savedHats);
+                if (parsed && typeof parsed.p1 === 'string') p1Hat = parsed.p1;
+                if (parsed && typeof parsed.p2 === 'string') p2Hat = parsed.p2;
+            } catch (e) {}
+        }
+    } catch (err) {
+        console.warn("Storage access restricted:", err);
     }
+
+    // Safety Fallbacks
+    if (!p1Color) p1Color = '#00f0ff';
+    if (!p2Color) p2Color = '#ff0055';
+    if (!p1Class) p1Class = 'NINJA';
+    if (!p2Class) p2Class = 'BRAWLER';
+    if (!p1Hat) p1Hat = 'NONE';
+    if (!p2Hat) p2Hat = 'NONE';
+
     updateRebindButtonText();
-
-    const savedColors = localStorage.getItem('brawl_sticks_colors');
-    if (savedColors) {
-        try {
-            const parsed = JSON.parse(savedColors);
-            if (parsed.p1) p1Color = parsed.p1;
-            if (parsed.p2) p2Color = parsed.p2;
-        } catch (e) {}
-    }
-
-    const savedClasses = localStorage.getItem('brawl_sticks_classes');
-    if (savedClasses) {
-        try {
-            const parsed = JSON.parse(savedClasses);
-            if (parsed.p1) p1Class = parsed.p1;
-            if (parsed.p2) p2Class = parsed.p2;
-        } catch (e) {}
-    }
-
-    const savedHats = localStorage.getItem('brawl_sticks_hats');
-    if (savedHats) {
-        try {
-            const parsed = JSON.parse(savedHats);
-            if (parsed.p1) p1Hat = parsed.p1;
-            if (parsed.p2) p2Hat = parsed.p2;
-        } catch (e) {}
-    }
-
     syncUIElements();
     applyHUDColors();
 }
 
 function savePreferences() {
-    localStorage.setItem('brawl_sticks_colors', JSON.stringify({ p1: p1Color, p2: p2Color }));
-    localStorage.setItem('brawl_sticks_classes', JSON.stringify({ p1: p1Class, p2: p2Class }));
-    localStorage.setItem('brawl_sticks_hats', JSON.stringify({ p1: p1Hat, p2: p2Hat }));
+    try {
+        localStorage.setItem('brawl_sticks_colors', JSON.stringify({ p1: p1Color, p2: p2Color }));
+        localStorage.setItem('brawl_sticks_classes', JSON.stringify({ p1: p1Class, p2: p2Class }));
+        localStorage.setItem('brawl_sticks_hats', JSON.stringify({ p1: p1Hat, p2: p2Hat }));
+    } catch (e) {}
     applyHUDColors();
 }
 
 function saveKeys() {
-    localStorage.setItem('brawl_sticks_keys', JSON.stringify(keyBindings));
+    try {
+        localStorage.setItem('brawl_sticks_keys', JSON.stringify(keyBindings));
+    } catch (e) {}
     updateRebindButtonText();
 }
 
@@ -131,27 +147,27 @@ function applyHUDColors() {
 }
 
 document.querySelectorAll('#p1-color-swatches .swatch').forEach(sw => {
-    sw.addEventListener('click', () => { p1Color = sw.getAttribute('data-color'); syncUIElements(); savePreferences(); });
+    sw.addEventListener('click', () => { p1Color = sw.getAttribute('data-color') || '#00f0ff'; syncUIElements(); savePreferences(); });
 });
 
 document.querySelectorAll('#p2-color-swatches .swatch').forEach(sw => {
-    sw.addEventListener('click', () => { p2Color = sw.getAttribute('data-color'); syncUIElements(); savePreferences(); });
+    sw.addEventListener('click', () => { p2Color = sw.getAttribute('data-color') || '#ff0055'; syncUIElements(); savePreferences(); });
 });
 
 document.querySelectorAll('#p1-class-list .class-card').forEach(c => {
-    c.addEventListener('click', () => { p1Class = c.getAttribute('data-class'); syncUIElements(); savePreferences(); });
+    c.addEventListener('click', () => { p1Class = c.getAttribute('data-class') || 'NINJA'; syncUIElements(); savePreferences(); });
 });
 
 document.querySelectorAll('#p2-class-list .class-card').forEach(c => {
-    c.addEventListener('click', () => { p2Class = c.getAttribute('data-class'); syncUIElements(); savePreferences(); });
+    c.addEventListener('click', () => { p2Class = c.getAttribute('data-class') || 'BRAWLER'; syncUIElements(); savePreferences(); });
 });
 
 document.querySelectorAll('#p1-hat-list .hat-btn').forEach(h => {
-    h.addEventListener('click', () => { p1Hat = h.getAttribute('data-hat'); syncUIElements(); savePreferences(); });
+    h.addEventListener('click', () => { p1Hat = h.getAttribute('data-hat') || 'NONE'; syncUIElements(); savePreferences(); });
 });
 
 document.querySelectorAll('#p2-hat-list .hat-btn').forEach(h => {
-    h.addEventListener('click', () => { p2Hat = h.getAttribute('data-hat'); syncUIElements(); savePreferences(); });
+    h.addEventListener('click', () => { p2Hat = h.getAttribute('data-hat') || 'NONE'; syncUIElements(); savePreferences(); });
 });
 
 let waitingForRebind = null;
@@ -174,11 +190,14 @@ document.querySelectorAll('.rebind-btn').forEach(btn => {
     btn.addEventListener('click', handleRebindStart);
 });
 
-document.getElementById('btn-reset-keys').addEventListener('click', () => {
-    keyBindings = JSON.parse(JSON.stringify(defaultKeyBindings));
-    localStorage.removeItem('brawl_sticks_keys');
-    updateRebindButtonText();
-});
+const resetKeysBtn = document.getElementById('btn-reset-keys');
+if (resetKeysBtn) {
+    resetKeysBtn.addEventListener('click', () => {
+        keyBindings = JSON.parse(JSON.stringify(defaultKeyBindings));
+        try { localStorage.removeItem('brawl_sticks_keys'); } catch (e) {}
+        updateRebindButtonText();
+    });
+}
 
 // ==========================================
 // 2. SOUND SYNTHESIZER (Web Audio API)
@@ -191,100 +210,114 @@ class SoundFX {
 
     init() {
         if (!this.ctx) {
-            const AudioCtx = window.AudioContext || window.webkitAudioContext;
-            this.ctx = new AudioCtx();
+            try {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                this.ctx = new AudioCtx();
+            } catch (e) {}
         }
     }
 
     playPunch() {
         if (!this.enabled || !this.ctx) return;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(180, this.ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(40, this.ctx.currentTime + 0.1);
-        gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.1);
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start();
-        osc.stop(this.ctx.currentTime + 0.1);
+        try {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(180, this.ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(40, this.ctx.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.1);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start();
+            osc.stop(this.ctx.currentTime + 0.1);
+        } catch (e) {}
     }
 
     playHeavyHit() {
         if (!this.enabled || !this.ctx) return;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(120, this.ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(20, this.ctx.currentTime + 0.25);
-        gain.gain.setValueAtTime(0.5, this.ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start();
-        osc.stop(this.ctx.currentTime + 0.25);
+        try {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(120, this.ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(20, this.ctx.currentTime + 0.25);
+            gain.gain.setValueAtTime(0.5, this.ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start();
+            osc.stop(this.ctx.currentTime + 0.25);
+        } catch (e) {}
     }
 
     playBlock() {
         if (!this.enabled || !this.ctx) return;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(400, this.ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(200, this.ctx.currentTime + 0.08);
-        gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start();
-        osc.stop(this.ctx.currentTime + 0.08);
+        try {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(400, this.ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(200, this.ctx.currentTime + 0.08);
+            gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start();
+            osc.stop(this.ctx.currentTime + 0.08);
+        } catch (e) {}
     }
 
     playSlide() {
         if (!this.enabled || !this.ctx) return;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(110, this.ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(50, this.ctx.currentTime + 0.18);
-        gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.18);
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start();
-        osc.stop(this.ctx.currentTime + 0.18);
+        try {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(110, this.ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(50, this.ctx.currentTime + 0.18);
+            gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.18);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start();
+            osc.stop(this.ctx.currentTime + 0.18);
+        } catch (e) {}
     }
 
     playJump() {
         if (!this.enabled || !this.ctx) return;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(150, this.ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(350, this.ctx.currentTime + 0.12);
-        gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.12);
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start();
-        osc.stop(this.ctx.currentTime + 0.12);
+        try {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(150, this.ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(350, this.ctx.currentTime + 0.12);
+            gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.12);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start();
+            osc.stop(this.ctx.currentTime + 0.12);
+        } catch (e) {}
     }
 
     playUltimate() {
         if (!this.enabled || !this.ctx) return;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(300, this.ctx.currentTime);
-        osc.frequency.linearRampToValueAtTime(600, this.ctx.currentTime + 0.3);
-        osc.frequency.exponentialRampToValueAtTime(50, this.ctx.currentTime + 0.6);
-        gain.gain.setValueAtTime(0.4, this.ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.6);
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start();
-        osc.stop(this.ctx.currentTime + 0.6);
+        try {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(300, this.ctx.currentTime);
+            osc.frequency.linearRampToValueAtTime(600, this.ctx.currentTime + 0.3);
+            osc.frequency.exponentialRampToValueAtTime(50, this.ctx.currentTime + 0.6);
+            gain.gain.setValueAtTime(0.4, this.ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.6);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start();
+            osc.stop(this.ctx.currentTime + 0.6);
+        } catch (e) {}
     }
 }
 
@@ -295,10 +328,10 @@ const audio = new SoundFX();
 // ==========================================
 class DamageText {
     constructor(x, y, text, color) {
-        this.x = x;
-        this.y = y;
-        this.text = text;
-        this.color = color;
+        this.x = x || 0;
+        this.y = y || 0;
+        this.text = text || '';
+        this.color = color || '#ffffff';
         this.vy = -1.5;
         this.life = 35;
         this.maxLife = 35;
@@ -324,12 +357,12 @@ class DamageText {
 
 class Projectile {
     constructor(x, y, vx, damage, owner) {
-        this.x = x;
-        this.y = y;
-        this.vx = vx;
-        this.damage = damage;
+        this.x = x || 0;
+        this.y = y || 0;
+        this.vx = vx || 10;
+        this.damage = damage || 20;
         this.owner = owner;
-        this.color = owner.color;
+        this.color = (owner && owner.color) ? owner.color : '#00f0ff';
         this.radius = 18;
         this.active = true;
     }
@@ -354,9 +387,9 @@ class Projectile {
 
 class ShockwaveRing {
     constructor(x, y, color) {
-        this.x = x;
-        this.y = y;
-        this.color = color;
+        this.x = x || 0;
+        this.y = y || 0;
+        this.color = color || '#ffd700';
         this.radius = 10;
         this.maxRadius = 160;
         this.active = true;
@@ -369,6 +402,9 @@ class ShockwaveRing {
 
     draw(ctx) {
         const alpha = Math.max(0, 1 - (this.radius / this.maxRadius));
+        const radX = Math.max(0.1, this.radius);
+        const radY = Math.max(0.1, this.radius * 0.35);
+
         ctx.save();
         ctx.globalAlpha = alpha;
         ctx.strokeStyle = this.color;
@@ -376,7 +412,7 @@ class ShockwaveRing {
         ctx.shadowColor = this.color;
         ctx.shadowBlur = 20;
         ctx.beginPath();
-        ctx.ellipse(this.x, this.y, this.radius, this.radius * 0.35, 0, 0, Math.PI * 2);
+        ctx.ellipse(this.x, this.y, radX, radY, 0, 0, Math.PI * 2);
         ctx.stroke();
         ctx.restore();
     }
@@ -384,14 +420,14 @@ class ShockwaveRing {
 
 class Particle {
     constructor(x, y, vx, vy, color, size, life) {
-        this.x = x;
-        this.y = y;
-        this.vx = vx;
-        this.vy = vy;
-        this.color = color;
-        this.size = size;
-        this.maxLife = life;
-        this.life = life;
+        this.x = x || 0;
+        this.y = y || 0;
+        this.vx = vx || 0;
+        this.vy = vy || 0;
+        this.color = color || '#ffffff';
+        this.size = size || 3;
+        this.maxLife = life || 20;
+        this.life = life || 20;
     }
 
     update() {
@@ -409,7 +445,7 @@ class Particle {
         ctx.shadowColor = this.color;
         ctx.shadowBlur = 10;
         ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.arc(this.x, this.y, Math.max(0.1, this.size), 0, Math.PI * 2);
         ctx.fill();
         ctx.restore();
     }
@@ -431,7 +467,7 @@ class ParticleSystem {
                 x, y,
                 Math.cos(angle) * speed,
                 Math.sin(angle) * speed - 2,
-                color,
+                color || '#ffffff',
                 2 + Math.random() * 3,
                 20 + Math.random() * 15
             ));
@@ -453,12 +489,13 @@ class ParticleSystem {
     }
 
     createSlideSparks(x, y, facing, color) {
+        const dir = facing || 1;
         for (let i = 0; i < 3; i++) {
             this.particles.push(new Particle(
                 x, y,
-                -facing * (3 + Math.random() * 4),
+                -dir * (3 + Math.random() * 4),
                 -Math.random() * 3,
-                color,
+                color || '#ffffff',
                 2 + Math.random() * 2,
                 10 + Math.random() * 8
             ));
@@ -470,7 +507,7 @@ class ParticleSystem {
     }
 
     addProjectile(p) {
-        this.projectiles.push(p);
+        if (p) this.projectiles.push(p);
     }
 
     addShockwave(x, y, color) {
@@ -516,14 +553,14 @@ const particleSystem = new ParticleSystem();
 class Stickman {
     constructor(id, x, y, color, fighterClass, hat, team, isCPU = false) {
         this.id = id;
-        this.x = x;
-        this.y = y;
+        this.x = x || 0;
+        this.y = y || 0;
         this.width = 38;
         this.height = 85;
-        this.color = color;
+        this.color = color || '#00f0ff';
         this.fighterClass = fighterClass || 'NINJA';
         this.hat = hat || 'NONE';
-        this.team = team;
+        this.team = team || 1;
         this.isCPU = isCPU;
 
         this.maxHealth = (this.fighterClass === 'BRAWLER') ? 130 : (this.fighterClass === 'KNIGHT') ? 110 : 100;
@@ -536,7 +573,7 @@ class Stickman {
         this.gravity = 0.65;
         this.isGrounded = false;
         this.jumpCount = 0;
-        this.facing = team === 1 ? 1 : -1;
+        this.facing = this.team === 1 ? 1 : -1;
 
         this.specialMeter = 0;
         this.isBlocking = false;
@@ -553,8 +590,8 @@ class Stickman {
     }
 
     resetPosition(x, y) {
-        this.x = x;
-        this.y = y;
+        this.x = x || 0;
+        this.y = y || 0;
         this.vx = 0;
         this.vy = 0;
         this.health = this.maxHealth;
@@ -588,15 +625,17 @@ class Stickman {
 
         let target = null;
         let minDist = Infinity;
-        opponents.forEach(opp => {
-            if (opp.health > 0) {
-                const dist = Math.hypot(opp.x - this.x, opp.y - this.y);
-                if (dist < minDist) {
-                    minDist = dist;
-                    target = opp;
+        if (Array.isArray(opponents)) {
+            opponents.forEach(opp => {
+                if (opp && opp.health > 0) {
+                    const dist = Math.hypot(opp.x - this.x, opp.y - this.y);
+                    if (dist < minDist) {
+                        minDist = dist;
+                        target = opp;
+                    }
                 }
-            }
-        });
+            });
+        }
 
         if (target && !this.isAttacking && !this.isSliding && this.stunTimer === 0) {
             this.facing = (target.x >= this.x) ? 1 : -1;
@@ -706,7 +745,7 @@ class Stickman {
 
     handleInputs(keys, mode, target) {
         const pid = this.id === 'p1' ? 'p1' : 'p2';
-        const binds = keyBindings[pid];
+        const binds = keyBindings[pid] || defaultKeyBindings.p1;
 
         let leftKey = !!keys[binds.left];
         let rightKey = !!keys[binds.right];
@@ -777,10 +816,8 @@ class Stickman {
         }
     }
 
-    // SIGNATURE CLASS SPECIAL MOVES ENGINE
     executeSignatureSpecial(target, damage) {
         if (this.fighterClass === 'NINJA') {
-            // Shadow Teleport Dash Behind Enemy
             particleSystem.createHitSparks(this.x + 20, this.y + 30, this.color);
             if (target) {
                 this.x = target.x - (target.facing * 50);
@@ -790,21 +827,18 @@ class Stickman {
             particleSystem.createHitSparks(this.x + 20, this.y + 30, '#ffffff');
             particleSystem.addDamageText(this.x, this.y - 20, 'SHADOW TELEPORT KICK!', this.color);
         } else if (this.fighterClass === 'BRAWLER') {
-            // BRAWLER FOOT GROUND SLAM: Leaps up and slams foot down into floor!
-            this.vy = 8; // Drive foot down fast
+            this.vy = 8;
             this.startAttack('ultimate', 35, damage);
             triggerCameraShake(16, 14);
             particleSystem.addShockwave(this.x + this.width / 2, 460, this.color);
             particleSystem.createDust(this.x, 460);
             particleSystem.addDamageText(this.x, this.y - 20, 'FOOT GROUND SLAM!', '#ffd700');
         } else if (this.fighterClass === 'WEAVER') {
-            // Plasma Orb Projectile
             this.startAttack('ultimate', 25, damage);
             const projVx = this.facing * 12;
             particleSystem.addProjectile(new Projectile(this.x + (this.facing * 35), this.y + 30, projVx, damage, this));
             particleSystem.addDamageText(this.x, this.y - 20, 'PLASMA ORB BLAST!', '#aa00ff');
         } else if (this.fighterClass === 'KNIGHT') {
-            // Phantom Sword Lunge
             this.vx = this.facing * 18;
             this.startAttack('ultimate', 30, damage);
             particleSystem.createSlideSparks(this.x, 460, this.facing, this.color);
@@ -836,10 +870,12 @@ class Stickman {
     takeDamage(amount, knockback, attackerFacing) {
         if (this.invincibleTimer > 0 || this.health <= 0) return;
 
+        const face = attackerFacing || 1;
+
         if (this.isBlocking || this.isSliding) {
             const damageTaken = amount * 0.25;
             this.health = Math.max(0, this.health - damageTaken);
-            this.vx = attackerFacing * (knockback * 0.4);
+            this.vx = face * (knockback * 0.4);
             audio.playBlock();
             particleSystem.createHitSparks(this.x + this.width / 2, this.y + 30, '#ffffff');
             particleSystem.addDamageText(this.x, this.y - 15, `-${Math.round(damageTaken)} (75% BLOCK)`, '#ffffff');
@@ -850,7 +886,7 @@ class Stickman {
         this.health = Math.max(0, this.health - amount);
         this.stunTimer = (amount > 20) ? 20 : 12;
         this.invincibleTimer = 15;
-        this.vx = attackerFacing * knockback;
+        this.vx = face * knockback;
         this.vy = -3;
         this.specialMeter = Math.min(100, this.specialMeter + 20);
 
@@ -999,12 +1035,11 @@ class Stickman {
             rLegX = centerX - runCycle * 16;
         }
 
-        // HEAVY KICK & BRAWLER FOOT SLAM RENDERING
+        // HEAVY KICK & BRAWLER FOOT SLAM VISUAL RENDERING
         if (this.isAttacking && this.attackType === 'heavy') {
             rLegX = centerX + this.facing * 56;
             rFootY = shoulderY - 12;
 
-            // DRAW GLOWING KICK MOTION ARC TRAIL
             ctx.save();
             ctx.strokeStyle = this.color;
             ctx.shadowColor = this.color;
@@ -1015,7 +1050,6 @@ class Stickman {
             ctx.stroke();
             ctx.restore();
         } else if (this.isAttacking && this.attackType === 'ultimate' && this.fighterClass === 'BRAWLER') {
-            // Brawler Foot Ground Slam posture (foot driven into floor)
             rLegX = centerX + this.facing * 12;
             rFootY = footY + 6;
             lLegX = centerX - this.facing * 18;
@@ -1069,7 +1103,7 @@ class Stickman {
             } else if (this.attackType === 'ultimate' && this.fighterClass === 'KNIGHT') {
                 rHandX = centerX + this.facing * 50;
                 rHandY = shoulderY - 8;
-                // Draw extended energy sword beam
+
                 ctx.save();
                 ctx.strokeStyle = '#e60000';
                 ctx.shadowColor = '#e60000';
@@ -1098,7 +1132,7 @@ class Stickman {
 // 5. GAME MANAGER & PAUSE SYSTEM
 // ==========================================
 const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
+const ctx = canvas ? canvas.getContext('2d') : null;
 
 const groundY = 460;
 const keys = {};
@@ -1124,38 +1158,57 @@ function triggerCameraShake(time, intensity) {
 function togglePause() {
     if (gameState === 'FIGHT') {
         gameState = 'PAUSED';
-        document.getElementById('pause-overlay').classList.remove('hidden');
+        const po = document.getElementById('pause-overlay');
+        if (po) po.classList.remove('hidden');
     } else if (gameState === 'PAUSED') {
         gameState = 'FIGHT';
-        document.getElementById('pause-overlay').classList.add('hidden');
+        const po = document.getElementById('pause-overlay');
+        if (po) po.classList.add('hidden');
     }
 }
 
-document.getElementById('btn-pause-trigger').addEventListener('click', (e) => {
-    e.stopPropagation();
-    togglePause();
-});
+const pauseTrigger = document.getElementById('btn-pause-trigger');
+if (pauseTrigger) {
+    pauseTrigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        togglePause();
+    });
+}
 
-document.getElementById('btn-resume').addEventListener('click', () => {
-    togglePause();
-});
+const btnResume = document.getElementById('btn-resume');
+if (btnResume) {
+    btnResume.addEventListener('click', () => {
+        togglePause();
+    });
+}
 
-document.getElementById('btn-restart').addEventListener('click', () => {
-    document.getElementById('pause-overlay').classList.add('hidden');
-    startRound();
-});
+const btnRestart = document.getElementById('btn-restart');
+if (btnRestart) {
+    btnRestart.addEventListener('click', () => {
+        const po = document.getElementById('pause-overlay');
+        if (po) po.classList.add('hidden');
+        startRound();
+    });
+}
 
-document.getElementById('btn-pause-menu').addEventListener('click', () => {
-    document.getElementById('pause-overlay').classList.add('hidden');
-    document.getElementById('start-overlay').classList.remove('hidden');
-    gameState = 'START';
-});
+const btnPauseMenu = document.getElementById('btn-pause-menu');
+if (btnPauseMenu) {
+    btnPauseMenu.addEventListener('click', () => {
+        const po = document.getElementById('pause-overlay');
+        const so = document.getElementById('start-overlay');
+        if (po) po.classList.add('hidden');
+        if (so) so.classList.remove('hidden');
+        gameState = 'START';
+    });
+}
 
 const pauseSoundBtn = document.getElementById('btn-pause-sound');
-pauseSoundBtn.addEventListener('click', () => {
-    audio.enabled = !audio.enabled;
-    pauseSoundBtn.textContent = audio.enabled ? '🔊 SOUND: ON' : 'MUTE SOUND';
-});
+if (pauseSoundBtn) {
+    pauseSoundBtn.addEventListener('click', () => {
+        audio.enabled = !audio.enabled;
+        pauseSoundBtn.textContent = audio.enabled ? '🔊 SOUND: ON' : 'MUTE SOUND';
+    });
+}
 
 window.addEventListener('keydown', (e) => {
     if (waitingForRebind) {
@@ -1216,6 +1269,7 @@ let joystickCenter = { x: 0, y: 0 };
 const maxJoystickRadius = 38;
 
 function updateJoystick(clientPos) {
+    if (!joystickThumb) return;
     const dx = clientPos.x - joystickCenter.x;
     const dy = clientPos.y - joystickCenter.y;
     const dist = Math.hypot(dx, dy);
@@ -1235,7 +1289,7 @@ function updateJoystick(clientPos) {
 
 function resetJoystick() {
     isDraggingJoystick = false;
-    joystickThumb.style.transform = `translate(0px, 0px)`;
+    if (joystickThumb) joystickThumb.style.transform = `translate(0px, 0px)`;
     keys['touch_left'] = false;
     keys['touch_right'] = false;
     keys['touch_jump'] = false;
@@ -1243,22 +1297,24 @@ function resetJoystick() {
     keys['jump_p1'] = false;
 }
 
-const startJoystickDrag = (clientX, clientY) => {
-    const rect = joystickBase.getBoundingClientRect();
-    joystickCenter = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
-    isDraggingJoystick = true;
-    updateJoystick({ x: clientX, y: clientY });
-};
+if (joystickBase) {
+    const startJoystickDrag = (clientX, clientY) => {
+        const rect = joystickBase.getBoundingClientRect();
+        joystickCenter = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+        isDraggingJoystick = true;
+        updateJoystick({ x: clientX, y: clientY });
+    };
 
-joystickBase.addEventListener('touchstart', (e) => {
-    e.preventDefault();
-    startJoystickDrag(e.touches[0].clientX, e.touches[0].clientY);
-});
+    joystickBase.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        startJoystickDrag(e.touches[0].clientX, e.touches[0].clientY);
+    });
 
-joystickBase.addEventListener('mousedown', (e) => {
-    e.preventDefault();
-    startJoystickDrag(e.clientX, e.clientY);
-});
+    joystickBase.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        startJoystickDrag(e.clientX, e.clientY);
+    });
+}
 
 window.addEventListener('mousemove', (e) => {
     if (isDraggingJoystick) {
@@ -1306,49 +1362,51 @@ let touchModeSetting = 'AUTO';
 const touchToggleBtn = document.getElementById('btn-touch-toggle');
 const isTouchDevice = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
 
-if (isTouchDevice) {
+if (isTouchDevice && touchOverlay) {
     touchOverlay.classList.remove('hidden');
 }
 
-touchToggleBtn.addEventListener('click', () => {
-    if (touchModeSetting === 'AUTO') {
-        touchModeSetting = 'ON';
-        touchOverlay.classList.remove('hidden');
-        touchToggleBtn.textContent = '📱 TOUCH: ALWAYS ON';
-    } else if (touchModeSetting === 'ON') {
-        touchModeSetting = 'OFF';
-        touchOverlay.classList.add('hidden');
-        touchToggleBtn.textContent = '📱 TOUCH: OFF';
-    } else {
-        touchModeSetting = 'AUTO';
-        if (isTouchDevice) touchOverlay.classList.remove('hidden');
-        else touchOverlay.classList.add('hidden');
-        touchToggleBtn.textContent = '📱 TOUCH: AUTO';
-    }
-});
+if (touchToggleBtn) {
+    touchToggleBtn.addEventListener('click', () => {
+        if (touchModeSetting === 'AUTO') {
+            touchModeSetting = 'ON';
+            if (touchOverlay) touchOverlay.classList.remove('hidden');
+            touchToggleBtn.textContent = '📱 TOUCH: ALWAYS ON';
+        } else if (touchModeSetting === 'ON') {
+            touchModeSetting = 'OFF';
+            if (touchOverlay) touchOverlay.classList.add('hidden');
+            touchToggleBtn.textContent = '📱 TOUCH: OFF';
+        } else {
+            touchModeSetting = 'AUTO';
+            if (isTouchDevice && touchOverlay) touchOverlay.classList.remove('hidden');
+            else if (touchOverlay) touchOverlay.classList.add('hidden');
+            touchToggleBtn.textContent = '📱 TOUCH: AUTO';
+        }
+    });
+}
 
 document.querySelectorAll('.mode-card').forEach(card => {
     card.addEventListener('click', () => {
         document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
         card.classList.add('active');
-        selectedMode = card.getAttribute('data-mode');
+        selectedMode = card.getAttribute('data-mode') || 'CPU';
 
         const p2Label = document.getElementById('p2-label');
         const p3Hud = document.getElementById('p3-hud');
         const p4Hud = document.getElementById('p4-hud');
 
         if (selectedMode === 'CPU') {
-            p2Label.textContent = 'CPU (ENEMY)';
-            p3Hud.classList.add('hidden');
-            p4Hud.classList.add('hidden');
+            if (p2Label) p2Label.textContent = 'CPU (ENEMY)';
+            if (p3Hud) p3Hud.classList.add('hidden');
+            if (p4Hud) p4Hud.classList.add('hidden');
         } else if (selectedMode === 'LOCAL') {
-            p2Label.textContent = 'PLAYER 2';
-            p3Hud.classList.add('hidden');
-            p4Hud.classList.add('hidden');
+            if (p2Label) p2Label.textContent = 'PLAYER 2';
+            if (p3Hud) p3Hud.classList.add('hidden');
+            if (p4Hud) p4Hud.classList.add('hidden');
         } else if (selectedMode === 'TEAM2V2') {
-            p2Label.textContent = 'RED TEAM 1';
-            p3Hud.classList.remove('hidden');
-            p4Hud.classList.remove('hidden');
+            if (p2Label) p2Label.textContent = 'RED TEAM 1';
+            if (p3Hud) p3Hud.classList.remove('hidden');
+            if (p4Hud) p4Hud.classList.remove('hidden');
         }
     });
 });
@@ -1357,35 +1415,50 @@ document.querySelectorAll('.diff-btn').forEach(btn => {
     btn.addEventListener('click', () => {
         document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        selectedDifficulty = btn.getAttribute('data-diff');
+        selectedDifficulty = btn.getAttribute('data-diff') || 'NORMAL';
     });
 });
 
-document.getElementById('btn-start').addEventListener('click', () => {
-    audio.init();
-    document.getElementById('start-overlay').classList.add('hidden');
-    startMatch();
-});
+const btnStart = document.getElementById('btn-start');
+if (btnStart) {
+    btnStart.addEventListener('click', () => {
+        audio.init();
+        const so = document.getElementById('start-overlay');
+        if (so) so.classList.add('hidden');
+        startMatch();
+    });
+}
 
-document.getElementById('btn-rematch').addEventListener('click', () => {
-    document.getElementById('gameover-overlay').classList.add('hidden');
-    team1Wins = 0;
-    team2Wins = 0;
-    updateScoreDots();
-    startMatch();
-});
+const btnRematch = document.getElementById('btn-rematch');
+if (btnRematch) {
+    btnRematch.addEventListener('click', () => {
+        const go = document.getElementById('gameover-overlay');
+        if (go) go.classList.add('hidden');
+        team1Wins = 0;
+        team2Wins = 0;
+        updateScoreDots();
+        startMatch();
+    });
+}
 
-document.getElementById('btn-menu').addEventListener('click', () => {
-    document.getElementById('gameover-overlay').classList.add('hidden');
-    document.getElementById('start-overlay').classList.remove('hidden');
-    gameState = 'START';
-});
+const btnMenu = document.getElementById('btn-menu');
+if (btnMenu) {
+    btnMenu.addEventListener('click', () => {
+        const go = document.getElementById('gameover-overlay');
+        const so = document.getElementById('start-overlay');
+        if (go) go.classList.add('hidden');
+        if (so) so.classList.remove('hidden');
+        gameState = 'START';
+    });
+}
 
 const soundToggleBtn = document.getElementById('btn-sound-toggle');
-soundToggleBtn.addEventListener('click', () => {
-    audio.enabled = !audio.enabled;
-    soundToggleBtn.textContent = audio.enabled ? '🔊 SOUND: ON' : 'MUTE SOUND';
-});
+if (soundToggleBtn) {
+    soundToggleBtn.addEventListener('click', () => {
+        audio.enabled = !audio.enabled;
+        soundToggleBtn.textContent = audio.enabled ? '🔊 SOUND: ON' : 'MUTE SOUND';
+    });
+}
 
 function setupFighters() {
     fighters = [];
@@ -1430,22 +1503,24 @@ function startMatch() {
 function startRound() {
     setupFighters();
     matchTime = 60;
-    document.getElementById('match-timer').textContent = matchTime;
-    document.getElementById('round-label').textContent = `ROUND ${currentRound}`;
+    const mt = document.getElementById('match-timer');
+    const rl = document.getElementById('round-label');
+    if (mt) mt.textContent = matchTime;
+    if (rl) rl.textContent = `ROUND ${currentRound}`;
 
     const announcerOverlay = document.getElementById('announcer-overlay');
     const announcerText = document.getElementById('announcer-text');
 
     gameState = 'COUNTDOWN';
-    announcerOverlay.classList.remove('hidden');
-    announcerText.textContent = `ROUND ${currentRound}`;
+    if (announcerOverlay) announcerOverlay.classList.remove('hidden');
+    if (announcerText) announcerText.textContent = `ROUND ${currentRound}`;
 
     setTimeout(() => {
-        announcerText.textContent = 'READY...';
+        if (announcerText) announcerText.textContent = 'READY...';
         setTimeout(() => {
-            announcerText.textContent = 'FIGHT!';
+            if (announcerText) announcerText.textContent = 'FIGHT!';
             setTimeout(() => {
-                announcerOverlay.classList.add('hidden');
+                if (announcerOverlay) announcerOverlay.classList.add('hidden');
                 gameState = 'FIGHT';
                 startTimer();
             }, 600);
@@ -1458,7 +1533,8 @@ function startTimer() {
     timerInterval = setInterval(() => {
         if (gameState === 'FIGHT') {
             matchTime--;
-            document.getElementById('match-timer').textContent = matchTime;
+            const mt = document.getElementById('match-timer');
+            if (mt) mt.textContent = matchTime;
             if (matchTime <= 0) {
                 handleRoundEnd('TIMEOUT');
             }
@@ -1467,13 +1543,14 @@ function startTimer() {
 }
 
 function handleRoundEnd(reason) {
+    if (gameState === 'ROUND_OVER' || gameState === 'MATCH_OVER') return;
     clearInterval(timerInterval);
     gameState = 'ROUND_OVER';
     slowMoTimer = 45;
 
     const announcerOverlay = document.getElementById('announcer-overlay');
     const announcerText = document.getElementById('announcer-text');
-    announcerOverlay.classList.remove('hidden');
+    if (announcerOverlay) announcerOverlay.classList.remove('hidden');
 
     const team1HealthTotal = fighters.filter(f => f.team === 1).reduce((sum, f) => sum + f.health, 0);
     const team2HealthTotal = fighters.filter(f => f.team === 2).reduce((sum, f) => sum + f.health, 0);
@@ -1482,17 +1559,17 @@ function handleRoundEnd(reason) {
     if (team1HealthTotal > team2HealthTotal) roundWinnerTeam = 1;
     else if (team2HealthTotal > team1HealthTotal) roundWinnerTeam = 2;
 
-    announcerText.textContent = (reason === 'KO') ? 'K.O.!' : 'TIME OVER!';
+    if (announcerText) announcerText.textContent = (reason === 'KO') ? 'K.O.!' : 'TIME OVER!';
 
     setTimeout(() => {
         if (roundWinnerTeam === 1) {
             team1Wins++;
-            announcerText.textContent = 'BLUE TEAM WINS!';
+            if (announcerText) announcerText.textContent = 'BLUE TEAM WINS!';
         } else if (roundWinnerTeam === 2) {
             team2Wins++;
-            announcerText.textContent = 'RED TEAM WINS!';
+            if (announcerText) announcerText.textContent = 'RED TEAM WINS!';
         } else {
-            announcerText.textContent = 'DRAW!';
+            if (announcerText) announcerText.textContent = 'DRAW!';
         }
         updateScoreDots();
 
@@ -1509,27 +1586,31 @@ function handleRoundEnd(reason) {
 
 function handleMatchEnd(winningTeam) {
     gameState = 'MATCH_OVER';
-    document.getElementById('announcer-overlay').classList.add('hidden');
+    const ao = document.getElementById('announcer-overlay');
+    if (ao) ao.classList.add('hidden');
     const gameOverOverlay = document.getElementById('gameover-overlay');
     const winnerTitle = document.getElementById('winner-title');
 
-    winnerTitle.textContent = (winningTeam === 1) ? 'BLUE TEAM WINS MATCH!' : 'RED TEAM WINS MATCH!';
-    winnerTitle.style.color = (winningTeam === 1) ? p1Color : p2Color;
-    winnerTitle.style.textShadow = `0 0 15px ${(winningTeam === 1) ? p1Color : p2Color}`;
+    if (winnerTitle) {
+        winnerTitle.textContent = (winningTeam === 1) ? 'BLUE TEAM WINS MATCH!' : 'RED TEAM WINS MATCH!';
+        winnerTitle.style.color = (winningTeam === 1) ? p1Color : p2Color;
+        winnerTitle.style.textShadow = `0 0 15px ${(winningTeam === 1) ? p1Color : p2Color}`;
+    }
 
-    document.getElementById('stat-rounds').textContent = `${team1Wins} - ${team2Wins}`;
-    gameOverOverlay.classList.remove('hidden');
+    const sr = document.getElementById('stat-rounds');
+    if (sr) sr.textContent = `${team1Wins} - ${team2Wins}`;
+    if (gameOverOverlay) gameOverOverlay.classList.remove('hidden');
 }
 
 function checkCombatCollisions() {
     if (gameState !== 'FIGHT') return;
 
     fighters.forEach(attacker => {
-        if (attacker.health <= 0) return;
+        if (!attacker || attacker.health <= 0) return;
         const hb = attacker.getHitbox();
         if (hb) {
             fighters.forEach(defender => {
-                if (defender.team !== attacker.team && defender.health > 0) {
+                if (defender && defender.team !== attacker.team && defender.health > 0) {
                     if (hb.x < defender.x + defender.width &&
                         hb.x + hb.width > defender.x &&
                         hb.y < defender.y + defender.height &&
@@ -1552,9 +1633,9 @@ function checkCombatCollisions() {
     });
 
     particleSystem.projectiles.forEach(proj => {
-        if (!proj.active) return;
+        if (!proj || !proj.active || !proj.owner) return;
         fighters.forEach(defender => {
-            if (defender.team !== proj.owner.team && defender.health > 0) {
+            if (defender && defender.team !== proj.owner.team && defender.health > 0) {
                 const dist = Math.hypot(defender.x + defender.width / 2 - proj.x, defender.y + 30 - proj.y);
                 if (dist < proj.radius + 20) {
                     defender.takeDamage(proj.damage, 14, proj.vx > 0 ? 1 : -1);
@@ -1572,6 +1653,7 @@ function checkCombatCollisions() {
 }
 
 function drawArena() {
+    if (!ctx) return;
     ctx.fillStyle = '#060812';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -1606,22 +1688,29 @@ function updateHUD() {
     const p4 = fighters.find(f => f.id === 'p4');
 
     if (p1) {
-        document.getElementById('p1-health').style.width = `${Math.max(0, (p1.health / p1.maxHealth) * 100)}%`;
-        document.getElementById('p1-special').style.width = `${p1.specialMeter}%`;
+        const p1h = document.getElementById('p1-health');
+        const p1s = document.getElementById('p1-special');
+        if (p1h) p1h.style.width = `${Math.max(0, (p1.health / p1.maxHealth) * 100)}%`;
+        if (p1s) p1s.style.width = `${p1.specialMeter}%`;
     }
     if (p2) {
-        document.getElementById('p2-health').style.width = `${Math.max(0, (p2.health / p2.maxHealth) * 100)}%`;
-        document.getElementById('p2-special').style.width = `${p2.specialMeter}%`;
+        const p2h = document.getElementById('p2-health');
+        const p2s = document.getElementById('p2-special');
+        if (p2h) p2h.style.width = `${Math.max(0, (p2.health / p2.maxHealth) * 100)}%`;
+        if (p2s) p2s.style.width = `${p2.specialMeter}%`;
     }
     if (p3) {
-        document.getElementById('p3-health').style.width = `${Math.max(0, (p3.health / p3.maxHealth) * 100)}%`;
+        const p3h = document.getElementById('p3-health');
+        if (p3h) p3h.style.width = `${Math.max(0, (p3.health / p3.maxHealth) * 100)}%`;
     }
     if (p4) {
-        document.getElementById('p4-health').style.width = `${Math.max(0, (p4.health / p4.maxHealth) * 100)}%`;
+        const p4h = document.getElementById('p4-health');
+        if (p4h) p4h.style.width = `${Math.max(0, (p4.health / p4.maxHealth) * 100)}%`;
     }
 }
 
 function gameLoop() {
+    if (!ctx) return;
     ctx.save();
 
     if (slowMoTimer > 0) {
