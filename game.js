@@ -939,6 +939,7 @@ class Stickman {
 
         const centerX = this.x + this.width / 2;
         const headY = this.y + 16;
+        const shoulderY = headY + 16;
         const hipY = this.y + 55;
         const footY = this.y + this.height;
 
@@ -1094,7 +1095,6 @@ class Stickman {
         ctx.lineTo(rLegX, rFootY);
         ctx.stroke();
 
-        const shoulderY = headY + 16;
         let lHandX = centerX - 14;
         let lHandY = shoulderY + 16;
         let rHandX = centerX + 14;
