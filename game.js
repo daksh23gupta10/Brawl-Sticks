@@ -1,6 +1,6 @@
 /**
  * BRAWL-STICKS: 1v1 & 2v2 Stickman Fighting Game Engine
- * Universal Input System: Mouse Clicks, Touch Joystick, Touch Buttons, Keyboard & Key Remapping
+ * Features: Dynamic Speed Scaling per Difficulty, Mouse Clicks, Mobile Touch Joystick, 75% Block Mitigation
  */
 
 // ==========================================
@@ -289,8 +289,8 @@ class Stickman {
 
         this.vx = 0;
         this.vy = 0;
-        this.speed = 6.5;
-        this.jumpForce = -14;
+        this.speed = 5.0; // Default speed
+        this.jumpForce = -12.8;
         this.gravity = 0.65;
         this.isGrounded = false;
         this.jumpCount = 0;
@@ -331,6 +331,18 @@ class Stickman {
     update(opponents, allies, keys, difficulty, mode, groundY) {
         this.animFrame++;
 
+        // DYNAMIC SPEED SCALING ACCORDING TO DIFFICULTY
+        if (difficulty === 'EASY') {
+            this.speed = 3.8;       // Relaxed & Easy speed
+            this.jumpForce = -11.5;
+        } else if (difficulty === 'NORMAL') {
+            this.speed = 5.0;       // Smooth & Balanced speed
+            this.jumpForce = -12.8;
+        } else {
+            this.speed = 6.5;       // Fast-Paced Hard speed
+            this.jumpForce = -14.0;
+        }
+
         if (this.stunTimer > 0) this.stunTimer--;
         if (this.invincibleTimer > 0) this.invincibleTimer--;
 
@@ -360,7 +372,7 @@ class Stickman {
 
         if (this.isSliding) {
             this.slideTimer--;
-            this.vx = this.facing * 11;
+            this.vx = this.facing * (this.speed * 1.8);
             particleSystem.createSlideSparks(this.x + this.width / 2, groundY, this.facing);
             if (this.slideTimer <= 0) {
                 this.isSliding = false;
@@ -440,7 +452,8 @@ class Stickman {
                 }
             } else {
                 const dir = target.x > this.x ? 1 : -1;
-                this.vx = dir * (this.speed * (difficulty === 'EASY' ? 0.7 : 1));
+                const cpuSpeedFactor = difficulty === 'EASY' ? 0.6 : difficulty === 'NORMAL' ? 0.85 : 1.0;
+                this.vx = dir * (this.speed * cpuSpeedFactor);
 
                 if (target.y < this.y - 30 && this.isGrounded && Math.random() < 0.6) {
                     this.vy = this.jumpForce;
@@ -463,7 +476,6 @@ class Stickman {
         let heavyKey = !!keys[binds.kick];
         let ultKey = !!keys[binds.ult];
 
-        // Player 1 Single Player: Support Arrow Keys, Touch Joystick, and Mouse Clicks!
         if (this.id === 'p1') {
             if (mode === 'CPU') {
                 leftKey = leftKey || !!keys['ArrowLeft'];
@@ -482,7 +494,6 @@ class Stickman {
             ultKey = ultKey || !!keys['mouse_ult'] || !!keys['touch_ult'];
         }
 
-        // TRIGGER SLIDE: Pressing block/down key while moving
         if (blockKey && this.isGrounded && !this.isSliding && !this.isAttacking) {
             if (leftKey || rightKey || Math.abs(this.vx) > 1) {
                 this.isSliding = true;
@@ -551,7 +562,7 @@ class Stickman {
         if (this.invincibleTimer > 0 || this.health <= 0) return;
 
         if (this.isBlocking || this.isSliding) {
-            const damageTaken = amount * 0.25; // 75% Reduction
+            const damageTaken = amount * 0.25;
             this.health = Math.max(0, this.health - damageTaken);
             this.vx = attackerFacing * (knockback * 0.4);
             audio.playBlock();
@@ -764,12 +775,11 @@ window.addEventListener('keyup', (e) => {
     if (e.code === keyBindings.p2.jump || e.code === 'ArrowUp') keys['jump_p2'] = false;
 });
 
-// UNIVERSAL MOUSE CLICK ATTACKS (Window & Canvas level)
+// UNIVERSAL MOUSE CLICK ATTACKS
 window.addEventListener('contextmenu', e => e.preventDefault());
 
 const handleMouseDown = (e) => {
     if (gameState !== 'FIGHT') return;
-    // Only trigger if clicking over canvas or touch area, not menu buttons
     if (e.target.closest('#start-overlay') || e.target.closest('#gameover-overlay')) return;
 
     if (e.button === 0) {
@@ -793,7 +803,7 @@ window.addEventListener('mouseup', (e) => {
     if (e.button === 1) keys['mouse_ult'] = false;
 });
 
-// VIRTUAL TOUCH JOYSTICK (Mouse Drag & Touch Drag support)
+// VIRTUAL TOUCH JOYSTICK (Mouse & Touch Drag Support)
 const joystickBase = document.getElementById('joystick-base');
 const joystickThumb = document.getElementById('joystick-thumb');
 const touchOverlay = document.getElementById('touch-overlay');
@@ -870,7 +880,6 @@ const setupActionButton = (id, keyName) => {
         e.preventDefault();
         e.stopPropagation();
         keys[keyName] = true;
-        // Hold for 120ms so single clicks trigger attack instantly
         setTimeout(() => { keys[keyName] = false; }, 120);
     };
 
