@@ -1,6 +1,6 @@
 /**
  * BRAWL-STICKS: 1v1 & 2v2 Stickman Fighting Game Engine
- * Features: Signature Class Special Moves, In-Game Pause Menu, Projectiles, Hats & Colors
+ * Features v2.3.1: Visible Kick Arc Trails, Brawler Foot Ground Slam, Prominent Timer Pause Button
  */
 
 // ==========================================
@@ -81,7 +81,6 @@ function updateRebindButtonText() {
 }
 
 function syncUIElements() {
-    // Swatches
     document.querySelectorAll('#p1-color-swatches .swatch').forEach(sw => {
         sw.classList.toggle('active', sw.getAttribute('data-color') === p1Color);
     });
@@ -89,7 +88,6 @@ function syncUIElements() {
         sw.classList.toggle('active', sw.getAttribute('data-color') === p2Color);
     });
 
-    // Classes
     document.querySelectorAll('#p1-class-list .class-card').forEach(c => {
         c.classList.toggle('active', c.getAttribute('data-class') === p1Class);
     });
@@ -97,7 +95,6 @@ function syncUIElements() {
         c.classList.toggle('active', c.getAttribute('data-class') === p2Class);
     });
 
-    // Hats
     document.querySelectorAll('#p1-hat-list .hat-btn').forEach(h => {
         h.classList.toggle('active', h.getAttribute('data-hat') === p1Hat);
     });
@@ -105,7 +102,6 @@ function syncUIElements() {
         h.classList.toggle('active', h.getAttribute('data-hat') === p2Hat);
     });
 
-    // HUD Class Badges
     const b1 = document.getElementById('p1-class-badge');
     const b2 = document.getElementById('p2-class-badge');
     if (b1) b1.textContent = p1Class;
@@ -134,7 +130,6 @@ function applyHUDColors() {
     }
 }
 
-// Event Listeners for UI
 document.querySelectorAll('#p1-color-swatches .swatch').forEach(sw => {
     sw.addEventListener('click', () => { p1Color = sw.getAttribute('data-color'); syncUIElements(); savePreferences(); });
 });
@@ -296,7 +291,7 @@ class SoundFX {
 const audio = new SoundFX();
 
 // ==========================================
-// 3. PROJECTILE & PARTICLE ENGINE
+// 3. PROJECTILE, SHOCKWAVE & PARTICLE ENGINE
 // ==========================================
 class DamageText {
     constructor(x, y, text, color) {
@@ -335,7 +330,7 @@ class Projectile {
         this.damage = damage;
         this.owner = owner;
         this.color = owner.color;
-        this.radius = 16;
+        this.radius = 18;
         this.active = true;
     }
 
@@ -353,6 +348,36 @@ class Projectile {
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
         ctx.fill();
+        ctx.restore();
+    }
+}
+
+class ShockwaveRing {
+    constructor(x, y, color) {
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        this.radius = 10;
+        this.maxRadius = 160;
+        this.active = true;
+    }
+
+    update() {
+        this.radius += 12;
+        if (this.radius >= this.maxRadius) this.active = false;
+    }
+
+    draw(ctx) {
+        const alpha = Math.max(0, 1 - (this.radius / this.maxRadius));
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.strokeStyle = this.color;
+        ctx.lineWidth = 6;
+        ctx.shadowColor = this.color;
+        ctx.shadowBlur = 20;
+        ctx.beginPath();
+        ctx.ellipse(this.x, this.y, this.radius, this.radius * 0.35, 0, 0, Math.PI * 2);
+        ctx.stroke();
         ctx.restore();
     }
 }
@@ -395,6 +420,7 @@ class ParticleSystem {
         this.particles = [];
         this.damageTexts = [];
         this.projectiles = [];
+        this.shockwaves = [];
     }
 
     createHitSparks(x, y, color) {
@@ -447,6 +473,10 @@ class ParticleSystem {
         this.projectiles.push(p);
     }
 
+    addShockwave(x, y, color) {
+        this.shockwaves.push(new ShockwaveRing(x, y, color));
+    }
+
     updateAndDraw(ctx) {
         for (let i = this.particles.length - 1; i >= 0; i--) {
             const p = this.particles[i];
@@ -467,6 +497,13 @@ class ParticleSystem {
             proj.update();
             proj.draw(ctx);
             if (!proj.active) this.projectiles.splice(i, 1);
+        }
+
+        for (let i = this.shockwaves.length - 1; i >= 0; i--) {
+            const sw = this.shockwaves[i];
+            sw.update();
+            sw.draw(ctx);
+            if (!sw.active) this.shockwaves.splice(i, 1);
         }
     }
 }
@@ -489,7 +526,6 @@ class Stickman {
         this.team = team;
         this.isCPU = isCPU;
 
-        // Class Stat Modifications
         this.maxHealth = (this.fighterClass === 'BRAWLER') ? 130 : (this.fighterClass === 'KNIGHT') ? 110 : 100;
         this.health = this.maxHealth;
 
@@ -747,19 +783,20 @@ class Stickman {
             // Shadow Teleport Dash Behind Enemy
             particleSystem.createHitSparks(this.x + 20, this.y + 30, this.color);
             if (target) {
-                this.x = target.x - (target.facing * 45);
+                this.x = target.x - (target.facing * 50);
                 this.facing = (target.x >= this.x) ? 1 : -1;
             }
             this.startAttack('ultimate', 30, damage);
             particleSystem.createHitSparks(this.x + 20, this.y + 30, '#ffffff');
-            particleSystem.addDamageText(this.x, this.y - 20, 'SHADOW TELEPORT!', this.color);
+            particleSystem.addDamageText(this.x, this.y - 20, 'SHADOW TELEPORT KICK!', this.color);
         } else if (this.fighterClass === 'BRAWLER') {
-            // Ground Shockwave Slam
-            this.vy = -6;
+            // BRAWLER FOOT GROUND SLAM: Leaps up and slams foot down into floor!
+            this.vy = 8; // Drive foot down fast
             this.startAttack('ultimate', 35, damage);
-            triggerCameraShake(15, 12);
+            triggerCameraShake(16, 14);
+            particleSystem.addShockwave(this.x + this.width / 2, 460, this.color);
             particleSystem.createDust(this.x, 460);
-            particleSystem.addDamageText(this.x, this.y - 20, 'GROUND SHOCKWAVE!', '#ffd700');
+            particleSystem.addDamageText(this.x, this.y - 20, 'FOOT GROUND SLAM!', '#ffd700');
         } else if (this.fighterClass === 'WEAVER') {
             // Plasma Orb Projectile
             this.startAttack('ultimate', 25, damage);
@@ -768,7 +805,7 @@ class Stickman {
             particleSystem.addDamageText(this.x, this.y - 20, 'PLASMA ORB BLAST!', '#aa00ff');
         } else if (this.fighterClass === 'KNIGHT') {
             // Phantom Sword Lunge
-            this.vx = this.facing * 16;
+            this.vx = this.facing * 18;
             this.startAttack('ultimate', 30, damage);
             particleSystem.createSlideSparks(this.x, 460, this.facing, this.color);
             particleSystem.addDamageText(this.x, this.y - 20, 'PHANTOM BLADE LUNGE!', '#e60000');
@@ -785,14 +822,14 @@ class Stickman {
 
     getHitbox() {
         if (!this.isAttacking || this.hasHitOpponent) return null;
-        const reach = (this.attackType === 'light') ? 45 : (this.attackType === 'heavy') ? 60 : 90;
+        const reach = (this.attackType === 'light') ? 45 : (this.attackType === 'heavy') ? 70 : 90;
         return {
             x: (this.facing === 1) ? (this.x + this.width) : (this.x - reach),
             y: this.y + 20,
             width: reach,
             height: 35,
             damage: this.currentAttackDamage,
-            knockback: (this.attackType === 'light') ? 4 : (this.attackType === 'heavy') ? 9 : 16
+            knockback: (this.attackType === 'light') ? 4 : (this.attackType === 'heavy') ? 10 : 16
         };
     }
 
@@ -962,6 +999,39 @@ class Stickman {
             rLegX = centerX - runCycle * 16;
         }
 
+        // HEAVY KICK & BRAWLER FOOT SLAM RENDERING
+        if (this.isAttacking && this.attackType === 'heavy') {
+            rLegX = centerX + this.facing * 56;
+            rFootY = shoulderY - 12;
+
+            // DRAW GLOWING KICK MOTION ARC TRAIL
+            ctx.save();
+            ctx.strokeStyle = this.color;
+            ctx.shadowColor = this.color;
+            ctx.shadowBlur = 20;
+            ctx.lineWidth = 6;
+            ctx.beginPath();
+            ctx.arc(centerX, hipY, 52, -Math.PI / 4, 0, this.facing < 0);
+            ctx.stroke();
+            ctx.restore();
+        } else if (this.isAttacking && this.attackType === 'ultimate' && this.fighterClass === 'BRAWLER') {
+            // Brawler Foot Ground Slam posture (foot driven into floor)
+            rLegX = centerX + this.facing * 12;
+            rFootY = footY + 6;
+            lLegX = centerX - this.facing * 18;
+
+            ctx.save();
+            ctx.strokeStyle = '#ffd700';
+            ctx.shadowColor = '#ffd700';
+            ctx.shadowBlur = 22;
+            ctx.lineWidth = 7;
+            ctx.beginPath();
+            ctx.moveTo(centerX, hipY);
+            ctx.lineTo(rLegX, rFootY);
+            ctx.stroke();
+            ctx.restore();
+        }
+
         ctx.beginPath();
         ctx.moveTo(centerX, hipY);
         ctx.lineTo(lLegX, lFootY);
@@ -993,19 +1063,22 @@ class Stickman {
             if (this.attackType === 'light') {
                 rHandX = centerX + this.facing * 45;
                 rHandY = shoulderY - 4;
-            } else if (this.attackType === 'heavy') {
-                rLegX = centerX + this.facing * 50;
-                rFootY = shoulderY - 10;
-            } else if (this.attackType === 'ultimate') {
+            } else if (this.attackType === 'ultimate' && this.fighterClass === 'WEAVER') {
                 rHandX = centerX + this.facing * 40;
-                rHandY = shoulderY;
+                rHandY = shoulderY - 4;
+            } else if (this.attackType === 'ultimate' && this.fighterClass === 'KNIGHT') {
+                rHandX = centerX + this.facing * 50;
+                rHandY = shoulderY - 8;
+                // Draw extended energy sword beam
                 ctx.save();
-                ctx.fillStyle = this.color;
-                ctx.shadowColor = this.color;
-                ctx.shadowBlur = 25;
+                ctx.strokeStyle = '#e60000';
+                ctx.shadowColor = '#e60000';
+                ctx.shadowBlur = 22;
+                ctx.lineWidth = 6;
                 ctx.beginPath();
-                ctx.arc(centerX + this.facing * 55, shoulderY, 28, 0, Math.PI * 2);
-                ctx.fill();
+                ctx.moveTo(rHandX, rHandY);
+                ctx.lineTo(rHandX + this.facing * 60, rHandY - 4);
+                ctx.stroke();
                 ctx.restore();
             }
         }
@@ -1048,7 +1121,6 @@ function triggerCameraShake(time, intensity) {
     shakeIntensity = intensity;
 }
 
-// IN-GAME PAUSE MENU TOGGLE
 function togglePause() {
     if (gameState === 'FIGHT') {
         gameState = 'PAUSED';
@@ -1085,7 +1157,6 @@ pauseSoundBtn.addEventListener('click', () => {
     pauseSoundBtn.textContent = audio.enabled ? '🔊 SOUND: ON' : 'MUTE SOUND';
 });
 
-// Global Key Listeners
 window.addEventListener('keydown', (e) => {
     if (waitingForRebind) {
         e.preventDefault();
@@ -1110,7 +1181,6 @@ window.addEventListener('keyup', (e) => {
     if (e.code === keyBindings.p2.jump || e.code === 'ArrowUp') keys['jump_p2'] = false;
 });
 
-// UNIVERSAL MOUSE CLICK ATTACKS
 window.addEventListener('contextmenu', e => e.preventDefault());
 
 const handleMouseDown = (e) => {
@@ -1138,7 +1208,6 @@ window.addEventListener('mouseup', (e) => {
     if (e.button === 1) keys['mouse_ult'] = false;
 });
 
-// VIRTUAL TOUCH JOYSTICK
 const joystickBase = document.getElementById('joystick-base');
 const joystickThumb = document.getElementById('joystick-thumb');
 const touchOverlay = document.getElementById('touch-overlay');
@@ -1206,7 +1275,6 @@ window.addEventListener('touchmove', (e) => {
 window.addEventListener('mouseup', () => { if (isDraggingJoystick) resetJoystick(); });
 window.addEventListener('touchend', (e) => { if (e.touches.length === 0) resetJoystick(); });
 
-// TOUCH ACTION BUTTONS
 const setupActionButton = (id, keyName) => {
     const btn = document.getElementById(id);
     if (!btn) return;
@@ -1234,7 +1302,6 @@ setupActionButton('tbtn-kick', 'touch_kick');
 setupActionButton('tbtn-slide', 'touch_slide');
 setupActionButton('tbtn-ult', 'touch_ult');
 
-// Touch Toggle Button on Start Screen
 let touchModeSetting = 'AUTO';
 const touchToggleBtn = document.getElementById('btn-touch-toggle');
 const isTouchDevice = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
@@ -1260,7 +1327,6 @@ touchToggleBtn.addEventListener('click', () => {
     }
 });
 
-// UI Mode & Difficulty Selection
 document.querySelectorAll('.mode-card').forEach(card => {
     card.addEventListener('click', () => {
         document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
@@ -1295,7 +1361,6 @@ document.querySelectorAll('.diff-btn').forEach(btn => {
     });
 });
 
-// Buttons
 document.getElementById('btn-start').addEventListener('click', () => {
     audio.init();
     document.getElementById('start-overlay').classList.add('hidden');
@@ -1459,7 +1524,6 @@ function handleMatchEnd(winningTeam) {
 function checkCombatCollisions() {
     if (gameState !== 'FIGHT') return;
 
-    // Melee Hitboxes
     fighters.forEach(attacker => {
         if (attacker.health <= 0) return;
         const hb = attacker.getHitbox();
@@ -1487,7 +1551,6 @@ function checkCombatCollisions() {
         }
     });
 
-    // Projectile Collisions (Energy Weaver Orbs)
     particleSystem.projectiles.forEach(proj => {
         if (!proj.active) return;
         fighters.forEach(defender => {
