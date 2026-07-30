@@ -1,6 +1,6 @@
 /**
  * BRAWL-STICKS: 1v1 & 2v2 Stickman Fighting Game Engine
- * Features: Dynamic Speed Scaling per Difficulty, Mouse Clicks, Mobile Touch Joystick, 75% Block Mitigation
+ * Features: Fast Ultimate Meter Charge, Balanced CPU Damage, 75% Block Mitigation, Ground Slide
  */
 
 // ==========================================
@@ -289,7 +289,7 @@ class Stickman {
 
         this.vx = 0;
         this.vy = 0;
-        this.speed = 5.0; // Default speed
+        this.speed = 5.0;
         this.jumpForce = -12.8;
         this.gravity = 0.65;
         this.isGrounded = false;
@@ -331,15 +331,20 @@ class Stickman {
     update(opponents, allies, keys, difficulty, mode, groundY) {
         this.animFrame++;
 
-        // DYNAMIC SPEED SCALING ACCORDING TO DIFFICULTY
+        // PASSIVE ULTIMATE METER CHARGE OVER TIME
+        if (this.health > 0) {
+            this.specialMeter = Math.min(100, this.specialMeter + 0.18); // ~11% per sec
+        }
+
+        // Dynamic Speed scaling
         if (difficulty === 'EASY') {
-            this.speed = 3.8;       // Relaxed & Easy speed
+            this.speed = 3.8;
             this.jumpForce = -11.5;
         } else if (difficulty === 'NORMAL') {
-            this.speed = 5.0;       // Smooth & Balanced speed
+            this.speed = 5.0;
             this.jumpForce = -12.8;
         } else {
-            this.speed = 6.5;       // Fast-Paced Hard speed
+            this.speed = 6.5;
             this.jumpForce = -14.0;
         }
 
@@ -433,7 +438,7 @@ class Stickman {
             this.aiDecisionTimer = reactionDelay;
 
             if (this.specialMeter >= 100 && dist < 120 && Math.random() < 0.8) {
-                this.startAttack('ultimate', 30, 35);
+                this.startAttack('ultimate', 30, 18); // CPU Ultimate deals reduced 18 damage!
                 this.specialMeter = 0;
                 audio.playUltimate();
                 return;
@@ -530,7 +535,7 @@ class Stickman {
                 this.startAttack('heavy', 22, 16);
                 audio.playPunch();
             } else if (ultKey && !this.isAttacking && this.specialMeter >= 100) {
-                this.startAttack('ultimate', 30, 35);
+                this.startAttack('ultimate', 30, 35); // Player Ultimate deals 35 Damage
                 this.specialMeter = 0;
                 audio.playUltimate();
             }
@@ -567,7 +572,7 @@ class Stickman {
             this.vx = attackerFacing * (knockback * 0.4);
             audio.playBlock();
             particleSystem.createHitSparks(this.x + this.width / 2, this.y + 30, '#ffffff');
-            this.specialMeter = Math.min(100, this.specialMeter + 10);
+            this.specialMeter = Math.min(100, this.specialMeter + 15); // +15 on block
             return;
         }
 
@@ -576,7 +581,7 @@ class Stickman {
         this.invincibleTimer = 15;
         this.vx = attackerFacing * knockback;
         this.vy = -3;
-        this.specialMeter = Math.min(100, this.specialMeter + 15);
+        this.specialMeter = Math.min(100, this.specialMeter + 20); // +20 when hit
 
         if (amount >= 20) {
             audio.playHeavyHit();
@@ -803,7 +808,7 @@ window.addEventListener('mouseup', (e) => {
     if (e.button === 1) keys['mouse_ult'] = false;
 });
 
-// VIRTUAL TOUCH JOYSTICK (Mouse & Touch Drag Support)
+// VIRTUAL TOUCH JOYSTICK
 const joystickBase = document.getElementById('joystick-base');
 const joystickThumb = document.getElementById('joystick-thumb');
 const touchOverlay = document.getElementById('touch-overlay');
@@ -1126,6 +1131,10 @@ function checkCombatCollisions() {
 
                         defender.takeDamage(hb.damage, hb.knockback, attacker.facing);
                         attacker.hasHitOpponent = true;
+
+                        // Give attacker meter on successful hits (+25 on punch, +35 on kick)
+                        const meterGain = (attacker.attackType === 'light') ? 25 : 35;
+                        attacker.specialMeter = Math.min(100, attacker.specialMeter + meterGain);
 
                         const teamRemaining = fighters.filter(f => f.team === defender.team && f.health > 0);
                         if (teamRemaining.length === 0) {
