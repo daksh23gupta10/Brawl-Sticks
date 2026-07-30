@@ -42,8 +42,9 @@
                 </div>
             </div>
 
-            <!-- Timer & Round Indicator -->
+            <!-- Timer, Round Indicator & Pause Button -->
             <div id="timer-box">
+                <button id="btn-pause-trigger" title="Pause Game (P / ESC)">⏸️</button>
                 <div id="match-timer">60</div>
                 <div id="round-label">ROUND 1</div>
             </div>
@@ -103,6 +104,20 @@
             <!-- Announcer Overlay -->
             <div id="announcer-overlay" class="hidden">
                 <h1 id="announcer-text">READY?</h1>
+            </div>
+
+            <!-- ⏸️ PAUSE MENU OVERLAY -->
+            <div id="pause-overlay" class="overlay-screen hidden">
+                <div class="modal-card mini-modal">
+                    <h1 class="game-title">GAME <span class="neon-highlight">PAUSED</span></h1>
+                    <p class="subtitle">Press P or ESC to Resume</p>
+                    <div class="action-buttons vertical-buttons">
+                        <button id="btn-resume" class="btn btn-primary">▶️ RESUME MATCH</button>
+                        <button id="btn-restart" class="btn btn-secondary">🔄 RESTART ROUND</button>
+                        <button id="btn-pause-sound" class="btn btn-secondary">🔊 SOUND: ON</button>
+                        <button id="btn-pause-menu" class="btn btn-secondary">🏠 MAIN MENU</button>
+                    </div>
+                </div>
             </div>
 
             <!-- Start Screen Overlay -->
@@ -256,7 +271,7 @@
                         <!-- Controls Guide Display -->
                         <div class="controls-guide">
                             <div class="control-column p1-controls">
-                                <h3 class="cyan-text">PLAYER 1 CONTROLS</h3>
+                                <h3 class="cyan-text">PLAYER 1 CONTROLS (Pause: P / ESC)</h3>
                                 <div class="key-bind-grid">
                                     <div class="bind-row"><span>Move Left:</span> <button class="rebind-btn" data-player="p1" data-action="left">KeyA</button></div>
                                     <div class="bind-row"><span>Move Right:</span> <button class="rebind-btn" data-player="p1" data-action="right">KeyD</button></div>
@@ -264,7 +279,7 @@
                                     <div class="bind-row"><span>Block / Slide:</span> <button class="rebind-btn" data-player="p1" data-action="block">KeyS</button></div>
                                     <div class="bind-row"><span>Light Punch:</span> <button class="rebind-btn" data-player="p1" data-action="punch">KeyF (Left Click)</button></div>
                                     <div class="bind-row"><span>Heavy Kick:</span> <button class="rebind-btn" data-player="p1" data-action="kick">KeyG (Right Click)</button></div>
-                                    <div class="bind-row"><span>Ultimate:</span> <button class="rebind-btn" data-player="p1" data-action="ult">KeyH</button></div>
+                                    <div class="bind-row"><span>Signature Special:</span> <button class="rebind-btn" data-player="p1" data-action="ult">KeyH</button></div>
                                 </div>
                             </div>
                             <div class="control-column p2-controls" id="p2-controls-card">
@@ -276,13 +291,13 @@
                                     <div class="bind-row"><span>Block / Slide:</span> <button class="rebind-btn" data-player="p2" data-action="block">ArrowDown</button></div>
                                     <div class="bind-row"><span>Light Punch:</span> <button class="rebind-btn" data-player="p2" data-action="punch">KeyJ</button></div>
                                     <div class="bind-row"><span>Heavy Kick:</span> <button class="rebind-btn" data-player="p2" data-action="kick">KeyK</button></div>
-                                    <div class="bind-row"><span>Ultimate:</span> <button class="rebind-btn" data-player="p2" data-action="ult">KeyL</button></div>
+                                    <div class="bind-row"><span>Signature Special:</span> <button class="rebind-btn" data-player="p2" data-action="ult">KeyL</button></div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- FIXED BOTTOM ACTION BAR (FIGHT! button is always 100% visible) -->
+                    <!-- FIXED BOTTOM ACTION BAR -->
                     <div class="action-buttons">
                         <button id="btn-start" class="btn btn-primary">FIGHT!</button>
                         <button id="btn-touch-toggle" class="btn btn-secondary">📱 TOUCH: AUTO</button>
@@ -294,7 +309,7 @@
 
             <!-- Game Over Overlay -->
             <div id="gameover-overlay" class="overlay-screen hidden">
-                <div class="modal-card">
+                <div class="modal-card mini-modal">
                     <h1 id="winner-title" class="cyan-text">BLUE TEAM WINS!</h1>
                     <p id="winner-subtitle">DOMINATING VICTORY</p>
 
@@ -315,7 +330,7 @@
 
         <!-- Footer -->
         <footer id="game-footer">
-            <span>BRAWL-STICKS • Choose Fighter Classes & Hats Above!</span>
+            <span>BRAWL-STICKS • Press P or ESC to Pause Match!</span>
         </footer>
     </div>
 

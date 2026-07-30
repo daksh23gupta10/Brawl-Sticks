@@ -1,6 +1,6 @@
 /**
  * BRAWL-STICKS: 1v1 & 2v2 Stickman Fighting Game Engine
- * Features: Character Classes, Hats & Accessories, Floating Damage Numbers, Slow-Mo KO Finisher, Projectiles
+ * Features: Signature Class Special Moves, In-Game Pause Menu, Projectiles, Hats & Colors
  */
 
 // ==========================================
@@ -296,7 +296,7 @@ class SoundFX {
 const audio = new SoundFX();
 
 // ==========================================
-// 3. FLOATING DAMAGE POPUPS & PARTICLES
+// 3. PROJECTILE & PARTICLE ENGINE
 // ==========================================
 class DamageText {
     constructor(x, y, text, color) {
@@ -323,6 +323,36 @@ class DamageText {
         ctx.shadowColor = this.color;
         ctx.shadowBlur = 10;
         ctx.fillText(this.text, this.x, this.y);
+        ctx.restore();
+    }
+}
+
+class Projectile {
+    constructor(x, y, vx, damage, owner) {
+        this.x = x;
+        this.y = y;
+        this.vx = vx;
+        this.damage = damage;
+        this.owner = owner;
+        this.color = owner.color;
+        this.radius = 16;
+        this.active = true;
+    }
+
+    update() {
+        this.x += this.vx;
+        particleSystem.createDust(this.x, this.y);
+        if (this.x < -50 || this.x > 1074) this.active = false;
+    }
+
+    draw(ctx) {
+        ctx.save();
+        ctx.fillStyle = this.color;
+        ctx.shadowColor = this.color;
+        ctx.shadowBlur = 20;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fill();
         ctx.restore();
     }
 }
@@ -413,6 +443,10 @@ class ParticleSystem {
         this.damageTexts.push(new DamageText(x, y, text, color));
     }
 
+    addProjectile(p) {
+        this.projectiles.push(p);
+    }
+
     updateAndDraw(ctx) {
         for (let i = this.particles.length - 1; i >= 0; i--) {
             const p = this.particles[i];
@@ -426,6 +460,13 @@ class ParticleSystem {
             dt.update();
             dt.draw(ctx);
             if (dt.life <= 0) this.damageTexts.splice(i, 1);
+        }
+
+        for (let i = this.projectiles.length - 1; i >= 0; i--) {
+            const proj = this.projectiles[i];
+            proj.update();
+            proj.draw(ctx);
+            if (!proj.active) this.projectiles.splice(i, 1);
         }
     }
 }
@@ -499,11 +540,9 @@ class Stickman {
             this.specialMeter = Math.min(100, this.specialMeter + 0.18);
         }
 
-        // Base Speed by Difficulty
         let baseSpeed = (difficulty === 'EASY') ? 3.8 : (difficulty === 'NORMAL') ? 5.0 : 6.5;
         let baseJump = (difficulty === 'EASY') ? -11.5 : (difficulty === 'NORMAL') ? -12.8 : -14.0;
 
-        // Class Speed Modifier
         const speedFactor = (this.fighterClass === 'NINJA') ? 1.2 : (this.fighterClass === 'BRAWLER') ? 0.85 : 1.0;
         this.speed = baseSpeed * speedFactor;
         this.jumpForce = baseJump * (this.fighterClass === 'NINJA' ? 1.1 : 1.0);
@@ -531,7 +570,7 @@ class Stickman {
             if (this.isCPU) {
                 this.updateAI(target, difficulty);
             } else {
-                this.handleInputs(keys, mode);
+                this.handleInputs(keys, mode, target);
             }
         }
 
@@ -598,7 +637,7 @@ class Stickman {
             this.aiDecisionTimer = reactionDelay;
 
             if (this.specialMeter >= 100 && dist < 120 && Math.random() < 0.8) {
-                this.startAttack('ultimate', 30, 18);
+                this.executeSignatureSpecial(target, 18);
                 this.specialMeter = 0;
                 audio.playUltimate();
                 return;
@@ -629,7 +668,7 @@ class Stickman {
         }
     }
 
-    handleInputs(keys, mode) {
+    handleInputs(keys, mode, target) {
         const pid = this.id === 'p1' ? 'p1' : 'p2';
         const binds = keyBindings[pid];
 
@@ -695,10 +734,44 @@ class Stickman {
                 this.startAttack('heavy', 22, 16);
                 audio.playPunch();
             } else if (ultKey && !this.isAttacking && this.specialMeter >= 100) {
-                this.startAttack('ultimate', 30, 35);
+                this.executeSignatureSpecial(target, 35);
                 this.specialMeter = 0;
                 audio.playUltimate();
             }
+        }
+    }
+
+    // SIGNATURE CLASS SPECIAL MOVES ENGINE
+    executeSignatureSpecial(target, damage) {
+        if (this.fighterClass === 'NINJA') {
+            // Shadow Teleport Dash Behind Enemy
+            particleSystem.createHitSparks(this.x + 20, this.y + 30, this.color);
+            if (target) {
+                this.x = target.x - (target.facing * 45);
+                this.facing = (target.x >= this.x) ? 1 : -1;
+            }
+            this.startAttack('ultimate', 30, damage);
+            particleSystem.createHitSparks(this.x + 20, this.y + 30, '#ffffff');
+            particleSystem.addDamageText(this.x, this.y - 20, 'SHADOW TELEPORT!', this.color);
+        } else if (this.fighterClass === 'BRAWLER') {
+            // Ground Shockwave Slam
+            this.vy = -6;
+            this.startAttack('ultimate', 35, damage);
+            triggerCameraShake(15, 12);
+            particleSystem.createDust(this.x, 460);
+            particleSystem.addDamageText(this.x, this.y - 20, 'GROUND SHOCKWAVE!', '#ffd700');
+        } else if (this.fighterClass === 'WEAVER') {
+            // Plasma Orb Projectile
+            this.startAttack('ultimate', 25, damage);
+            const projVx = this.facing * 12;
+            particleSystem.addProjectile(new Projectile(this.x + (this.facing * 35), this.y + 30, projVx, damage, this));
+            particleSystem.addDamageText(this.x, this.y - 20, 'PLASMA ORB BLAST!', '#aa00ff');
+        } else if (this.fighterClass === 'KNIGHT') {
+            // Phantom Sword Lunge
+            this.vx = this.facing * 16;
+            this.startAttack('ultimate', 30, damage);
+            particleSystem.createSlideSparks(this.x, 460, this.facing, this.color);
+            particleSystem.addDamageText(this.x, this.y - 20, 'PHANTOM BLADE LUNGE!', '#e60000');
         }
     }
 
@@ -712,14 +785,14 @@ class Stickman {
 
     getHitbox() {
         if (!this.isAttacking || this.hasHitOpponent) return null;
-        const reach = (this.attackType === 'light') ? 45 : (this.attackType === 'heavy') ? 60 : 85;
+        const reach = (this.attackType === 'light') ? 45 : (this.attackType === 'heavy') ? 60 : 90;
         return {
             x: (this.facing === 1) ? (this.x + this.width) : (this.x - reach),
             y: this.y + 20,
             width: reach,
             height: 35,
             damage: this.currentAttackDamage,
-            knockback: (this.attackType === 'light') ? 4 : (this.attackType === 'heavy') ? 9 : 15
+            knockback: (this.attackType === 'light') ? 4 : (this.attackType === 'heavy') ? 9 : 16
         };
     }
 
@@ -782,7 +855,6 @@ class Stickman {
         ctx.fill();
         ctx.restore();
 
-        // RENDER HATS & ACCESSORIES
         const drawHat = (hx, hy) => {
             ctx.save();
             if (this.hat === 'CROWN') {
@@ -806,7 +878,6 @@ class Stickman {
                 ctx.beginPath();
                 ctx.arc(hx, hy, 14, -Math.PI / 4, Math.PI / 4, this.facing < 0);
                 ctx.stroke();
-                // Tails behind
                 ctx.beginPath();
                 ctx.moveTo(hx - this.facing * 14, hy);
                 ctx.lineTo(hx - this.facing * 24, hy + 6);
@@ -931,7 +1002,7 @@ class Stickman {
                 ctx.save();
                 ctx.fillStyle = this.color;
                 ctx.shadowColor = this.color;
-                ctx.shadowBlur = 20;
+                ctx.shadowBlur = 25;
                 ctx.beginPath();
                 ctx.arc(centerX + this.facing * 55, shoulderY, 28, 0, Math.PI * 2);
                 ctx.fill();
@@ -951,7 +1022,7 @@ class Stickman {
 }
 
 // ==========================================
-// 5. GAME MANAGER, MOUSE & SLOW-MO ENGINE
+// 5. GAME MANAGER & PAUSE SYSTEM
 // ==========================================
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -977,6 +1048,43 @@ function triggerCameraShake(time, intensity) {
     shakeIntensity = intensity;
 }
 
+// IN-GAME PAUSE MENU TOGGLE
+function togglePause() {
+    if (gameState === 'FIGHT') {
+        gameState = 'PAUSED';
+        document.getElementById('pause-overlay').classList.remove('hidden');
+    } else if (gameState === 'PAUSED') {
+        gameState = 'FIGHT';
+        document.getElementById('pause-overlay').classList.add('hidden');
+    }
+}
+
+document.getElementById('btn-pause-trigger').addEventListener('click', (e) => {
+    e.stopPropagation();
+    togglePause();
+});
+
+document.getElementById('btn-resume').addEventListener('click', () => {
+    togglePause();
+});
+
+document.getElementById('btn-restart').addEventListener('click', () => {
+    document.getElementById('pause-overlay').classList.add('hidden');
+    startRound();
+});
+
+document.getElementById('btn-pause-menu').addEventListener('click', () => {
+    document.getElementById('pause-overlay').classList.add('hidden');
+    document.getElementById('start-overlay').classList.remove('hidden');
+    gameState = 'START';
+});
+
+const pauseSoundBtn = document.getElementById('btn-pause-sound');
+pauseSoundBtn.addEventListener('click', () => {
+    audio.enabled = !audio.enabled;
+    pauseSoundBtn.textContent = audio.enabled ? '🔊 SOUND: ON' : 'MUTE SOUND';
+});
+
 // Global Key Listeners
 window.addEventListener('keydown', (e) => {
     if (waitingForRebind) {
@@ -987,6 +1095,12 @@ window.addEventListener('keydown', (e) => {
         waitingForRebind = null;
         return;
     }
+
+    if (e.code === 'KeyP' || e.code === 'Escape') {
+        togglePause();
+        return;
+    }
+
     keys[e.code] = true;
 });
 
@@ -1001,7 +1115,7 @@ window.addEventListener('contextmenu', e => e.preventDefault());
 
 const handleMouseDown = (e) => {
     if (gameState !== 'FIGHT') return;
-    if (e.target.closest('#start-overlay') || e.target.closest('#gameover-overlay')) return;
+    if (e.target.closest('#start-overlay') || e.target.closest('#gameover-overlay') || e.target.closest('#pause-overlay')) return;
 
     if (e.button === 0) {
         keys['mouse_punch'] = true;
@@ -1290,7 +1404,7 @@ function startTimer() {
 function handleRoundEnd(reason) {
     clearInterval(timerInterval);
     gameState = 'ROUND_OVER';
-    slowMoTimer = 45; // TRIGGER CINEMATIC SLOW-MOTION KO FINISHER!
+    slowMoTimer = 45;
 
     const announcerOverlay = document.getElementById('announcer-overlay');
     const announcerText = document.getElementById('announcer-text');
@@ -1345,6 +1459,7 @@ function handleMatchEnd(winningTeam) {
 function checkCombatCollisions() {
     if (gameState !== 'FIGHT') return;
 
+    // Melee Hitboxes
     fighters.forEach(attacker => {
         if (attacker.health <= 0) return;
         const hb = attacker.getHitbox();
@@ -1370,6 +1485,26 @@ function checkCombatCollisions() {
                 }
             });
         }
+    });
+
+    // Projectile Collisions (Energy Weaver Orbs)
+    particleSystem.projectiles.forEach(proj => {
+        if (!proj.active) return;
+        fighters.forEach(defender => {
+            if (defender.team !== proj.owner.team && defender.health > 0) {
+                const dist = Math.hypot(defender.x + defender.width / 2 - proj.x, defender.y + 30 - proj.y);
+                if (dist < proj.radius + 20) {
+                    defender.takeDamage(proj.damage, 14, proj.vx > 0 ? 1 : -1);
+                    particleSystem.createHitSparks(proj.x, proj.y, proj.color);
+                    proj.active = false;
+
+                    const teamRemaining = fighters.filter(f => f.team === defender.team && f.health > 0);
+                    if (teamRemaining.length === 0) {
+                        handleRoundEnd('KO');
+                    }
+                }
+            }
+        });
     });
 }
 
@@ -1426,7 +1561,6 @@ function updateHUD() {
 function gameLoop() {
     ctx.save();
 
-    // SLOW-MOTION KO FINISHER CAMERA ZOOM
     if (slowMoTimer > 0) {
         slowMoTimer--;
         ctx.scale(1.05, 1.05);

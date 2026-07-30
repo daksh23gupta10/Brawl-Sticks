@@ -158,7 +158,7 @@ body {
     height: 6px;
 }
 
-/* Timer Box */
+/* Timer Box & Pause Button */
 #timer-box {
     display: flex;
     flex-direction: column;
@@ -168,6 +168,27 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 8px;
     padding: 4px 10px;
+    position: relative;
+}
+
+#btn-pause-trigger {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    color: #fff;
+    cursor: pointer;
+    font-size: 0.75rem;
+    padding: 1px 5px;
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    transition: all 0.2s ease;
+}
+
+#btn-pause-trigger:hover {
+    background: var(--gold);
+    color: #000;
+    transform: scale(1.1);
 }
 
 #match-timer {
@@ -350,6 +371,23 @@ canvas {
     display: flex;
     flex-direction: column;
     overflow: hidden;
+}
+
+.mini-modal {
+    max-width: 420px;
+    height: auto;
+    max-height: 80%;
+    padding: 24px 30px;
+}
+
+.vertical-buttons {
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+}
+
+.vertical-buttons .btn {
+    width: 100%;
 }
 
 .modal-header {
