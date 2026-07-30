@@ -1,10 +1,10 @@
 /**
  * BRAWL-STICKS: 1v1 & 2v2 Stickman Fighting Game Engine
- * Features: Fast Ultimate Meter Charge, Balanced CPU Damage, 75% Block Mitigation, Ground Slide
+ * Features: 10-Color Customization System for Stickmen & Health Bars, Mouse Clicks, Touch Joystick
  */
 
 // ==========================================
-// 1. KEY BINDINGS & LOCALSTORAGE SYSTEM
+// 1. KEY BINDINGS & COLOR CUSTOMIZATION SYSTEM
 // ==========================================
 const defaultKeyBindings = {
     p1: { left: 'KeyA', right: 'KeyD', jump: 'KeyW', block: 'KeyS', punch: 'KeyF', kick: 'KeyG', ult: 'KeyH' },
@@ -13,16 +13,33 @@ const defaultKeyBindings = {
 
 let keyBindings = JSON.parse(JSON.stringify(defaultKeyBindings));
 
-function loadSavedKeys() {
-    const saved = localStorage.getItem('brawl_sticks_keys');
-    if (saved) {
-        try {
-            keyBindings = JSON.parse(saved);
-        } catch (e) {
-            keyBindings = JSON.parse(JSON.stringify(defaultKeyBindings));
-        }
+let p1Color = '#00f0ff'; // Default P1 Cyan
+let p2Color = '#ff0055'; // Default P2 Magenta
+
+function loadSavedPreferences() {
+    // Load Keys
+    const savedKeys = localStorage.getItem('brawl_sticks_keys');
+    if (savedKeys) {
+        try { keyBindings = JSON.parse(savedKeys); } catch (e) { keyBindings = JSON.parse(JSON.stringify(defaultKeyBindings)); }
     }
     updateRebindButtonText();
+
+    // Load Colors
+    const savedColors = localStorage.getItem('brawl_sticks_colors');
+    if (savedColors) {
+        try {
+            const parsed = JSON.parse(savedColors);
+            if (parsed.p1) p1Color = parsed.p1;
+            if (parsed.p2) p2Color = parsed.p2;
+        } catch (e) {}
+    }
+    syncColorSwatchesUI();
+    applyHUDColors();
+}
+
+function saveColors() {
+    localStorage.setItem('brawl_sticks_colors', JSON.stringify({ p1: p1Color, p2: p2Color }));
+    applyHUDColors();
 }
 
 function saveKeys() {
@@ -39,6 +56,56 @@ function updateRebindButtonText() {
         }
     });
 }
+
+function syncColorSwatchesUI() {
+    document.querySelectorAll('#p1-color-swatches .swatch').forEach(sw => {
+        sw.classList.toggle('active', sw.getAttribute('data-color') === p1Color);
+    });
+    document.querySelectorAll('#p2-color-swatches .swatch').forEach(sw => {
+        sw.classList.toggle('active', sw.getAttribute('data-color') === p2Color);
+    });
+}
+
+function applyHUDColors() {
+    // Apply P1 Colors
+    const p1Health = document.getElementById('p1-health');
+    const p1Special = document.getElementById('p1-special');
+    const p1Label = document.getElementById('p1-label');
+    if (p1Health) p1Health.style.background = p1Color;
+    if (p1Special) p1Special.style.background = p1Color;
+    if (p1Label) {
+        p1Label.style.color = p1Color;
+        p1Label.style.textShadow = `0 0 10px ${p1Color}`;
+    }
+
+    // Apply P2 Colors
+    const p2Health = document.getElementById('p2-health');
+    const p2Special = document.getElementById('p2-special');
+    const p2Label = document.getElementById('p2-label');
+    if (p2Health) p2Health.style.background = p2Color;
+    if (p2Special) p2Special.style.background = p2Color;
+    if (p2Label) {
+        p2Label.style.color = p2Color;
+        p2Label.style.textShadow = `0 0 10px ${p2Color}`;
+    }
+}
+
+// Swatch Event Listeners
+document.querySelectorAll('#p1-color-swatches .swatch').forEach(sw => {
+    sw.addEventListener('click', () => {
+        p1Color = sw.getAttribute('data-color');
+        syncColorSwatchesUI();
+        saveColors();
+    });
+});
+
+document.querySelectorAll('#p2-color-swatches .swatch').forEach(sw => {
+    sw.addEventListener('click', () => {
+        p2Color = sw.getAttribute('data-color');
+        syncColorSwatchesUI();
+        saveColors();
+    });
+});
 
 let waitingForRebind = null;
 
@@ -246,13 +313,13 @@ class ParticleSystem {
         }
     }
 
-    createSlideSparks(x, y, facing) {
+    createSlideSparks(x, y, facing, color) {
         for (let i = 0; i < 3; i++) {
             this.particles.push(new Particle(
                 x, y,
                 -facing * (3 + Math.random() * 4),
                 -Math.random() * 3,
-                '#00f0ff',
+                color,
                 2 + Math.random() * 2,
                 10 + Math.random() * 8
             ));
@@ -331,12 +398,10 @@ class Stickman {
     update(opponents, allies, keys, difficulty, mode, groundY) {
         this.animFrame++;
 
-        // PASSIVE ULTIMATE METER CHARGE OVER TIME
         if (this.health > 0) {
-            this.specialMeter = Math.min(100, this.specialMeter + 0.18); // ~11% per sec
+            this.specialMeter = Math.min(100, this.specialMeter + 0.18);
         }
 
-        // Dynamic Speed scaling
         if (difficulty === 'EASY') {
             this.speed = 3.8;
             this.jumpForce = -11.5;
@@ -378,7 +443,7 @@ class Stickman {
         if (this.isSliding) {
             this.slideTimer--;
             this.vx = this.facing * (this.speed * 1.8);
-            particleSystem.createSlideSparks(this.x + this.width / 2, groundY, this.facing);
+            particleSystem.createSlideSparks(this.x + this.width / 2, groundY, this.facing, this.color);
             if (this.slideTimer <= 0) {
                 this.isSliding = false;
             }
@@ -438,7 +503,7 @@ class Stickman {
             this.aiDecisionTimer = reactionDelay;
 
             if (this.specialMeter >= 100 && dist < 120 && Math.random() < 0.8) {
-                this.startAttack('ultimate', 30, 18); // CPU Ultimate deals reduced 18 damage!
+                this.startAttack('ultimate', 30, 18);
                 this.specialMeter = 0;
                 audio.playUltimate();
                 return;
@@ -535,7 +600,7 @@ class Stickman {
                 this.startAttack('heavy', 22, 16);
                 audio.playPunch();
             } else if (ultKey && !this.isAttacking && this.specialMeter >= 100) {
-                this.startAttack('ultimate', 30, 35); // Player Ultimate deals 35 Damage
+                this.startAttack('ultimate', 30, 35);
                 this.specialMeter = 0;
                 audio.playUltimate();
             }
@@ -572,7 +637,7 @@ class Stickman {
             this.vx = attackerFacing * (knockback * 0.4);
             audio.playBlock();
             particleSystem.createHitSparks(this.x + this.width / 2, this.y + 30, '#ffffff');
-            this.specialMeter = Math.min(100, this.specialMeter + 15); // +15 on block
+            this.specialMeter = Math.min(100, this.specialMeter + 15);
             return;
         }
 
@@ -581,7 +646,7 @@ class Stickman {
         this.invincibleTimer = 15;
         this.vx = attackerFacing * knockback;
         this.vy = -3;
-        this.specialMeter = Math.min(100, this.specialMeter + 20); // +20 when hit
+        this.specialMeter = Math.min(100, this.specialMeter + 20);
 
         if (amount >= 20) {
             audio.playHeavyHit();
@@ -995,24 +1060,33 @@ soundToggleBtn.addEventListener('click', () => {
 function setupFighters() {
     fighters = [];
     if (selectedMode === 'CPU') {
-        fighters.push(new Stickman('p1', 200, 300, '#00f0ff', 1, false));
-        fighters.push(new Stickman('p2', 750, 300, '#ff0055', 2, true));
+        fighters.push(new Stickman('p1', 200, 300, p1Color, 1, false)); // Dynamic p1Color
+        fighters.push(new Stickman('p2', 750, 300, p2Color, 2, true));  // Dynamic p2Color
     } else if (selectedMode === 'LOCAL') {
-        fighters.push(new Stickman('p1', 200, 300, '#00f0ff', 1, false));
-        fighters.push(new Stickman('p2', 750, 300, '#ff0055', 2, false));
+        fighters.push(new Stickman('p1', 200, 300, p1Color, 1, false));
+        fighters.push(new Stickman('p2', 750, 300, p2Color, 2, false));
     } else if (selectedMode === 'TEAM2V2') {
-        fighters.push(new Stickman('p1', 180, 300, '#00f0ff', 1, false));
-        fighters.push(new Stickman('p3', 280, 300, '#00aaff', 1, true));
-        fighters.push(new Stickman('p2', 720, 300, '#ff0055', 2, true));
-        fighters.push(new Stickman('p4', 820, 300, '#ff4400', 2, true));
+        fighters.push(new Stickman('p1', 180, 300, p1Color, 1, false));
+        fighters.push(new Stickman('p3', 280, 300, p1Color, 1, true));
+        fighters.push(new Stickman('p2', 720, 300, p2Color, 2, true));
+        fighters.push(new Stickman('p4', 820, 300, p2Color, 2, true));
     }
+    applyHUDColors();
 }
 
 function updateScoreDots() {
     const p1Dots = document.querySelectorAll('#p1-score .dot');
     const p2Dots = document.querySelectorAll('#p2-score .dot');
-    p1Dots.forEach((dot, idx) => dot.classList.toggle('active', idx < team1Wins));
-    p2Dots.forEach((dot, idx) => dot.classList.toggle('active', idx < team2Wins));
+
+    p1Dots.forEach((dot, idx) => {
+        dot.style.background = idx < team1Wins ? p1Color : 'rgba(255, 255, 255, 0.2)';
+        dot.style.boxShadow = idx < team1Wins ? `0 0 10px ${p1Color}` : 'none';
+    });
+
+    p2Dots.forEach((dot, idx) => {
+        dot.style.background = idx < team2Wins ? p2Color : 'rgba(255, 255, 255, 0.2)';
+        dot.style.boxShadow = idx < team2Wins ? `0 0 10px ${p2Color}` : 'none';
+    });
 }
 
 function startMatch() {
@@ -1109,7 +1183,8 @@ function handleMatchEnd(winningTeam) {
     const winnerTitle = document.getElementById('winner-title');
 
     winnerTitle.textContent = (winningTeam === 1) ? 'BLUE TEAM WINS MATCH!' : 'RED TEAM WINS MATCH!';
-    winnerTitle.className = (winningTeam === 1) ? 'cyan-text' : 'magenta-text';
+    winnerTitle.style.color = (winningTeam === 1) ? p1Color : p2Color;
+    winnerTitle.style.textShadow = `0 0 15px ${(winningTeam === 1) ? p1Color : p2Color}`;
 
     document.getElementById('stat-rounds').textContent = `${team1Wins} - ${team2Wins}`;
     gameOverOverlay.classList.remove('hidden');
@@ -1132,7 +1207,6 @@ function checkCombatCollisions() {
                         defender.takeDamage(hb.damage, hb.knockback, attacker.facing);
                         attacker.hasHitOpponent = true;
 
-                        // Give attacker meter on successful hits (+25 on punch, +35 on kick)
                         const meterGain = (attacker.attackType === 'light') ? 25 : 35;
                         attacker.specialMeter = Math.min(100, attacker.specialMeter + meterGain);
 
@@ -1161,8 +1235,8 @@ function drawArena() {
         ctx.stroke();
     }
 
-    ctx.strokeStyle = '#00f0ff';
-    ctx.shadowColor = '#00f0ff';
+    ctx.strokeStyle = p1Color;
+    ctx.shadowColor = p1Color;
     ctx.shadowBlur = 15;
     ctx.lineWidth = 3;
     ctx.beginPath();
@@ -1225,5 +1299,5 @@ function gameLoop() {
     requestAnimationFrame(gameLoop);
 }
 
-loadSavedKeys();
+loadSavedPreferences();
 gameLoop();

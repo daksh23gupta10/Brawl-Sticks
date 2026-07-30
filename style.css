@@ -119,16 +119,6 @@ body {
     transition: background 0.3s ease, box-shadow 0.3s ease;
 }
 
-#p1-score .dot.active {
-    background: var(--cyan);
-    box-shadow: 0 0 10px var(--cyan);
-}
-
-#p2-score .dot.active {
-    background: var(--magenta);
-    box-shadow: 0 0 10px var(--magenta);
-}
-
 /* Health & Special Bars */
 .bar-container {
     height: 16px;
@@ -146,31 +136,11 @@ body {
 .bar-fill {
     height: 100%;
     width: 100%;
-    transition: width 0.15s ease-out;
-}
-
-.cyan-bg {
-    background: linear-gradient(90deg, #0088ff, var(--cyan));
-    box-shadow: 0 0 12px var(--cyan-glow);
-}
-
-.magenta-bg {
-    background: linear-gradient(90deg, #ff00aa, var(--magenta));
-    box-shadow: 0 0 12px var(--magenta-glow);
+    transition: width 0.15s ease-out, background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .special-bar-wrapper {
     height: 6px;
-}
-
-.cyan-glow {
-    background: var(--cyan);
-    box-shadow: 0 0 8px var(--cyan);
-}
-
-.magenta-glow {
-    background: var(--magenta);
-    box-shadow: 0 0 8px var(--magenta);
 }
 
 /* Timer Box */
@@ -349,8 +319,8 @@ canvas {
     background: var(--card-bg);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 16px;
-    padding: 20px 28px;
-    width: 90%;
+    padding: 18px 24px;
+    width: 92%;
     max-width: 820px;
     text-align: center;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9);
@@ -358,7 +328,7 @@ canvas {
 
 .game-title {
     font-family: var(--font-heading);
-    font-size: 2.2rem;
+    font-size: 2.1rem;
     font-weight: 900;
     letter-spacing: 3px;
 }
@@ -370,8 +340,8 @@ canvas {
 
 .subtitle {
     color: #a0aec0;
-    margin-bottom: 12px;
-    font-size: 0.95rem;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
     letter-spacing: 1px;
 }
 
@@ -380,14 +350,14 @@ canvas {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     gap: 10px;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
 }
 
 .mode-card {
     background: rgba(0, 0, 0, 0.4);
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 8px;
-    padding: 10px;
+    padding: 8px;
     cursor: pointer;
     transition: all 0.2s ease;
 }
@@ -404,18 +374,18 @@ canvas {
 }
 
 .mode-icon {
-    font-size: 1.3rem;
-    margin-bottom: 4px;
+    font-size: 1.2rem;
+    margin-bottom: 2px;
 }
 
 .mode-card h3 {
     font-family: var(--font-heading);
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     margin-bottom: 2px;
 }
 
 .mode-card p {
-    font-size: 0.72rem;
+    font-size: 0.7rem;
     color: #a0aec0;
 }
 
@@ -425,14 +395,14 @@ canvas {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
     background: rgba(0, 0, 0, 0.3);
     padding: 4px 12px;
     border-radius: 6px;
 }
 
 .picker-label {
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     font-weight: 700;
     color: var(--gold);
 }
@@ -455,39 +425,90 @@ canvas {
     box-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
 }
 
+/* COLOR PICKER SECTION */
+.color-picker-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+    background: rgba(0, 0, 0, 0.35);
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.color-picker-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: flex-start;
+}
+
+.color-picker-title {
+    font-family: var(--font-heading);
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.swatch-list {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.swatch {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.swatch:hover {
+    transform: scale(1.2);
+}
+
+.swatch.active {
+    border-color: #ffffff;
+    box-shadow: 0 0 10px #ffffff, 0 0 15px currentColor;
+    transform: scale(1.25);
+}
+
 /* Controls Guide Grid */
 .controls-guide {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 12px;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
     text-align: left;
 }
 
 .control-column {
     background: rgba(0, 0, 0, 0.35);
-    padding: 10px 14px;
+    padding: 8px 12px;
     border-radius: 8px;
     border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .control-column h3 {
     font-family: var(--font-heading);
-    font-size: 0.8rem;
-    margin-bottom: 8px;
+    font-size: 0.78rem;
+    margin-bottom: 6px;
 }
 
 .key-bind-grid {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 3px;
 }
 
 .bind-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 0.78rem;
+    font-size: 0.75rem;
     color: #e2e8f0;
 }
 
@@ -495,14 +516,14 @@ canvas {
     background: rgba(255, 255, 255, 0.12);
     border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: 4px;
-    padding: 2px 8px;
+    padding: 1px 6px;
     font-family: monospace;
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     font-weight: 700;
     color: #fff;
     cursor: pointer;
     transition: all 0.15s ease;
-    min-width: 75px;
+    min-width: 70px;
     text-align: center;
 }
 
@@ -527,15 +548,15 @@ canvas {
 .action-buttons {
     display: flex;
     justify-content: center;
-    gap: 10px;
+    gap: 8px;
     flex-wrap: wrap;
 }
 
 .btn {
     font-family: var(--font-heading);
     font-weight: 700;
-    font-size: 0.9rem;
-    padding: 8px 20px;
+    font-size: 0.85rem;
+    padding: 6px 18px;
     border-radius: 6px;
     border: none;
     cursor: pointer;
@@ -576,7 +597,7 @@ canvas {
 
 #announcer-text {
     font-family: var(--font-heading);
-    font-size: 3.8rem;
+    font-size: 3.5rem;
     font-weight: 900;
     color: var(--gold);
     text-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
@@ -616,42 +637,4 @@ canvas {
     font-size: 0.78rem;
     color: #718096;
     letter-spacing: 1px;
-}
-
-/* Mobile Responsiveness */
-@media (max-width: 768px) {
-    #app-container {
-        width: 100vw;
-        height: 100vh;
-        border-radius: 0;
-    }
-
-    #game-hud {
-        padding: 4px 8px;
-        gap: 8px;
-        grid-template-columns: 1fr 100px 1fr;
-    }
-
-    .player-name {
-        font-size: 0.85rem;
-    }
-
-    #match-timer {
-        font-size: 1.4rem;
-    }
-
-    #canvas-container {
-        width: 100vw;
-        height: 70vh;
-        border-radius: 0;
-    }
-
-    .modal-card {
-        padding: 16px;
-        width: 96%;
-    }
-
-    .controls-guide {
-        grid-template-columns: 1fr;
-    }
 }

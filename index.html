@@ -24,10 +24,10 @@
                         </div>
                     </div>
                     <div class="bar-container health-bar-wrapper">
-                        <div class="bar-fill health-fill cyan-bg" id="p1-health" style="width: 100%;"></div>
+                        <div class="bar-fill health-fill" id="p1-health" style="width: 100%; background: #00f0ff;"></div>
                     </div>
                     <div class="bar-container special-bar-wrapper">
-                        <div class="bar-fill special-fill cyan-glow" id="p1-special" style="width: 0%;"></div>
+                        <div class="bar-fill special-fill" id="p1-special" style="width: 0%; background: #00f0ff;"></div>
                     </div>
                 </div>
                 <!-- Teammate P3 (2v2 mode) -->
@@ -36,7 +36,7 @@
                         <span class="player-name cyan-text">P1 ALLY (CPU)</span>
                     </div>
                     <div class="bar-container health-bar-wrapper">
-                        <div class="bar-fill health-fill cyan-bg" id="p3-health" style="width: 100%;"></div>
+                        <div class="bar-fill health-fill" id="p3-health" style="width: 100%; background: #00aaff;"></div>
                     </div>
                 </div>
             </div>
@@ -58,10 +58,10 @@
                         <span class="player-name magenta-text" id="p2-label">CPU (ENEMY)</span>
                     </div>
                     <div class="bar-container health-bar-wrapper right-align-bar">
-                        <div class="bar-fill health-fill magenta-bg" id="p2-health" style="width: 100%;"></div>
+                        <div class="bar-fill health-fill" id="p2-health" style="width: 100%; background: #ff0055;"></div>
                     </div>
                     <div class="bar-container special-bar-wrapper right-align-bar">
-                        <div class="bar-fill special-fill magenta-glow" id="p2-special" style="width: 0%;"></div>
+                        <div class="bar-fill special-fill" id="p2-special" style="width: 0%; background: #ff0055;"></div>
                     </div>
                 </div>
                 <!-- Teammate P4 (2v2 mode) -->
@@ -70,7 +70,7 @@
                         <span class="player-name magenta-text">P2 ALLY (CPU)</span>
                     </div>
                     <div class="bar-container health-bar-wrapper right-align-bar">
-                        <div class="bar-fill health-fill magenta-bg" id="p4-health" style="width: 100%;"></div>
+                        <div class="bar-fill health-fill" id="p4-health" style="width: 100%; background: #ff4400;"></div>
                     </div>
                 </div>
             </div>
@@ -107,7 +107,7 @@
             <div id="start-overlay" class="overlay-screen">
                 <div class="modal-card">
                     <h1 class="game-title">BRAWL <span class="neon-highlight">STICKS</span></h1>
-                    <p class="subtitle">Play on PC (Keyboard & Mouse) or Mobile (Touch Joystick)</p>
+                    <p class="subtitle">Customize Colors, Game Mode & Controls</p>
 
                     <!-- Mode Selector Cards -->
                     <div class="mode-selector">
@@ -136,6 +136,41 @@
                         <button class="diff-btn" data-diff="HARD">HARD</button>
                     </div>
 
+                    <!-- 🎨 COLOR PICKER PALETTE SECTION -->
+                    <div class="color-picker-section">
+                        <div class="color-picker-group">
+                            <span class="color-picker-title cyan-text">P1 COLOR:</span>
+                            <div class="swatch-list" id="p1-color-swatches">
+                                <span class="swatch active" data-color="#00f0ff" style="background: #00f0ff;"></span>
+                                <span class="swatch" data-color="#ff0055" style="background: #ff0055;"></span>
+                                <span class="swatch" data-color="#00ff66" style="background: #00ff66;"></span>
+                                <span class="swatch" data-color="#ffd700" style="background: #ffd700;"></span>
+                                <span class="swatch" data-color="#aa00ff" style="background: #aa00ff;"></span>
+                                <span class="swatch" data-color="#ff6600" style="background: #ff6600;"></span>
+                                <span class="swatch" data-color="#ff00aa" style="background: #ff00aa;"></span>
+                                <span class="swatch" data-color="#ffffff" style="background: #ffffff;"></span>
+                                <span class="swatch" data-color="#00f5c4" style="background: #00f5c4;"></span>
+                                <span class="swatch" data-color="#e60000" style="background: #e60000;"></span>
+                            </div>
+                        </div>
+
+                        <div class="color-picker-group">
+                            <span class="color-picker-title magenta-text">P2 / ENEMY COLOR:</span>
+                            <div class="swatch-list" id="p2-color-swatches">
+                                <span class="swatch" data-color="#00f0ff" style="background: #00f0ff;"></span>
+                                <span class="swatch active" data-color="#ff0055" style="background: #ff0055;"></span>
+                                <span class="swatch" data-color="#00ff66" style="background: #00ff66;"></span>
+                                <span class="swatch" data-color="#ffd700" style="background: #ffd700;"></span>
+                                <span class="swatch" data-color="#aa00ff" style="background: #aa00ff;"></span>
+                                <span class="swatch" data-color="#ff6600" style="background: #ff6600;"></span>
+                                <span class="swatch" data-color="#ff00aa" style="background: #ff00aa;"></span>
+                                <span class="swatch" data-color="#ffffff" style="background: #ffffff;"></span>
+                                <span class="swatch" data-color="#00f5c4" style="background: #00f5c4;"></span>
+                                <span class="swatch" data-color="#e60000" style="background: #e60000;"></span>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Controls Guide Display -->
                     <div class="controls-guide">
                         <div class="control-column p1-controls">
@@ -145,8 +180,8 @@
                                 <div class="bind-row"><span>Move Right:</span> <button class="rebind-btn" data-player="p1" data-action="right">KeyD</button></div>
                                 <div class="bind-row"><span>Jump:</span> <button class="rebind-btn" data-player="p1" data-action="jump">KeyW</button></div>
                                 <div class="bind-row"><span>Block / Slide:</span> <button class="rebind-btn" data-player="p1" data-action="block">KeyS</button></div>
-                                <div class="bind-row"><span>Light Punch:</span> <button class="rebind-btn" data-player="p1" data-action="punch">KeyF (or Left Click)</button></div>
-                                <div class="bind-row"><span>Heavy Kick:</span> <button class="rebind-btn" data-player="p1" data-action="kick">KeyG (or Right Click)</button></div>
+                                <div class="bind-row"><span>Light Punch:</span> <button class="rebind-btn" data-player="p1" data-action="punch">KeyF (Left Click)</button></div>
+                                <div class="bind-row"><span>Heavy Kick:</span> <button class="rebind-btn" data-player="p1" data-action="kick">KeyG (Right Click)</button></div>
                                 <div class="bind-row"><span>Ultimate:</span> <button class="rebind-btn" data-player="p1" data-action="ult">KeyH</button></div>
                             </div>
                         </div>
@@ -196,7 +231,7 @@
 
         <!-- Footer -->
         <footer id="game-footer">
-            <span>BRAWL-STICKS • Mouse Clicks (Left=Punch, Right=Kick) & Touch Joystick Enabled!</span>
+            <span>BRAWL-STICKS • Choose your stickman & health bar colors above!</span>
         </footer>
     </div>
 
