@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brawl-Sticks | 1v1 & 2v2 Stickman Fighting Game</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="app-container">
+        <!-- Top HUD -->
+        <header id="game-hud">
+            <!-- Team 1 / P1 HUD -->
+            <div class="team-hud-container" id="team1-hud">
+                <div class="player-hud" id="p1-hud">
+                    <div class="player-meta">
+                        <span class="player-name cyan-text" id="p1-label">PLAYER 1</span>
+                        <div class="score-dots" id="p1-score">
+                            <span class="dot"></span>
+                            <span class="dot"></span>
+                        </div>
+                    </div>
+                    <div class="bar-container health-bar-wrapper">
+                        <div class="bar-fill health-fill cyan-bg" id="p1-health" style="width: 100%;"></div>
+                    </div>
+                    <div class="bar-container special-bar-wrapper">
+                        <div class="bar-fill special-fill cyan-glow" id="p1-special" style="width: 0%;"></div>
+                    </div>
+                </div>
+                <!-- Teammate P3 (2v2 mode) -->
+                <div class="player-hud mini-hud hidden" id="p3-hud">
+                    <div class="player-meta">
+                        <span class="player-name cyan-text">P1 ALLY (CPU)</span>
+                    </div>
+                    <div class="bar-container health-bar-wrapper">
+                        <div class="bar-fill health-fill cyan-bg" id="p3-health" style="width: 100%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timer & Round Indicator -->
+            <div id="timer-box">
+                <div id="match-timer">60</div>
+                <div id="round-label">ROUND 1</div>
+            </div>
+
+            <!-- Team 2 / P2 HUD -->
+            <div class="team-hud-container" id="team2-hud">
+                <div class="player-hud" id="p2-hud">
+                    <div class="player-meta align-right">
+                        <div class="score-dots" id="p2-score">
+                            <span class="dot"></span>
+                            <span class="dot"></span>
+                        </div>
+                        <span class="player-name magenta-text" id="p2-label">CPU (ENEMY)</span>
+                    </div>
+                    <div class="bar-container health-bar-wrapper right-align-bar">
+                        <div class="bar-fill health-fill magenta-bg" id="p2-health" style="width: 100%;"></div>
+                    </div>
+                    <div class="bar-container special-bar-wrapper right-align-bar">
+                        <div class="bar-fill special-fill magenta-glow" id="p2-special" style="width: 0%;"></div>
+                    </div>
+                </div>
+                <!-- Teammate P4 (2v2 mode) -->
+                <div class="player-hud mini-hud hidden" id="p4-hud">
+                    <div class="player-meta align-right">
+                        <span class="player-name magenta-text">P2 ALLY (CPU)</span>
+                    </div>
+                    <div class="bar-container health-bar-wrapper right-align-bar">
+                        <div class="bar-fill health-fill magenta-bg" id="p4-health" style="width: 100%;"></div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Canvas Frame -->
+        <main id="canvas-container">
+            <canvas id="gameCanvas" width="1024" height="576"></canvas>
+
+            <!-- Announcer Overlay -->
+            <div id="announcer-overlay" class="hidden">
+                <h1 id="announcer-text">READY?</h1>
+            </div>
+
+            <!-- Start Screen Overlay -->
+            <div id="start-overlay" class="overlay-screen">
+                <div class="modal-card">
+                    <h1 class="game-title">BRAWL <span class="neon-highlight">STICKS</span></h1>
+                    <p class="subtitle">Select Game Mode & Customize Controls</p>
+
+                    <!-- Mode Selector Cards -->
+                    <div class="mode-selector">
+                        <div class="mode-card active" data-mode="CPU">
+                            <div class="mode-icon">🤖</div>
+                            <h3>1 PLAYER vs CPU</h3>
+                            <p>Fight CPU using WASD or Arrow Keys</p>
+                        </div>
+                        <div class="mode-card" data-mode="LOCAL">
+                            <div class="mode-icon">⚔️</div>
+                            <h3>1v1 LOCAL</h3>
+                            <p>Player 1 vs Player 2 on 1 keyboard</p>
+                        </div>
+                        <div class="mode-card" data-mode="TEAM2V2">
+                            <div class="mode-icon">🔥</div>
+                            <h3>2v2 TEAM BRAWL</h3>
+                            <p>4 Fighters Chaos Arena Battle</p>
+                        </div>
+                    </div>
+
+                    <!-- AI Difficulty Selector -->
+                    <div class="difficulty-picker" id="diff-picker">
+                        <span class="picker-label">AI DIFFICULTY:</span>
+                        <button class="diff-btn" data-diff="EASY">EASY</button>
+                        <button class="diff-btn active" data-diff="NORMAL">NORMAL</button>
+                        <button class="diff-btn" data-diff="HARD">HARD</button>
+                    </div>
+
+                    <!-- Controls Guide Display -->
+                    <div class="controls-guide">
+                        <div class="control-column p1-controls">
+                            <h3 class="cyan-text">PLAYER 1 CONTROLS</h3>
+                            <div class="key-bind-grid">
+                                <div class="bind-row"><span>Move Left:</span> <button class="rebind-btn" data-player="p1" data-action="left">KeyA</button></div>
+                                <div class="bind-row"><span>Move Right:</span> <button class="rebind-btn" data-player="p1" data-action="right">KeyD</button></div>
+                                <div class="bind-row"><span>Jump:</span> <button class="rebind-btn" data-player="p1" data-action="jump">KeyW</button></div>
+                                <div class="bind-row"><span>Block / Shield:</span> <button class="rebind-btn" data-player="p1" data-action="block">KeyS</button></div>
+                                <div class="bind-row"><span>Light Punch:</span> <button class="rebind-btn" data-player="p1" data-action="punch">KeyF</button></div>
+                                <div class="bind-row"><span>Heavy Kick:</span> <button class="rebind-btn" data-player="p1" data-action="kick">KeyG</button></div>
+                                <div class="bind-row"><span>Ultimate:</span> <button class="rebind-btn" data-player="p1" data-action="ult">KeyH</button></div>
+                            </div>
+                        </div>
+                        <div class="control-column p2-controls" id="p2-controls-card">
+                            <h3 class="magenta-text">PLAYER 2 CONTROLS</h3>
+                            <div class="key-bind-grid">
+                                <div class="bind-row"><span>Move Left:</span> <button class="rebind-btn" data-player="p2" data-action="left">ArrowLeft</button></div>
+                                <div class="bind-row"><span>Move Right:</span> <button class="rebind-btn" data-player="p2" data-action="right">ArrowRight</button></div>
+                                <div class="bind-row"><span>Jump:</span> <button class="rebind-btn" data-player="p2" data-action="jump">ArrowUp</button></div>
+                                <div class="bind-row"><span>Block / Shield:</span> <button class="rebind-btn" data-player="p2" data-action="block">ArrowDown</button></div>
+                                <div class="bind-row"><span>Light Punch:</span> <button class="rebind-btn" data-player="p2" data-action="punch">KeyJ</button></div>
+                                <div class="bind-row"><span>Heavy Kick:</span> <button class="rebind-btn" data-player="p2" data-action="kick">KeyK</button></div>
+                                <div class="bind-row"><span>Ultimate:</span> <button class="rebind-btn" data-player="p2" data-action="ult">KeyL</button></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button id="btn-start" class="btn btn-primary">FIGHT!</button>
+                        <button id="btn-reset-keys" class="btn btn-secondary">🔄 RESET KEYS</button>
+                        <button id="btn-sound-toggle" class="btn btn-secondary">🔊 SOUND: ON</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Game Over Overlay -->
+            <div id="gameover-overlay" class="overlay-screen hidden">
+                <div class="modal-card">
+                    <h1 id="winner-title" class="cyan-text">BLUE TEAM WINS!</h1>
+                    <p id="winner-subtitle">DOMINATING VICTORY</p>
+
+                    <div class="stats-summary">
+                        <div class="stat-box">
+                            <span class="stat-value" id="stat-rounds">2 - 0</span>
+                            <span class="stat-label">Final Score</span>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button id="btn-rematch" class="btn btn-primary">REMATCH</button>
+                        <button id="btn-menu" class="btn btn-secondary">MAIN MENU</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer id="game-footer">
+            <span>BRAWL-STICKS • Click any key button above to customize your controls!</span>
+        </footer>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
