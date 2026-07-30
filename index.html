@@ -108,175 +108,181 @@
             <!-- Start Screen Overlay -->
             <div id="start-overlay" class="overlay-screen">
                 <div class="modal-card">
-                    <h1 class="game-title">BRAWL <span class="neon-highlight">STICKS</span></h1>
-                    <p class="subtitle">Choose Your Character Class & Hat Customization</p>
+                    <div class="modal-header">
+                        <h1 class="game-title">BRAWL <span class="neon-highlight">STICKS</span></h1>
+                        <p class="subtitle">Customize Game Mode, Classes, Hats & Key Bindings</p>
+                    </div>
 
-                    <!-- Mode Selector Cards -->
-                    <div class="mode-selector">
-                        <div class="mode-card active" data-mode="CPU">
-                            <div class="mode-icon">🤖</div>
-                            <h3>1 PLAYER vs CPU</h3>
-                            <p>Fight CPU via Touch, Keys or Mouse</p>
+                    <!-- Scrollable Customization Content -->
+                    <div class="modal-body">
+                        <!-- Mode Selector Cards -->
+                        <div class="mode-selector">
+                            <div class="mode-card active" data-mode="CPU">
+                                <div class="mode-icon">🤖</div>
+                                <h3>1 PLAYER vs CPU</h3>
+                                <p>Fight CPU via Touch, Keys or Mouse</p>
+                            </div>
+                            <div class="mode-card" data-mode="LOCAL">
+                                <div class="mode-icon">⚔️</div>
+                                <h3>1v1 LOCAL</h3>
+                                <p>Player 1 vs Player 2 on 1 keyboard</p>
+                            </div>
+                            <div class="mode-card" data-mode="TEAM2V2">
+                                <div class="mode-icon">🔥</div>
+                                <h3>2v2 TEAM BRAWL</h3>
+                                <p>4 Fighters Chaos Arena Battle</p>
+                            </div>
                         </div>
-                        <div class="mode-card" data-mode="LOCAL">
-                            <div class="mode-icon">⚔️</div>
-                            <h3>1v1 LOCAL</h3>
-                            <p>Player 1 vs Player 2 on 1 keyboard</p>
+
+                        <!-- AI Difficulty Selector -->
+                        <div class="difficulty-picker" id="diff-picker">
+                            <span class="picker-label">AI DIFFICULTY:</span>
+                            <button class="diff-btn" data-diff="EASY">EASY</button>
+                            <button class="diff-btn active" data-diff="NORMAL">NORMAL</button>
+                            <button class="diff-btn" data-diff="HARD">HARD</button>
                         </div>
-                        <div class="mode-card" data-mode="TEAM2V2">
-                            <div class="mode-icon">🔥</div>
-                            <h3>2v2 TEAM BRAWL</h3>
-                            <p>4 Fighters Chaos Arena Battle</p>
+
+                        <!-- 🥷 CHARACTER CLASSES SELECTOR -->
+                        <div class="class-picker-section">
+                            <div class="class-picker-group">
+                                <span class="picker-title cyan-text">P1 CLASS:</span>
+                                <div class="class-card-list" id="p1-class-list">
+                                    <div class="class-card active" data-class="NINJA">
+                                        <span class="class-icon">🥷</span>
+                                        <span class="class-name">NINJA</span>
+                                    </div>
+                                    <div class="class-card" data-class="BRAWLER">
+                                        <span class="class-icon">🥊</span>
+                                        <span class="class-name">BRAWLER</span>
+                                    </div>
+                                    <div class="class-card" data-class="WEAVER">
+                                        <span class="class-icon">🔮</span>
+                                        <span class="class-name">WEAVER</span>
+                                    </div>
+                                    <div class="class-card" data-class="KNIGHT">
+                                        <span class="class-icon">⚔️</span>
+                                        <span class="class-name">KNIGHT</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="class-picker-group">
+                                <span class="picker-title magenta-text">P2 / ENEMY CLASS:</span>
+                                <div class="class-card-list" id="p2-class-list">
+                                    <div class="class-card" data-class="NINJA">
+                                        <span class="class-icon">🥷</span>
+                                        <span class="class-name">NINJA</span>
+                                    </div>
+                                    <div class="class-card active" data-class="BRAWLER">
+                                        <span class="class-icon">🥊</span>
+                                        <span class="class-name">BRAWLER</span>
+                                    </div>
+                                    <div class="class-card" data-class="WEAVER">
+                                        <span class="class-icon">🔮</span>
+                                        <span class="class-name">WEAVER</span>
+                                    </div>
+                                    <div class="class-card" data-class="KNIGHT">
+                                        <span class="class-icon">⚔️</span>
+                                        <span class="class-name">KNIGHT</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 👑 HATS & ACCESSORIES SELECTOR -->
+                        <div class="hat-picker-section">
+                            <div class="hat-picker-group">
+                                <span class="picker-title cyan-text">P1 HAT:</span>
+                                <div class="hat-list" id="p1-hat-list">
+                                    <button class="hat-btn active" data-hat="NONE">NONE</button>
+                                    <button class="hat-btn" data-hat="CROWN">👑 CROWN</button>
+                                    <button class="hat-btn" data-hat="SHADES">🕶️ SHADES</button>
+                                    <button class="hat-btn" data-hat="BANDANA">🥷 HEADBAND</button>
+                                    <button class="hat-btn" data-hat="COWBOY">🤠 COWBOY</button>
+                                    <button class="hat-btn" data-hat="VISOR">🪖 VISOR</button>
+                                    <button class="hat-btn" data-hat="TOPHAT">🎩 TOPHAT</button>
+                                </div>
+                            </div>
+
+                            <div class="hat-picker-group">
+                                <span class="picker-title magenta-text">P2 HAT:</span>
+                                <div class="hat-list" id="p2-hat-list">
+                                    <button class="hat-btn active" data-hat="NONE">NONE</button>
+                                    <button class="hat-btn" data-hat="CROWN">👑 CROWN</button>
+                                    <button class="hat-btn" data-hat="SHADES">🕶️ SHADES</button>
+                                    <button class="hat-btn" data-hat="BANDANA">🥷 HEADBAND</button>
+                                    <button class="hat-btn" data-hat="COWBOY">🤠 COWBOY</button>
+                                    <button class="hat-btn" data-hat="VISOR">🪖 VISOR</button>
+                                    <button class="hat-btn" data-hat="TOPHAT">🎩 TOPHAT</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 🎨 COLOR PALETTE -->
+                        <div class="color-picker-section">
+                            <div class="color-picker-group">
+                                <span class="color-picker-title cyan-text">P1 COLOR:</span>
+                                <div class="swatch-list" id="p1-color-swatches">
+                                    <span class="swatch active" data-color="#00f0ff" style="background: #00f0ff;"></span>
+                                    <span class="swatch" data-color="#ff0055" style="background: #ff0055;"></span>
+                                    <span class="swatch" data-color="#00ff66" style="background: #00ff66;"></span>
+                                    <span class="swatch" data-color="#ffd700" style="background: #ffd700;"></span>
+                                    <span class="swatch" data-color="#aa00ff" style="background: #aa00ff;"></span>
+                                    <span class="swatch" data-color="#ff6600" style="background: #ff6600;"></span>
+                                    <span class="swatch" data-color="#ff00aa" style="background: #ff00aa;"></span>
+                                    <span class="swatch" data-color="#ffffff" style="background: #ffffff;"></span>
+                                    <span class="swatch" data-color="#00f5c4" style="background: #00f5c4;"></span>
+                                    <span class="swatch" data-color="#e60000" style="background: #e60000;"></span>
+                                </div>
+                            </div>
+
+                            <div class="color-picker-group">
+                                <span class="color-picker-title magenta-text">P2 / ENEMY COLOR:</span>
+                                <div class="swatch-list" id="p2-color-swatches">
+                                    <span class="swatch" data-color="#00f0ff" style="background: #00f0ff;"></span>
+                                    <span class="swatch active" data-color="#ff0055" style="background: #ff0055;"></span>
+                                    <span class="swatch" data-color="#00ff66" style="background: #00ff66;"></span>
+                                    <span class="swatch" data-color="#ffd700" style="background: #ffd700;"></span>
+                                    <span class="swatch" data-color="#aa00ff" style="background: #aa00ff;"></span>
+                                    <span class="swatch" data-color="#ff6600" style="background: #ff6600;"></span>
+                                    <span class="swatch" data-color="#ff00aa" style="background: #ff00aa;"></span>
+                                    <span class="swatch" data-color="#ffffff" style="background: #ffffff;"></span>
+                                    <span class="swatch" data-color="#00f5c4" style="background: #00f5c4;"></span>
+                                    <span class="swatch" data-color="#e60000" style="background: #e60000;"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Controls Guide Display -->
+                        <div class="controls-guide">
+                            <div class="control-column p1-controls">
+                                <h3 class="cyan-text">PLAYER 1 CONTROLS</h3>
+                                <div class="key-bind-grid">
+                                    <div class="bind-row"><span>Move Left:</span> <button class="rebind-btn" data-player="p1" data-action="left">KeyA</button></div>
+                                    <div class="bind-row"><span>Move Right:</span> <button class="rebind-btn" data-player="p1" data-action="right">KeyD</button></div>
+                                    <div class="bind-row"><span>Jump:</span> <button class="rebind-btn" data-player="p1" data-action="jump">KeyW</button></div>
+                                    <div class="bind-row"><span>Block / Slide:</span> <button class="rebind-btn" data-player="p1" data-action="block">KeyS</button></div>
+                                    <div class="bind-row"><span>Light Punch:</span> <button class="rebind-btn" data-player="p1" data-action="punch">KeyF (Left Click)</button></div>
+                                    <div class="bind-row"><span>Heavy Kick:</span> <button class="rebind-btn" data-player="p1" data-action="kick">KeyG (Right Click)</button></div>
+                                    <div class="bind-row"><span>Ultimate:</span> <button class="rebind-btn" data-player="p1" data-action="ult">KeyH</button></div>
+                                </div>
+                            </div>
+                            <div class="control-column p2-controls" id="p2-controls-card">
+                                <h3 class="magenta-text">PLAYER 2 CONTROLS</h3>
+                                <div class="key-bind-grid">
+                                    <div class="bind-row"><span>Move Left:</span> <button class="rebind-btn" data-player="p2" data-action="left">ArrowLeft</button></div>
+                                    <div class="bind-row"><span>Move Right:</span> <button class="rebind-btn" data-player="p2" data-action="right">ArrowRight</button></div>
+                                    <div class="bind-row"><span>Jump:</span> <button class="rebind-btn" data-player="p2" data-action="jump">ArrowUp</button></div>
+                                    <div class="bind-row"><span>Block / Slide:</span> <button class="rebind-btn" data-player="p2" data-action="block">ArrowDown</button></div>
+                                    <div class="bind-row"><span>Light Punch:</span> <button class="rebind-btn" data-player="p2" data-action="punch">KeyJ</button></div>
+                                    <div class="bind-row"><span>Heavy Kick:</span> <button class="rebind-btn" data-player="p2" data-action="kick">KeyK</button></div>
+                                    <div class="bind-row"><span>Ultimate:</span> <button class="rebind-btn" data-player="p2" data-action="ult">KeyL</button></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- AI Difficulty Selector -->
-                    <div class="difficulty-picker" id="diff-picker">
-                        <span class="picker-label">AI DIFFICULTY:</span>
-                        <button class="diff-btn" data-diff="EASY">EASY</button>
-                        <button class="diff-btn active" data-diff="NORMAL">NORMAL</button>
-                        <button class="diff-btn" data-diff="HARD">HARD</button>
-                    </div>
-
-                    <!-- 🥷 CHARACTER CLASSES SELECTOR -->
-                    <div class="class-picker-section">
-                        <div class="class-picker-group">
-                            <span class="picker-title cyan-text">P1 CLASS:</span>
-                            <div class="class-card-list" id="p1-class-list">
-                                <div class="class-card active" data-class="NINJA">
-                                    <span class="class-icon">🥷</span>
-                                    <span class="class-name">NINJA</span>
-                                </div>
-                                <div class="class-card" data-class="BRAWLER">
-                                    <span class="class-icon">🥊</span>
-                                    <span class="class-name">BRAWLER</span>
-                                </div>
-                                <div class="class-card" data-class="WEAVER">
-                                    <span class="class-icon">🔮</span>
-                                    <span class="class-name">WEAVER</span>
-                                </div>
-                                <div class="class-card" data-class="KNIGHT">
-                                    <span class="class-icon">⚔️</span>
-                                    <span class="class-name">KNIGHT</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="class-picker-group">
-                            <span class="picker-title magenta-text">P2 / ENEMY CLASS:</span>
-                            <div class="class-card-list" id="p2-class-list">
-                                <div class="class-card" data-class="NINJA">
-                                    <span class="class-icon">🥷</span>
-                                    <span class="class-name">NINJA</span>
-                                </div>
-                                <div class="class-card active" data-class="BRAWLER">
-                                    <span class="class-icon">🥊</span>
-                                    <span class="class-name">BRAWLER</span>
-                                </div>
-                                <div class="class-card" data-class="WEAVER">
-                                    <span class="class-icon">🔮</span>
-                                    <span class="class-name">WEAVER</span>
-                                </div>
-                                <div class="class-card" data-class="KNIGHT">
-                                    <span class="class-icon">⚔️</span>
-                                    <span class="class-name">KNIGHT</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 👑 HATS & ACCESSORIES SELECTOR -->
-                    <div class="hat-picker-section">
-                        <div class="hat-picker-group">
-                            <span class="picker-title cyan-text">P1 HAT:</span>
-                            <div class="hat-list" id="p1-hat-list">
-                                <button class="hat-btn active" data-hat="NONE">NONE</button>
-                                <button class="hat-btn" data-hat="CROWN">👑 CROWN</button>
-                                <button class="hat-btn" data-hat="SHADES">🕶️ SHADES</button>
-                                <button class="hat-btn" data-hat="BANDANA">🥷 HEADBAND</button>
-                                <button class="hat-btn" data-hat="COWBOY">🤠 COWBOY</button>
-                                <button class="hat-btn" data-hat="VISOR">🪖 VISOR</button>
-                                <button class="hat-btn" data-hat="TOPHAT">🎩 TOPHAT</button>
-                            </div>
-                        </div>
-
-                        <div class="hat-picker-group">
-                            <span class="picker-title magenta-text">P2 HAT:</span>
-                            <div class="hat-list" id="p2-hat-list">
-                                <button class="hat-btn active" data-hat="NONE">NONE</button>
-                                <button class="hat-btn" data-hat="CROWN">👑 CROWN</button>
-                                <button class="hat-btn" data-hat="SHADES">🕶️ SHADES</button>
-                                <button class="hat-btn" data-hat="BANDANA">🥷 HEADBAND</button>
-                                <button class="hat-btn" data-hat="COWBOY">🤠 COWBOY</button>
-                                <button class="hat-btn" data-hat="VISOR">🪖 VISOR</button>
-                                <button class="hat-btn" data-hat="TOPHAT">🎩 TOPHAT</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 🎨 COLOR PALETTE -->
-                    <div class="color-picker-section">
-                        <div class="color-picker-group">
-                            <span class="color-picker-title cyan-text">P1 COLOR:</span>
-                            <div class="swatch-list" id="p1-color-swatches">
-                                <span class="swatch active" data-color="#00f0ff" style="background: #00f0ff;"></span>
-                                <span class="swatch" data-color="#ff0055" style="background: #ff0055;"></span>
-                                <span class="swatch" data-color="#00ff66" style="background: #00ff66;"></span>
-                                <span class="swatch" data-color="#ffd700" style="background: #ffd700;"></span>
-                                <span class="swatch" data-color="#aa00ff" style="background: #aa00ff;"></span>
-                                <span class="swatch" data-color="#ff6600" style="background: #ff6600;"></span>
-                                <span class="swatch" data-color="#ff00aa" style="background: #ff00aa;"></span>
-                                <span class="swatch" data-color="#ffffff" style="background: #ffffff;"></span>
-                                <span class="swatch" data-color="#00f5c4" style="background: #00f5c4;"></span>
-                                <span class="swatch" data-color="#e60000" style="background: #e60000;"></span>
-                            </div>
-                        </div>
-
-                        <div class="color-picker-group">
-                            <span class="color-picker-title magenta-text">P2 / ENEMY COLOR:</span>
-                            <div class="swatch-list" id="p2-color-swatches">
-                                <span class="swatch" data-color="#00f0ff" style="background: #00f0ff;"></span>
-                                <span class="swatch active" data-color="#ff0055" style="background: #ff0055;"></span>
-                                <span class="swatch" data-color="#00ff66" style="background: #00ff66;"></span>
-                                <span class="swatch" data-color="#ffd700" style="background: #ffd700;"></span>
-                                <span class="swatch" data-color="#aa00ff" style="background: #aa00ff;"></span>
-                                <span class="swatch" data-color="#ff6600" style="background: #ff6600;"></span>
-                                <span class="swatch" data-color="#ff00aa" style="background: #ff00aa;"></span>
-                                <span class="swatch" data-color="#ffffff" style="background: #ffffff;"></span>
-                                <span class="swatch" data-color="#00f5c4" style="background: #00f5c4;"></span>
-                                <span class="swatch" data-color="#e60000" style="background: #e60000;"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Controls Guide Display -->
-                    <div class="controls-guide">
-                        <div class="control-column p1-controls">
-                            <h3 class="cyan-text">PLAYER 1 CONTROLS</h3>
-                            <div class="key-bind-grid">
-                                <div class="bind-row"><span>Move Left:</span> <button class="rebind-btn" data-player="p1" data-action="left">KeyA</button></div>
-                                <div class="bind-row"><span>Move Right:</span> <button class="rebind-btn" data-player="p1" data-action="right">KeyD</button></div>
-                                <div class="bind-row"><span>Jump:</span> <button class="rebind-btn" data-player="p1" data-action="jump">KeyW</button></div>
-                                <div class="bind-row"><span>Block / Slide:</span> <button class="rebind-btn" data-player="p1" data-action="block">KeyS</button></div>
-                                <div class="bind-row"><span>Light Punch:</span> <button class="rebind-btn" data-player="p1" data-action="punch">KeyF (Left Click)</button></div>
-                                <div class="bind-row"><span>Heavy Kick:</span> <button class="rebind-btn" data-player="p1" data-action="kick">KeyG (Right Click)</button></div>
-                                <div class="bind-row"><span>Ultimate:</span> <button class="rebind-btn" data-player="p1" data-action="ult">KeyH</button></div>
-                            </div>
-                        </div>
-                        <div class="control-column p2-controls" id="p2-controls-card">
-                            <h3 class="magenta-text">PLAYER 2 CONTROLS</h3>
-                            <div class="key-bind-grid">
-                                <div class="bind-row"><span>Move Left:</span> <button class="rebind-btn" data-player="p2" data-action="left">ArrowLeft</button></div>
-                                <div class="bind-row"><span>Move Right:</span> <button class="rebind-btn" data-player="p2" data-action="right">ArrowRight</button></div>
-                                <div class="bind-row"><span>Jump:</span> <button class="rebind-btn" data-player="p2" data-action="jump">ArrowUp</button></div>
-                                <div class="bind-row"><span>Block / Slide:</span> <button class="rebind-btn" data-player="p2" data-action="block">ArrowDown</button></div>
-                                <div class="bind-row"><span>Light Punch:</span> <button class="rebind-btn" data-player="p2" data-action="punch">KeyJ</button></div>
-                                <div class="bind-row"><span>Heavy Kick:</span> <button class="rebind-btn" data-player="p2" data-action="kick">KeyK</button></div>
-                                <div class="bind-row"><span>Ultimate:</span> <button class="rebind-btn" data-player="p2" data-action="ult">KeyL</button></div>
-                            </div>
-                        </div>
-                    </div>
-
+                    <!-- FIXED BOTTOM ACTION BAR (FIGHT! button is always 100% visible) -->
                     <div class="action-buttons">
                         <button id="btn-start" class="btn btn-primary">FIGHT!</button>
                         <button id="btn-touch-toggle" class="btn btn-secondary">📱 TOUCH: AUTO</button>
