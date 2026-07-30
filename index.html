@@ -18,6 +18,7 @@
                 <div class="player-hud" id="p1-hud">
                     <div class="player-meta">
                         <span class="player-name cyan-text" id="p1-label">PLAYER 1</span>
+                        <span class="class-badge" id="p1-class-badge">NINJA</span>
                         <div class="score-dots" id="p1-score">
                             <span class="dot"></span>
                             <span class="dot"></span>
@@ -55,6 +56,7 @@
                             <span class="dot"></span>
                             <span class="dot"></span>
                         </div>
+                        <span class="class-badge" id="p2-class-badge">BRAWLER</span>
                         <span class="player-name magenta-text" id="p2-label">CPU (ENEMY)</span>
                     </div>
                     <div class="bar-container health-bar-wrapper right-align-bar">
@@ -107,7 +109,7 @@
             <div id="start-overlay" class="overlay-screen">
                 <div class="modal-card">
                     <h1 class="game-title">BRAWL <span class="neon-highlight">STICKS</span></h1>
-                    <p class="subtitle">Customize Colors, Game Mode & Controls</p>
+                    <p class="subtitle">Choose Your Character Class & Hat Customization</p>
 
                     <!-- Mode Selector Cards -->
                     <div class="mode-selector">
@@ -136,7 +138,83 @@
                         <button class="diff-btn" data-diff="HARD">HARD</button>
                     </div>
 
-                    <!-- 🎨 COLOR PICKER PALETTE SECTION -->
+                    <!-- 🥷 CHARACTER CLASSES SELECTOR -->
+                    <div class="class-picker-section">
+                        <div class="class-picker-group">
+                            <span class="picker-title cyan-text">P1 CLASS:</span>
+                            <div class="class-card-list" id="p1-class-list">
+                                <div class="class-card active" data-class="NINJA">
+                                    <span class="class-icon">🥷</span>
+                                    <span class="class-name">NINJA</span>
+                                </div>
+                                <div class="class-card" data-class="BRAWLER">
+                                    <span class="class-icon">🥊</span>
+                                    <span class="class-name">BRAWLER</span>
+                                </div>
+                                <div class="class-card" data-class="WEAVER">
+                                    <span class="class-icon">🔮</span>
+                                    <span class="class-name">WEAVER</span>
+                                </div>
+                                <div class="class-card" data-class="KNIGHT">
+                                    <span class="class-icon">⚔️</span>
+                                    <span class="class-name">KNIGHT</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="class-picker-group">
+                            <span class="picker-title magenta-text">P2 / ENEMY CLASS:</span>
+                            <div class="class-card-list" id="p2-class-list">
+                                <div class="class-card" data-class="NINJA">
+                                    <span class="class-icon">🥷</span>
+                                    <span class="class-name">NINJA</span>
+                                </div>
+                                <div class="class-card active" data-class="BRAWLER">
+                                    <span class="class-icon">🥊</span>
+                                    <span class="class-name">BRAWLER</span>
+                                </div>
+                                <div class="class-card" data-class="WEAVER">
+                                    <span class="class-icon">🔮</span>
+                                    <span class="class-name">WEAVER</span>
+                                </div>
+                                <div class="class-card" data-class="KNIGHT">
+                                    <span class="class-icon">⚔️</span>
+                                    <span class="class-name">KNIGHT</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 👑 HATS & ACCESSORIES SELECTOR -->
+                    <div class="hat-picker-section">
+                        <div class="hat-picker-group">
+                            <span class="picker-title cyan-text">P1 HAT:</span>
+                            <div class="hat-list" id="p1-hat-list">
+                                <button class="hat-btn active" data-hat="NONE">NONE</button>
+                                <button class="hat-btn" data-hat="CROWN">👑 CROWN</button>
+                                <button class="hat-btn" data-hat="SHADES">🕶️ SHADES</button>
+                                <button class="hat-btn" data-hat="BANDANA">🥷 HEADBAND</button>
+                                <button class="hat-btn" data-hat="COWBOY">🤠 COWBOY</button>
+                                <button class="hat-btn" data-hat="VISOR">🪖 VISOR</button>
+                                <button class="hat-btn" data-hat="TOPHAT">🎩 TOPHAT</button>
+                            </div>
+                        </div>
+
+                        <div class="hat-picker-group">
+                            <span class="picker-title magenta-text">P2 HAT:</span>
+                            <div class="hat-list" id="p2-hat-list">
+                                <button class="hat-btn active" data-hat="NONE">NONE</button>
+                                <button class="hat-btn" data-hat="CROWN">👑 CROWN</button>
+                                <button class="hat-btn" data-hat="SHADES">🕶️ SHADES</button>
+                                <button class="hat-btn" data-hat="BANDANA">🥷 HEADBAND</button>
+                                <button class="hat-btn" data-hat="COWBOY">🤠 COWBOY</button>
+                                <button class="hat-btn" data-hat="VISOR">🪖 VISOR</button>
+                                <button class="hat-btn" data-hat="TOPHAT">🎩 TOPHAT</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 🎨 COLOR PALETTE -->
                     <div class="color-picker-section">
                         <div class="color-picker-group">
                             <span class="color-picker-title cyan-text">P1 COLOR:</span>
@@ -174,7 +252,7 @@
                     <!-- Controls Guide Display -->
                     <div class="controls-guide">
                         <div class="control-column p1-controls">
-                            <h3 class="cyan-text">PLAYER 1 / MOUSE CONTROLS</h3>
+                            <h3 class="cyan-text">PLAYER 1 CONTROLS</h3>
                             <div class="key-bind-grid">
                                 <div class="bind-row"><span>Move Left:</span> <button class="rebind-btn" data-player="p1" data-action="left">KeyA</button></div>
                                 <div class="bind-row"><span>Move Right:</span> <button class="rebind-btn" data-player="p1" data-action="right">KeyD</button></div>
@@ -231,7 +309,7 @@
 
         <!-- Footer -->
         <footer id="game-footer">
-            <span>BRAWL-STICKS • Choose your stickman & health bar colors above!</span>
+            <span>BRAWL-STICKS • Choose Fighter Classes & Hats Above!</span>
         </footer>
     </div>
 

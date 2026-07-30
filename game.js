@@ -1,10 +1,10 @@
 /**
  * BRAWL-STICKS: 1v1 & 2v2 Stickman Fighting Game Engine
- * Features: 10-Color Customization System for Stickmen & Health Bars, Mouse Clicks, Touch Joystick
+ * Features: Character Classes, Hats & Accessories, Floating Damage Numbers, Slow-Mo KO Finisher, Projectiles
  */
 
 // ==========================================
-// 1. KEY BINDINGS & COLOR CUSTOMIZATION SYSTEM
+// 1. KEY BINDINGS, CLASSES & COSMETICS
 // ==========================================
 const defaultKeyBindings = {
     p1: { left: 'KeyA', right: 'KeyD', jump: 'KeyW', block: 'KeyS', punch: 'KeyF', kick: 'KeyG', ult: 'KeyH' },
@@ -13,18 +13,20 @@ const defaultKeyBindings = {
 
 let keyBindings = JSON.parse(JSON.stringify(defaultKeyBindings));
 
-let p1Color = '#00f0ff'; // Default P1 Cyan
-let p2Color = '#ff0055'; // Default P2 Magenta
+let p1Color = '#00f0ff';
+let p2Color = '#ff0055';
+let p1Class = 'NINJA';
+let p2Class = 'BRAWLER';
+let p1Hat = 'NONE';
+let p2Hat = 'NONE';
 
 function loadSavedPreferences() {
-    // Load Keys
     const savedKeys = localStorage.getItem('brawl_sticks_keys');
     if (savedKeys) {
         try { keyBindings = JSON.parse(savedKeys); } catch (e) { keyBindings = JSON.parse(JSON.stringify(defaultKeyBindings)); }
     }
     updateRebindButtonText();
 
-    // Load Colors
     const savedColors = localStorage.getItem('brawl_sticks_colors');
     if (savedColors) {
         try {
@@ -33,12 +35,33 @@ function loadSavedPreferences() {
             if (parsed.p2) p2Color = parsed.p2;
         } catch (e) {}
     }
-    syncColorSwatchesUI();
+
+    const savedClasses = localStorage.getItem('brawl_sticks_classes');
+    if (savedClasses) {
+        try {
+            const parsed = JSON.parse(savedClasses);
+            if (parsed.p1) p1Class = parsed.p1;
+            if (parsed.p2) p2Class = parsed.p2;
+        } catch (e) {}
+    }
+
+    const savedHats = localStorage.getItem('brawl_sticks_hats');
+    if (savedHats) {
+        try {
+            const parsed = JSON.parse(savedHats);
+            if (parsed.p1) p1Hat = parsed.p1;
+            if (parsed.p2) p2Hat = parsed.p2;
+        } catch (e) {}
+    }
+
+    syncUIElements();
     applyHUDColors();
 }
 
-function saveColors() {
+function savePreferences() {
     localStorage.setItem('brawl_sticks_colors', JSON.stringify({ p1: p1Color, p2: p2Color }));
+    localStorage.setItem('brawl_sticks_classes', JSON.stringify({ p1: p1Class, p2: p2Class }));
+    localStorage.setItem('brawl_sticks_hats', JSON.stringify({ p1: p1Hat, p2: p2Hat }));
     applyHUDColors();
 }
 
@@ -57,17 +80,39 @@ function updateRebindButtonText() {
     });
 }
 
-function syncColorSwatchesUI() {
+function syncUIElements() {
+    // Swatches
     document.querySelectorAll('#p1-color-swatches .swatch').forEach(sw => {
         sw.classList.toggle('active', sw.getAttribute('data-color') === p1Color);
     });
     document.querySelectorAll('#p2-color-swatches .swatch').forEach(sw => {
         sw.classList.toggle('active', sw.getAttribute('data-color') === p2Color);
     });
+
+    // Classes
+    document.querySelectorAll('#p1-class-list .class-card').forEach(c => {
+        c.classList.toggle('active', c.getAttribute('data-class') === p1Class);
+    });
+    document.querySelectorAll('#p2-class-list .class-card').forEach(c => {
+        c.classList.toggle('active', c.getAttribute('data-class') === p2Class);
+    });
+
+    // Hats
+    document.querySelectorAll('#p1-hat-list .hat-btn').forEach(h => {
+        h.classList.toggle('active', h.getAttribute('data-hat') === p1Hat);
+    });
+    document.querySelectorAll('#p2-hat-list .hat-btn').forEach(h => {
+        h.classList.toggle('active', h.getAttribute('data-hat') === p2Hat);
+    });
+
+    // HUD Class Badges
+    const b1 = document.getElementById('p1-class-badge');
+    const b2 = document.getElementById('p2-class-badge');
+    if (b1) b1.textContent = p1Class;
+    if (b2) b2.textContent = p2Class;
 }
 
 function applyHUDColors() {
-    // Apply P1 Colors
     const p1Health = document.getElementById('p1-health');
     const p1Special = document.getElementById('p1-special');
     const p1Label = document.getElementById('p1-label');
@@ -78,7 +123,6 @@ function applyHUDColors() {
         p1Label.style.textShadow = `0 0 10px ${p1Color}`;
     }
 
-    // Apply P2 Colors
     const p2Health = document.getElementById('p2-health');
     const p2Special = document.getElementById('p2-special');
     const p2Label = document.getElementById('p2-label');
@@ -90,21 +134,29 @@ function applyHUDColors() {
     }
 }
 
-// Swatch Event Listeners
+// Event Listeners for UI
 document.querySelectorAll('#p1-color-swatches .swatch').forEach(sw => {
-    sw.addEventListener('click', () => {
-        p1Color = sw.getAttribute('data-color');
-        syncColorSwatchesUI();
-        saveColors();
-    });
+    sw.addEventListener('click', () => { p1Color = sw.getAttribute('data-color'); syncUIElements(); savePreferences(); });
 });
 
 document.querySelectorAll('#p2-color-swatches .swatch').forEach(sw => {
-    sw.addEventListener('click', () => {
-        p2Color = sw.getAttribute('data-color');
-        syncColorSwatchesUI();
-        saveColors();
-    });
+    sw.addEventListener('click', () => { p2Color = sw.getAttribute('data-color'); syncUIElements(); savePreferences(); });
+});
+
+document.querySelectorAll('#p1-class-list .class-card').forEach(c => {
+    c.addEventListener('click', () => { p1Class = c.getAttribute('data-class'); syncUIElements(); savePreferences(); });
+});
+
+document.querySelectorAll('#p2-class-list .class-card').forEach(c => {
+    c.addEventListener('click', () => { p2Class = c.getAttribute('data-class'); syncUIElements(); savePreferences(); });
+});
+
+document.querySelectorAll('#p1-hat-list .hat-btn').forEach(h => {
+    h.addEventListener('click', () => { p1Hat = h.getAttribute('data-hat'); syncUIElements(); savePreferences(); });
+});
+
+document.querySelectorAll('#p2-hat-list .hat-btn').forEach(h => {
+    h.addEventListener('click', () => { p2Hat = h.getAttribute('data-hat'); syncUIElements(); savePreferences(); });
 });
 
 let waitingForRebind = null;
@@ -244,8 +296,37 @@ class SoundFX {
 const audio = new SoundFX();
 
 // ==========================================
-// 3. PARTICLE ENGINE
+// 3. FLOATING DAMAGE POPUPS & PARTICLES
 // ==========================================
+class DamageText {
+    constructor(x, y, text, color) {
+        this.x = x;
+        this.y = y;
+        this.text = text;
+        this.color = color;
+        this.vy = -1.5;
+        this.life = 35;
+        this.maxLife = 35;
+    }
+
+    update() {
+        this.y += this.vy;
+        this.life--;
+    }
+
+    draw(ctx) {
+        const alpha = Math.max(0, this.life / this.maxLife);
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.font = "900 16px 'Orbitron', sans-serif";
+        ctx.fillStyle = this.color;
+        ctx.shadowColor = this.color;
+        ctx.shadowBlur = 10;
+        ctx.fillText(this.text, this.x, this.y);
+        ctx.restore();
+    }
+}
+
 class Particle {
     constructor(x, y, vx, vy, color, size, life) {
         this.x = x;
@@ -282,6 +363,8 @@ class Particle {
 class ParticleSystem {
     constructor() {
         this.particles = [];
+        this.damageTexts = [];
+        this.projectiles = [];
     }
 
     createHitSparks(x, y, color) {
@@ -326,14 +409,23 @@ class ParticleSystem {
         }
     }
 
+    addDamageText(x, y, text, color) {
+        this.damageTexts.push(new DamageText(x, y, text, color));
+    }
+
     updateAndDraw(ctx) {
         for (let i = this.particles.length - 1; i >= 0; i--) {
             const p = this.particles[i];
             p.update();
             p.draw(ctx);
-            if (p.life <= 0) {
-                this.particles.splice(i, 1);
-            }
+            if (p.life <= 0) this.particles.splice(i, 1);
+        }
+
+        for (let i = this.damageTexts.length - 1; i >= 0; i--) {
+            const dt = this.damageTexts[i];
+            dt.update();
+            dt.draw(ctx);
+            if (dt.life <= 0) this.damageTexts.splice(i, 1);
         }
     }
 }
@@ -344,15 +436,21 @@ const particleSystem = new ParticleSystem();
 // 4. STICKMAN FIGHTER CLASS
 // ==========================================
 class Stickman {
-    constructor(id, x, y, color, team, isCPU = false) {
+    constructor(id, x, y, color, fighterClass, hat, team, isCPU = false) {
         this.id = id;
         this.x = x;
         this.y = y;
         this.width = 38;
         this.height = 85;
         this.color = color;
+        this.fighterClass = fighterClass || 'NINJA';
+        this.hat = hat || 'NONE';
         this.team = team;
         this.isCPU = isCPU;
+
+        // Class Stat Modifications
+        this.maxHealth = (this.fighterClass === 'BRAWLER') ? 130 : (this.fighterClass === 'KNIGHT') ? 110 : 100;
+        this.health = this.maxHealth;
 
         this.vx = 0;
         this.vy = 0;
@@ -363,7 +461,6 @@ class Stickman {
         this.jumpCount = 0;
         this.facing = team === 1 ? 1 : -1;
 
-        this.health = 100;
         this.specialMeter = 0;
         this.isBlocking = false;
         this.isSliding = false;
@@ -383,7 +480,7 @@ class Stickman {
         this.y = y;
         this.vx = 0;
         this.vy = 0;
-        this.health = 100;
+        this.health = this.maxHealth;
         this.specialMeter = 0;
         this.isBlocking = false;
         this.isSliding = false;
@@ -402,16 +499,14 @@ class Stickman {
             this.specialMeter = Math.min(100, this.specialMeter + 0.18);
         }
 
-        if (difficulty === 'EASY') {
-            this.speed = 3.8;
-            this.jumpForce = -11.5;
-        } else if (difficulty === 'NORMAL') {
-            this.speed = 5.0;
-            this.jumpForce = -12.8;
-        } else {
-            this.speed = 6.5;
-            this.jumpForce = -14.0;
-        }
+        // Base Speed by Difficulty
+        let baseSpeed = (difficulty === 'EASY') ? 3.8 : (difficulty === 'NORMAL') ? 5.0 : 6.5;
+        let baseJump = (difficulty === 'EASY') ? -11.5 : (difficulty === 'NORMAL') ? -12.8 : -14.0;
+
+        // Class Speed Modifier
+        const speedFactor = (this.fighterClass === 'NINJA') ? 1.2 : (this.fighterClass === 'BRAWLER') ? 0.85 : 1.0;
+        this.speed = baseSpeed * speedFactor;
+        this.jumpForce = baseJump * (this.fighterClass === 'NINJA' ? 1.1 : 1.0);
 
         if (this.stunTimer > 0) this.stunTimer--;
         if (this.invincibleTimer > 0) this.invincibleTimer--;
@@ -637,6 +732,7 @@ class Stickman {
             this.vx = attackerFacing * (knockback * 0.4);
             audio.playBlock();
             particleSystem.createHitSparks(this.x + this.width / 2, this.y + 30, '#ffffff');
+            particleSystem.addDamageText(this.x, this.y - 15, `-${Math.round(damageTaken)} (75% BLOCK)`, '#ffffff');
             this.specialMeter = Math.min(100, this.specialMeter + 15);
             return;
         }
@@ -651,9 +747,11 @@ class Stickman {
         if (amount >= 20) {
             audio.playHeavyHit();
             triggerCameraShake(12, 10);
+            particleSystem.addDamageText(this.x, this.y - 15, `-${amount} CRIT!`, '#ffd700');
         } else {
             audio.playPunch();
             triggerCameraShake(5, 5);
+            particleSystem.addDamageText(this.x, this.y - 15, `-${amount}`, this.color);
         }
 
         particleSystem.createHitSparks(this.x + this.width / 2, this.y + 30, this.color);
@@ -684,6 +782,54 @@ class Stickman {
         ctx.fill();
         ctx.restore();
 
+        // RENDER HATS & ACCESSORIES
+        const drawHat = (hx, hy) => {
+            ctx.save();
+            if (this.hat === 'CROWN') {
+                ctx.fillStyle = '#ffd700';
+                ctx.beginPath();
+                ctx.moveTo(hx - 12, hy - 12);
+                ctx.lineTo(hx - 12, hy - 22);
+                ctx.lineTo(hx - 6, hy - 16);
+                ctx.lineTo(hx, hy - 25);
+                ctx.lineTo(hx + 6, hy - 16);
+                ctx.lineTo(hx + 12, hy - 22);
+                ctx.lineTo(hx + 12, hy - 12);
+                ctx.closePath();
+                ctx.fill();
+            } else if (this.hat === 'SHADES') {
+                ctx.fillStyle = '#000000';
+                ctx.fillRect(hx + this.facing * 2 - 8, hy - 2, 16, 5);
+            } else if (this.hat === 'BANDANA') {
+                ctx.strokeStyle = '#ff0044';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.arc(hx, hy, 14, -Math.PI / 4, Math.PI / 4, this.facing < 0);
+                ctx.stroke();
+                // Tails behind
+                ctx.beginPath();
+                ctx.moveTo(hx - this.facing * 14, hy);
+                ctx.lineTo(hx - this.facing * 24, hy + 6);
+                ctx.stroke();
+            } else if (this.hat === 'COWBOY') {
+                ctx.fillStyle = '#8b4513';
+                ctx.beginPath();
+                ctx.ellipse(hx, hy - 12, 18, 5, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillRect(hx - 9, hy - 20, 18, 9);
+            } else if (this.hat === 'VISOR') {
+                ctx.fillStyle = '#00f0ff';
+                ctx.shadowColor = '#00f0ff';
+                ctx.shadowBlur = 10;
+                ctx.fillRect(hx + this.facing * 4 - 8, hy - 4, 14, 6);
+            } else if (this.hat === 'TOPHAT') {
+                ctx.fillStyle = '#1a1a1a';
+                ctx.fillRect(hx - 14, hy - 13, 28, 4);
+                ctx.fillRect(hx - 9, hy - 28, 18, 15);
+            }
+            ctx.restore();
+        };
+
         if (this.isSliding) {
             const slideHeadX = centerX - this.facing * 18;
             const slideHeadY = footY - 22;
@@ -696,6 +842,8 @@ class Stickman {
             ctx.arc(slideHeadX, slideHeadY, 12, 0, Math.PI * 2);
             ctx.fill();
             ctx.shadowBlur = 0;
+
+            drawHat(slideHeadX, slideHeadY);
 
             ctx.beginPath();
             ctx.moveTo(slideHeadX, slideHeadY);
@@ -724,6 +872,8 @@ class Stickman {
         ctx.arc(centerX, headY, 13, 0, Math.PI * 2);
         ctx.fill();
         ctx.shadowBlur = 0;
+
+        drawHat(centerX, headY);
 
         ctx.beginPath();
         ctx.moveTo(centerX, headY + 13);
@@ -801,7 +951,7 @@ class Stickman {
 }
 
 // ==========================================
-// 5. GAME MANAGER, MOUSE & TOUCH CONTROLLERS
+// 5. GAME MANAGER, MOUSE & SLOW-MO ENGINE
 // ==========================================
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -820,6 +970,7 @@ let team2Wins = 0;
 let fighters = [];
 let shakeTime = 0;
 let shakeIntensity = 0;
+let slowMoTimer = 0;
 
 function triggerCameraShake(time, intensity) {
     shakeTime = time;
@@ -941,7 +1092,7 @@ window.addEventListener('touchmove', (e) => {
 window.addEventListener('mouseup', () => { if (isDraggingJoystick) resetJoystick(); });
 window.addEventListener('touchend', (e) => { if (e.touches.length === 0) resetJoystick(); });
 
-// UNIVERSAL TOUCH & MOUSE ACTION BUTTONS
+// TOUCH ACTION BUTTONS
 const setupActionButton = (id, keyName) => {
     const btn = document.getElementById(id);
     if (!btn) return;
@@ -1060,16 +1211,16 @@ soundToggleBtn.addEventListener('click', () => {
 function setupFighters() {
     fighters = [];
     if (selectedMode === 'CPU') {
-        fighters.push(new Stickman('p1', 200, 300, p1Color, 1, false)); // Dynamic p1Color
-        fighters.push(new Stickman('p2', 750, 300, p2Color, 2, true));  // Dynamic p2Color
+        fighters.push(new Stickman('p1', 200, 300, p1Color, p1Class, p1Hat, 1, false));
+        fighters.push(new Stickman('p2', 750, 300, p2Color, p2Class, p2Hat, 2, true));
     } else if (selectedMode === 'LOCAL') {
-        fighters.push(new Stickman('p1', 200, 300, p1Color, 1, false));
-        fighters.push(new Stickman('p2', 750, 300, p2Color, 2, false));
+        fighters.push(new Stickman('p1', 200, 300, p1Color, p1Class, p1Hat, 1, false));
+        fighters.push(new Stickman('p2', 750, 300, p2Color, p2Class, p2Hat, 2, false));
     } else if (selectedMode === 'TEAM2V2') {
-        fighters.push(new Stickman('p1', 180, 300, p1Color, 1, false));
-        fighters.push(new Stickman('p3', 280, 300, p1Color, 1, true));
-        fighters.push(new Stickman('p2', 720, 300, p2Color, 2, true));
-        fighters.push(new Stickman('p4', 820, 300, p2Color, 2, true));
+        fighters.push(new Stickman('p1', 180, 300, p1Color, p1Class, p1Hat, 1, false));
+        fighters.push(new Stickman('p3', 280, 300, p1Color, 'NINJA', 'NONE', 1, true));
+        fighters.push(new Stickman('p2', 720, 300, p2Color, p2Class, p2Hat, 2, true));
+        fighters.push(new Stickman('p4', 820, 300, p2Color, 'BRAWLER', 'NONE', 2, true));
     }
     applyHUDColors();
 }
@@ -1139,6 +1290,7 @@ function startTimer() {
 function handleRoundEnd(reason) {
     clearInterval(timerInterval);
     gameState = 'ROUND_OVER';
+    slowMoTimer = 45; // TRIGGER CINEMATIC SLOW-MOTION KO FINISHER!
 
     const announcerOverlay = document.getElementById('announcer-overlay');
     const announcerText = document.getElementById('announcer-text');
@@ -1256,23 +1408,31 @@ function updateHUD() {
     const p4 = fighters.find(f => f.id === 'p4');
 
     if (p1) {
-        document.getElementById('p1-health').style.width = `${Math.max(0, p1.health)}%`;
+        document.getElementById('p1-health').style.width = `${Math.max(0, (p1.health / p1.maxHealth) * 100)}%`;
         document.getElementById('p1-special').style.width = `${p1.specialMeter}%`;
     }
     if (p2) {
-        document.getElementById('p2-health').style.width = `${Math.max(0, p2.health)}%`;
+        document.getElementById('p2-health').style.width = `${Math.max(0, (p2.health / p2.maxHealth) * 100)}%`;
         document.getElementById('p2-special').style.width = `${p2.specialMeter}%`;
     }
     if (p3) {
-        document.getElementById('p3-health').style.width = `${Math.max(0, p3.health)}%`;
+        document.getElementById('p3-health').style.width = `${Math.max(0, (p3.health / p3.maxHealth) * 100)}%`;
     }
     if (p4) {
-        document.getElementById('p4-health').style.width = `${Math.max(0, p4.health)}%`;
+        document.getElementById('p4-health').style.width = `${Math.max(0, (p4.health / p4.maxHealth) * 100)}%`;
     }
 }
 
 function gameLoop() {
     ctx.save();
+
+    // SLOW-MOTION KO FINISHER CAMERA ZOOM
+    if (slowMoTimer > 0) {
+        slowMoTimer--;
+        ctx.scale(1.05, 1.05);
+        ctx.translate(-25, -15);
+    }
+
     if (shakeTime > 0) {
         const dx = (Math.random() - 0.5) * shakeIntensity;
         const dy = (Math.random() - 0.5) * shakeIntensity;

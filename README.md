@@ -1,54 +1,47 @@
 # ⚔️ Brawl-Sticks (1v1 & 2v2 Stickman Fighting Game)
 
-A fast-paced, high-performance 2D Stickman Fighting Web Game built using HTML5 Canvas, Vanilla JavaScript, and Web Audio API. Play solo against smart AI, battle a friend locally, or jump into a 4-fighter 2v2 Team Brawl! Now with full **Stickman & Health Bar Color Customization (10 Basic Colors)**!
+A fast-paced, high-performance 2D Stickman Fighting Web Game built using HTML5 Canvas, Vanilla JavaScript, and Web Audio API. Play solo against smart AI, battle a friend locally, or jump into a 4-fighter 2v2 Team Brawl! Now featuring **Character Classes**, **Hats & Accessories**, **Floating Damage Text**, and **Cinematic Slow-Mo KO Finishers**!
 
 ---
 
-## 🎨 10 Basic Color Palette
+## 🥷 4 Character Classes
 
-Players can select their preferred color for Stickmen and Health Bars:
-1. **Cyan / Neon Blue** (`#00f0ff`)
-2. **Magenta / Crimson** (`#ff0055`)
-3. **Neon Green / Lime** (`#00ff66`)
-4. **Gold / Yellow** (`#ffd700`)
-5. **Electric Purple** (`#aa00ff`)
-6. **Vibrant Orange** (`#ff6600`)
-7. **Bright Pink** (`#ff00aa`)
-8. **Pure White / Silver** (`#ffffff`)
-9. **Emerald Teal** (`#00f5c4`)
-10. **Deep Red** (`#e60000`)
+1. **🥷 NINJA:** High speed (+20%), higher jumps (+10%), agile combat.
+2. **🥊 BRAWLER:** Heavy tank (+30% HP: 130 HP), powerful ground presence.
+3. **🔮 ENERGY WEAVER:** Ranged specialist with glowing energy effects.
+4. **⚔️ SHADOW KNIGHT:** Extended reach sword fighter (+10% HP: 110 HP).
 
 ---
 
-## 📱 Mobile & Mouse Controls
+## 👑 Hats & Accessories
 
-### Mouse Attacks (Desktop):
-* **Left-Click:** Light Punch
-* **Right-Click:** Heavy Kick
-* **Middle-Click:** Ultimate Special Attack
+Selectable cosmetics rendered dynamically on stickmen heads:
+* 👑 **Crown**
+* 🕶️ **Sunglasses**
+* 🥷 **Ninja Headband**
+* 🤠 **Cowboy Hat**
+* 🪖 **Cyber Visor**
+* 🎩 **Top Hat**
 
-### Virtual Touch Controls (Mobile & Tablet):
-* **Virtual Joystick (Bottom Left):** Drag left/right to move, drag up to jump, drag down to block/slide.
-* **Touch Action Buttons (Bottom Right):** Punch, Kick, Slide, Ultimate.
+---
+
+## 💥 Combat Feedback & KO Finishers
+
+* **Floating Damage Popups:** Pop-up damage text (`-14`, `-35 CRIT!`, `-3 (75% BLOCK)`) drift upward and fade on hits.
+* **Cinematic Slow-Mo KO:** When the final knockout blow of a round lands, the camera zooms in with a dramatic slow-motion effect!
 
 ---
 
 ## 📜 Updates & Changelog
 
+### Version 2.0.0
+* **4 Character Classes**: Ninja, Brawler, Energy Weaver, Shadow Knight with custom stats & badges.
+* **Hats & Accessories**: Vector-rendered hats (Crown, Shades, Headband, Cowboy, Visor, TopHat).
+* **Floating Damage Numbers**: Dynamic combat popups (`-14`, `-35 CRIT!`, `-3 BLOCK`).
+* **Slow-Mo KO Finisher**: Cinematic camera zoom on round-ending KO blows.
+
 ### Version 1.8.0
-* **10-Color Customization System**: Choose from 10 basic colors for Player 1 and Player 2.
-* **Dynamic Health Bar Color Sync**: Health bar fills, special meters, score dots, and HUD text dynamically change color to match chosen palette.
-* **`localStorage` Persistence**: Color preferences are automatically saved in browser memory.
+* 10-Color Customization System for Stickmen & Health Bars.
 
 ### Version 1.7.0
-* Accelerated Ultimate meter charging (+0.18/frame passive + hit bonuses).
-* Rebalanced CPU Ultimate damage to 18 HP.
-
-### Version 1.6.0
-* Difficulty speed scaling (3.8 for Easy, 5.0 for Normal, 6.5 for Hard).
-
-### Version 1.5.0
-* Mouse click attacks & Virtual Touch Joystick for mobile.
-
-### Version 1.4.0
-* 75% Block damage mitigation & Ground Slide mechanic.
+* Accelerated Ultimate meter charge & rebalanced CPU Ultimate damage.
