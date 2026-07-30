@@ -1,6 +1,6 @@
 /**
  * BRAWL-STICKS: 1v1 & 2v2 Stickman Fighting Game Engine
- * Features: 75% Block Damage Mitigation, Ground Slide Mechanic, Key Remapping, AI Controller
+ * Features: Mouse Clicks, Mobile Touch Joystick, Touch Action Buttons, 75% Block Mitigation, Ground Slide
  */
 
 // ==========================================
@@ -355,7 +355,6 @@ class Stickman {
             }
         }
 
-        // Apply Sliding physics & particle trail
         if (this.isSliding) {
             this.slideTimer--;
             this.vx = this.facing * 11;
@@ -381,7 +380,6 @@ class Stickman {
             this.isGrounded = false;
         }
 
-        // Friction: slower deceleration when sliding
         this.vx *= this.isSliding ? 0.94 : 0.85;
         if (this.x < 30) this.x = 30;
         if (this.x + this.width > 1024 - 30) this.x = 1024 - 30 - this.width;
@@ -403,7 +401,6 @@ class Stickman {
         const reactionDelay = difficulty === 'EASY' ? 25 : difficulty === 'NORMAL' ? 12 : 5;
         const blockProbability = difficulty === 'EASY' ? 0.1 : difficulty === 'NORMAL' ? 0.4 : 0.75;
 
-        // AI Slide / Block reaction
         if (target.isAttacking && dist < 90 && Math.random() < blockProbability) {
             if (this.isGrounded && Math.random() < 0.5) {
                 this.isSliding = true;
@@ -463,14 +460,28 @@ class Stickman {
         let heavyKey = keys[binds.kick];
         let ultKey = keys[binds.ult];
 
-        if (this.id === 'p1' && mode === 'CPU') {
-            leftKey = leftKey || keys['ArrowLeft'];
-            rightKey = rightKey || keys['ArrowRight'];
-            jumpKey = jumpKey || keys['ArrowUp'];
-            blockKey = blockKey || keys['ArrowDown'];
+        // Player 1 Single Player: Support Arrow Keys, Touch Joystick, and Mouse Clicks!
+        if (this.id === 'p1') {
+            if (mode === 'CPU') {
+                leftKey = leftKey || keys['ArrowLeft'];
+                rightKey = rightKey || keys['ArrowRight'];
+                jumpKey = jumpKey || keys['ArrowUp'];
+                blockKey = blockKey || keys['ArrowDown'];
+            }
+
+            // Touch Joystick Overrides
+            leftKey = leftKey || keys['touch_left'];
+            rightKey = rightKey || keys['touch_right'];
+            jumpKey = jumpKey || keys['touch_jump'];
+            blockKey = blockKey || keys['touch_block'] || keys['touch_slide'];
+
+            // Mouse & Touch Action Overrides
+            lightKey = lightKey || keys['mouse_punch'] || keys['touch_punch'];
+            heavyKey = heavyKey || keys['mouse_kick'] || keys['touch_kick'];
+            ultKey = ultKey || keys['mouse_ult'] || keys['touch_ult'];
         }
 
-        // TRIGGER SLIDE: Pressing S / Down Arrow while moving or grounded
+        // TRIGGER SLIDE: Pressing block/down key while moving
         if (blockKey && this.isGrounded && !this.isSliding && !this.isAttacking) {
             if (leftKey || rightKey || Math.abs(this.vx) > 1) {
                 this.isSliding = true;
@@ -535,12 +546,11 @@ class Stickman {
         };
     }
 
-    // 75% DAMAGE REDUCTION (Taking 25% damage when Blocking OR Sliding)
     takeDamage(amount, knockback, attackerFacing) {
         if (this.invincibleTimer > 0 || this.health <= 0) return;
 
         if (this.isBlocking || this.isSliding) {
-            const damageTaken = amount * 0.25; // EXACT 75% REDUCTION
+            const damageTaken = amount * 0.25; // 75% Damage Reduction
             this.health = Math.max(0, this.health - damageTaken);
             this.vx = attackerFacing * (knockback * 0.4);
             audio.playBlock();
@@ -549,7 +559,6 @@ class Stickman {
             return;
         }
 
-        // Full Damage Hit
         this.health = Math.max(0, this.health - amount);
         this.stunTimer = (amount > 20) ? 20 : 12;
         this.invincibleTimer = 15;
@@ -586,7 +595,6 @@ class Stickman {
         const hipY = this.y + 55;
         const footY = this.y + this.height;
 
-        // Ground Shadow
         ctx.save();
         ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
         ctx.beginPath();
@@ -594,14 +602,12 @@ class Stickman {
         ctx.fill();
         ctx.restore();
 
-        // SLIDING POSTURE ANIMATION
         if (this.isSliding) {
             const slideHeadX = centerX - this.facing * 18;
             const slideHeadY = footY - 22;
             const slideHipX = centerX;
             const slideHipY = footY - 12;
 
-            // Head Glow
             ctx.shadowColor = this.color;
             ctx.shadowBlur = 10;
             ctx.beginPath();
@@ -609,13 +615,11 @@ class Stickman {
             ctx.fill();
             ctx.shadowBlur = 0;
 
-            // Spine Leaning Back
             ctx.beginPath();
             ctx.moveTo(slideHeadX, slideHeadY);
             ctx.lineTo(slideHipX, slideHipY);
             ctx.stroke();
 
-            // Legs Extended Forward
             ctx.beginPath();
             ctx.moveTo(slideHipX, slideHipY);
             ctx.lineTo(centerX + this.facing * 30, footY - 4);
@@ -623,7 +627,6 @@ class Stickman {
             ctx.lineTo(centerX + this.facing * 20, footY - 8);
             ctx.stroke();
 
-            // Arms Balancing
             ctx.beginPath();
             ctx.moveTo(slideHipX, slideHipY - 6);
             ctx.lineTo(slideHipX - this.facing * 16, slideHipY - 18);
@@ -633,7 +636,6 @@ class Stickman {
             return;
         }
 
-        // STANDARD POSTURES
         ctx.shadowColor = this.color;
         ctx.shadowBlur = 10;
         ctx.beginPath();
@@ -717,7 +719,7 @@ class Stickman {
 }
 
 // ==========================================
-// 5. GAME MANAGER & MAIN LOOP
+// 5. GAME MANAGER, MOUSE & TOUCH CONTROLLERS
 // ==========================================
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -734,7 +736,6 @@ let team1Wins = 0;
 let team2Wins = 0;
 
 let fighters = [];
-
 let shakeTime = 0;
 let shakeIntensity = 0;
 
@@ -760,6 +761,122 @@ window.addEventListener('keyup', (e) => {
     keys[e.code] = false;
     if (e.code === keyBindings.p1.jump || e.code === 'ArrowUp') keys['jump_p1'] = false;
     if (e.code === keyBindings.p2.jump || e.code === 'ArrowUp') keys['jump_p2'] = false;
+});
+
+// MOUSE CLICK CONTROLS (Left Click = Punch, Right Click = Kick)
+canvas.addEventListener('contextmenu', e => e.preventDefault()); // Prevent right click menu on canvas
+
+canvas.addEventListener('mousedown', (e) => {
+    if (gameState !== 'FIGHT') return;
+    if (e.button === 0) keys['mouse_punch'] = true; // Left Click
+    if (e.button === 2) keys['mouse_kick'] = true;  // Right Click
+    if (e.button === 1) keys['mouse_ult'] = true;   // Middle Click
+});
+
+canvas.addEventListener('mouseup', (e) => {
+    if (e.button === 0) keys['mouse_punch'] = false;
+    if (e.button === 2) keys['mouse_kick'] = false;
+    if (e.button === 1) keys['mouse_ult'] = false;
+});
+
+// VIRTUAL TOUCH JOYSTICK & TOUCH ACTION BUTTONS
+const joystickBase = document.getElementById('joystick-base');
+const joystickThumb = document.getElementById('joystick-thumb');
+const touchOverlay = document.getElementById('touch-overlay');
+let isTouchingJoystick = false;
+let joystickCenter = { x: 0, y: 0 };
+const maxJoystickRadius = 38;
+
+function updateJoystick(touchX, touchY) {
+    const dx = touchX - joystickCenter.x;
+    const dy = touchY - joystickCenter.y;
+    const dist = Math.hypot(dx, dy);
+    const angle = Math.atan2(dy, dx);
+
+    const clampedRadius = Math.min(dist, maxJoystickRadius);
+    const thumbX = Math.cos(angle) * clampedRadius;
+    const thumbY = Math.sin(angle) * clampedRadius;
+
+    joystickThumb.style.transform = `translate(${thumbX}px, ${thumbY}px)`;
+
+    // Direction thresholds
+    keys['touch_left'] = dx < -14;
+    keys['touch_right'] = dx > 14;
+    keys['touch_jump'] = dy < -18;
+    keys['touch_block'] = dy > 18;
+}
+
+function resetJoystick() {
+    isTouchingJoystick = false;
+    joystickThumb.style.transform = `translate(0px, 0px)`;
+    keys['touch_left'] = false;
+    keys['touch_right'] = false;
+    keys['touch_jump'] = false;
+    keys['touch_block'] = false;
+    keys['jump_p1'] = false;
+}
+
+joystickBase.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    const rect = joystickBase.getBoundingClientRect();
+    joystickCenter = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+    isTouchingJoystick = true;
+    updateJoystick(e.touches[0].clientX, e.touches[0].clientY);
+});
+
+window.addEventListener('touchmove', (e) => {
+    if (isTouchingJoystick && e.touches.length > 0) {
+        updateJoystick(e.touches[0].clientX, e.touches[0].clientY);
+    }
+});
+
+window.addEventListener('touchend', (e) => {
+    if (e.touches.length === 0) resetJoystick();
+});
+
+// Touch Action Buttons
+const setupTouchBtn = (id, keyName) => {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    btn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        keys[keyName] = true;
+    });
+    btn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        keys[keyName] = false;
+    });
+};
+
+setupTouchBtn('tbtn-punch', 'touch_punch');
+setupTouchBtn('tbtn-kick', 'touch_kick');
+setupTouchBtn('tbtn-slide', 'touch_slide');
+setupTouchBtn('tbtn-ult', 'touch_ult');
+
+// Touch Toggle Button on Start Screen
+let touchModeSetting = 'AUTO';
+const touchToggleBtn = document.getElementById('btn-touch-toggle');
+
+const isTouchDevice = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+if (isTouchDevice) {
+    touchOverlay.classList.remove('hidden');
+}
+
+touchToggleBtn.addEventListener('click', () => {
+    if (touchModeSetting === 'AUTO') {
+        touchModeSetting = 'ON';
+        touchOverlay.classList.remove('hidden');
+        touchToggleBtn.textContent = '📱 TOUCH: ALWAYS ON';
+    } else if (touchModeSetting === 'ON') {
+        touchModeSetting = 'OFF';
+        touchOverlay.classList.add('hidden');
+        touchToggleBtn.textContent = '📱 TOUCH: OFF';
+    } else {
+        touchModeSetting = 'AUTO';
+        if (isTouchDevice) touchOverlay.classList.remove('hidden');
+        else touchOverlay.classList.add('hidden');
+        touchToggleBtn.textContent = '📱 TOUCH: AUTO';
+    }
 });
 
 // UI Mode & Difficulty Selection
