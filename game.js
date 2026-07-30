@@ -1,6 +1,6 @@
 /**
  * BRAWL-STICKS: 1v1 & 2v2 Stickman Fighting Game Engine
- * Features: Mouse Clicks, Mobile Touch Joystick, Touch Action Buttons, 75% Block Mitigation, Ground Slide
+ * Universal Input System: Mouse Clicks, Touch Joystick, Touch Buttons, Keyboard & Key Remapping
  */
 
 // ==========================================
@@ -43,7 +43,8 @@ function updateRebindButtonText() {
 let waitingForRebind = null;
 
 document.querySelectorAll('.rebind-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
+    const handleRebindStart = (e) => {
+        e.preventDefault();
         e.stopPropagation();
         if (waitingForRebind) {
             waitingForRebind.element.classList.remove('waiting');
@@ -54,7 +55,9 @@ document.querySelectorAll('.rebind-btn').forEach(btn => {
         waitingForRebind = { player, action, element: btn };
         btn.classList.add('waiting');
         btn.textContent = 'PRESS KEY...';
-    });
+    };
+
+    btn.addEventListener('click', handleRebindStart);
 });
 
 document.getElementById('btn-reset-keys').addEventListener('click', () => {
@@ -452,33 +455,31 @@ class Stickman {
         const pid = this.id === 'p1' ? 'p1' : 'p2';
         const binds = keyBindings[pid];
 
-        let leftKey = keys[binds.left];
-        let rightKey = keys[binds.right];
-        let jumpKey = keys[binds.jump];
-        let blockKey = keys[binds.block];
-        let lightKey = keys[binds.punch];
-        let heavyKey = keys[binds.kick];
-        let ultKey = keys[binds.ult];
+        let leftKey = !!keys[binds.left];
+        let rightKey = !!keys[binds.right];
+        let jumpKey = !!keys[binds.jump];
+        let blockKey = !!keys[binds.block];
+        let lightKey = !!keys[binds.punch];
+        let heavyKey = !!keys[binds.kick];
+        let ultKey = !!keys[binds.ult];
 
         // Player 1 Single Player: Support Arrow Keys, Touch Joystick, and Mouse Clicks!
         if (this.id === 'p1') {
             if (mode === 'CPU') {
-                leftKey = leftKey || keys['ArrowLeft'];
-                rightKey = rightKey || keys['ArrowRight'];
-                jumpKey = jumpKey || keys['ArrowUp'];
-                blockKey = blockKey || keys['ArrowDown'];
+                leftKey = leftKey || !!keys['ArrowLeft'];
+                rightKey = rightKey || !!keys['ArrowRight'];
+                jumpKey = jumpKey || !!keys['ArrowUp'];
+                blockKey = blockKey || !!keys['ArrowDown'];
             }
 
-            // Touch Joystick Overrides
-            leftKey = leftKey || keys['touch_left'];
-            rightKey = rightKey || keys['touch_right'];
-            jumpKey = jumpKey || keys['touch_jump'];
-            blockKey = blockKey || keys['touch_block'] || keys['touch_slide'];
+            leftKey = leftKey || !!keys['touch_left'];
+            rightKey = rightKey || !!keys['touch_right'];
+            jumpKey = jumpKey || !!keys['touch_jump'];
+            blockKey = blockKey || !!keys['touch_block'] || !!keys['touch_slide'];
 
-            // Mouse & Touch Action Overrides
-            lightKey = lightKey || keys['mouse_punch'] || keys['touch_punch'];
-            heavyKey = heavyKey || keys['mouse_kick'] || keys['touch_kick'];
-            ultKey = ultKey || keys['mouse_ult'] || keys['touch_ult'];
+            lightKey = lightKey || !!keys['mouse_punch'] || !!keys['touch_punch'];
+            heavyKey = heavyKey || !!keys['mouse_kick'] || !!keys['touch_kick'];
+            ultKey = ultKey || !!keys['mouse_ult'] || !!keys['touch_ult'];
         }
 
         // TRIGGER SLIDE: Pressing block/down key while moving
@@ -550,7 +551,7 @@ class Stickman {
         if (this.invincibleTimer > 0 || this.health <= 0) return;
 
         if (this.isBlocking || this.isSliding) {
-            const damageTaken = amount * 0.25; // 75% Damage Reduction
+            const damageTaken = amount * 0.25; // 75% Reduction
             this.health = Math.max(0, this.health - damageTaken);
             this.vx = attackerFacing * (knockback * 0.4);
             audio.playBlock();
@@ -744,7 +745,7 @@ function triggerCameraShake(time, intensity) {
     shakeIntensity = intensity;
 }
 
-// Key Listeners
+// Global Key Listeners
 window.addEventListener('keydown', (e) => {
     if (waitingForRebind) {
         e.preventDefault();
@@ -763,33 +764,46 @@ window.addEventListener('keyup', (e) => {
     if (e.code === keyBindings.p2.jump || e.code === 'ArrowUp') keys['jump_p2'] = false;
 });
 
-// MOUSE CLICK CONTROLS (Left Click = Punch, Right Click = Kick)
-canvas.addEventListener('contextmenu', e => e.preventDefault()); // Prevent right click menu on canvas
+// UNIVERSAL MOUSE CLICK ATTACKS (Window & Canvas level)
+window.addEventListener('contextmenu', e => e.preventDefault());
 
-canvas.addEventListener('mousedown', (e) => {
+const handleMouseDown = (e) => {
     if (gameState !== 'FIGHT') return;
-    if (e.button === 0) keys['mouse_punch'] = true; // Left Click
-    if (e.button === 2) keys['mouse_kick'] = true;  // Right Click
-    if (e.button === 1) keys['mouse_ult'] = true;   // Middle Click
-});
+    // Only trigger if clicking over canvas or touch area, not menu buttons
+    if (e.target.closest('#start-overlay') || e.target.closest('#gameover-overlay')) return;
 
-canvas.addEventListener('mouseup', (e) => {
+    if (e.button === 0) {
+        keys['mouse_punch'] = true;
+        setTimeout(() => { keys['mouse_punch'] = false; }, 100);
+    }
+    if (e.button === 2) {
+        keys['mouse_kick'] = true;
+        setTimeout(() => { keys['mouse_kick'] = false; }, 100);
+    }
+    if (e.button === 1) {
+        keys['mouse_ult'] = true;
+        setTimeout(() => { keys['mouse_ult'] = false; }, 100);
+    }
+};
+
+window.addEventListener('mousedown', handleMouseDown);
+window.addEventListener('mouseup', (e) => {
     if (e.button === 0) keys['mouse_punch'] = false;
     if (e.button === 2) keys['mouse_kick'] = false;
     if (e.button === 1) keys['mouse_ult'] = false;
 });
 
-// VIRTUAL TOUCH JOYSTICK & TOUCH ACTION BUTTONS
+// VIRTUAL TOUCH JOYSTICK (Mouse Drag & Touch Drag support)
 const joystickBase = document.getElementById('joystick-base');
 const joystickThumb = document.getElementById('joystick-thumb');
 const touchOverlay = document.getElementById('touch-overlay');
-let isTouchingJoystick = false;
+let isDraggingJoystick = false;
 let joystickCenter = { x: 0, y: 0 };
 const maxJoystickRadius = 38;
 
-function updateJoystick(touchX, touchY) {
-    const dx = touchX - joystickCenter.x;
-    const dy = touchY - joystickCenter.y;
+function updateJoystick(clientPos) {
+    const dx = clientPos.x - joystickCenter.x;
+    const dy = clientPos.y - joystickCenter.y;
     const dist = Math.hypot(dx, dy);
     const angle = Math.atan2(dy, dx);
 
@@ -799,7 +813,6 @@ function updateJoystick(touchX, touchY) {
 
     joystickThumb.style.transform = `translate(${thumbX}px, ${thumbY}px)`;
 
-    // Direction thresholds
     keys['touch_left'] = dx < -14;
     keys['touch_right'] = dx > 14;
     keys['touch_jump'] = dy < -18;
@@ -807,7 +820,7 @@ function updateJoystick(touchX, touchY) {
 }
 
 function resetJoystick() {
-    isTouchingJoystick = false;
+    isDraggingJoystick = false;
     joystickThumb.style.transform = `translate(0px, 0px)`;
     keys['touch_left'] = false;
     keys['touch_right'] = false;
@@ -816,48 +829,72 @@ function resetJoystick() {
     keys['jump_p1'] = false;
 }
 
-joystickBase.addEventListener('touchstart', (e) => {
-    e.preventDefault();
+const startJoystickDrag = (clientX, clientY) => {
     const rect = joystickBase.getBoundingClientRect();
     joystickCenter = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
-    isTouchingJoystick = true;
-    updateJoystick(e.touches[0].clientX, e.touches[0].clientY);
+    isDraggingJoystick = true;
+    updateJoystick({ x: clientX, y: clientY });
+};
+
+joystickBase.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    startJoystickDrag(e.touches[0].clientX, e.touches[0].clientY);
 });
 
-window.addEventListener('touchmove', (e) => {
-    if (isTouchingJoystick && e.touches.length > 0) {
-        updateJoystick(e.touches[0].clientX, e.touches[0].clientY);
+joystickBase.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    startJoystickDrag(e.clientX, e.clientY);
+});
+
+window.addEventListener('mousemove', (e) => {
+    if (isDraggingJoystick) {
+        updateJoystick({ x: e.clientX, y: e.clientY });
     }
 });
 
-window.addEventListener('touchend', (e) => {
-    if (e.touches.length === 0) resetJoystick();
+window.addEventListener('touchmove', (e) => {
+    if (isDraggingJoystick && e.touches.length > 0) {
+        updateJoystick({ x: e.touches[0].clientX, y: e.touches[0].clientY });
+    }
 });
 
-// Touch Action Buttons
-const setupTouchBtn = (id, keyName) => {
+window.addEventListener('mouseup', () => { if (isDraggingJoystick) resetJoystick(); });
+window.addEventListener('touchend', (e) => { if (e.touches.length === 0) resetJoystick(); });
+
+// UNIVERSAL TOUCH & MOUSE ACTION BUTTONS
+const setupActionButton = (id, keyName) => {
     const btn = document.getElementById(id);
     if (!btn) return;
-    btn.addEventListener('touchstart', (e) => {
+
+    const pressAction = (e) => {
         e.preventDefault();
+        e.stopPropagation();
         keys[keyName] = true;
-    });
-    btn.addEventListener('touchend', (e) => {
+        // Hold for 120ms so single clicks trigger attack instantly
+        setTimeout(() => { keys[keyName] = false; }, 120);
+    };
+
+    const releaseAction = (e) => {
         e.preventDefault();
         keys[keyName] = false;
-    });
+    };
+
+    btn.addEventListener('mousedown', pressAction);
+    btn.addEventListener('mouseup', releaseAction);
+    btn.addEventListener('touchstart', pressAction);
+    btn.addEventListener('touchend', releaseAction);
 };
 
-setupTouchBtn('tbtn-punch', 'touch_punch');
-setupTouchBtn('tbtn-kick', 'touch_kick');
-setupTouchBtn('tbtn-slide', 'touch_slide');
-setupTouchBtn('tbtn-ult', 'touch_ult');
+setupActionButton('tbtn-punch', 'touch_punch');
+setupActionButton('tbtn-kick', 'touch_kick');
+setupActionButton('tbtn-slide', 'touch_slide');
+setupActionButton('tbtn-ult', 'touch_ult');
 
 // Touch Toggle Button on Start Screen
 let touchModeSetting = 'AUTO';
 const touchToggleBtn = document.getElementById('btn-touch-toggle');
-
 const isTouchDevice = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+
 if (isTouchDevice) {
     touchOverlay.classList.remove('hidden');
 }
