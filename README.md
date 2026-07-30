@@ -28,7 +28,7 @@ Click any action button on the start menu to rebind controls to any key on your 
 * **Player 1 (Blue Stickman)**:
   * `A` / `D` (or `←` / `→`) : Move Left / Right
   * `W` (or `↑`) : Jump / Double Jump
-  * `S` (or `↓`) : Block / Shield
+  * `S` (or `↓`) : Block Shield & **Ground Slide** (75% Damage Mitigation)
   * `F` : Light Punch
   * `G` : Heavy Kick
   * `H` : Ultimate Special (Requires 100% Special Meter)
@@ -36,7 +36,7 @@ Click any action button on the start menu to rebind controls to any key on your 
 * **Player 2 (Red Stickman)**:
   * `←` / `→` : Move Left / Right
   * `↑` : Jump / Double Jump
-  * `↓` : Block / Shield
+  * `↓` : Block Shield & **Ground Slide** (75% Damage Mitigation)
   * `J` : Light Punch
   * `K` : Heavy Kick
   * `L` : Ultimate Special (Requires 100% Special Meter)
@@ -44,6 +44,11 @@ Click any action button on the start menu to rebind controls to any key on your 
 ---
 
 ## 📜 Updates & Changelog
+
+### Version 1.4.0
+* **75% Damage Mitigation on Block**: Blocking attacks now reduces incoming damage by exactly 75% (taking 25% damage).
+* **Ground Slide Mechanic**: Pressing `S` or `Down Arrow` while moving initiates a high-speed low-profile Ground Slide with slide audio and spark particle trail.
+* 75% damage mitigation applies while sliding.
 
 ### Version 1.3.0
 * Added **Interactive Key Remapping UI** allowing users to click and assign custom keys for any action.
@@ -55,10 +60,6 @@ Click any action button on the start menu to rebind controls to any key on your 
 * Added **Single Player vs CPU Mode** with intelligent AI behavior.
 * Added **AI Difficulty Selector** (Easy, Normal, Hard).
 * Added **2v2 Team Brawl Mode** featuring 4 fighters on screen simultaneously.
-* Added multi-fighter team HUD support.
 
 ### Version 1.0.0
 * Initial Prototype release of **Brawl-Sticks** 1v1 Local fighting game.
-* 60 FPS HTML5 Vector Stickman Animation System.
-* Web Audio Synthesizer for procedural punches, kicks, blocks, and ultimate sounds.
-* Particle Spark & Screen Shake FX.

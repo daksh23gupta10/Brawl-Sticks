@@ -1,6 +1,6 @@
 /**
  * BRAWL-STICKS: 1v1 & 2v2 Stickman Fighting Game Engine
- * Features: Key Remapping, Dual Arrow Keys in Single Player, AI Controller, Web Audio
+ * Features: 75% Block Damage Mitigation, Ground Slide Mechanic, Key Remapping, AI Controller
  */
 
 // ==========================================
@@ -40,7 +40,7 @@ function updateRebindButtonText() {
     });
 }
 
-let waitingForRebind = null; // { player, action, element }
+let waitingForRebind = null;
 
 document.querySelectorAll('.rebind-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
@@ -122,6 +122,21 @@ class SoundFX {
         gain.connect(this.ctx.destination);
         osc.start();
         osc.stop(this.ctx.currentTime + 0.08);
+    }
+
+    playSlide() {
+        if (!this.enabled || !this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(110, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(50, this.ctx.currentTime + 0.18);
+        gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.18);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.18);
     }
 
     playJump() {
@@ -228,6 +243,19 @@ class ParticleSystem {
         }
     }
 
+    createSlideSparks(x, y, facing) {
+        for (let i = 0; i < 3; i++) {
+            this.particles.push(new Particle(
+                x, y,
+                -facing * (3 + Math.random() * 4),
+                -Math.random() * 3,
+                '#00f0ff',
+                2 + Math.random() * 2,
+                10 + Math.random() * 8
+            ));
+        }
+    }
+
     updateAndDraw(ctx) {
         for (let i = this.particles.length - 1; i >= 0; i--) {
             const p = this.particles[i];
@@ -258,7 +286,7 @@ class Stickman {
 
         this.vx = 0;
         this.vy = 0;
-        this.speed = 6;
+        this.speed = 6.5;
         this.jumpForce = -14;
         this.gravity = 0.65;
         this.isGrounded = false;
@@ -268,6 +296,8 @@ class Stickman {
         this.health = 100;
         this.specialMeter = 0;
         this.isBlocking = false;
+        this.isSliding = false;
+        this.slideTimer = 0;
         this.isAttacking = false;
         this.attackType = null;
         this.attackTimer = 0;
@@ -286,6 +316,8 @@ class Stickman {
         this.health = 100;
         this.specialMeter = 0;
         this.isBlocking = false;
+        this.isSliding = false;
+        this.slideTimer = 0;
         this.isAttacking = false;
         this.attackTimer = 0;
         this.stunTimer = 0;
@@ -311,7 +343,7 @@ class Stickman {
             }
         });
 
-        if (target && !this.isAttacking && this.stunTimer === 0) {
+        if (target && !this.isAttacking && !this.isSliding && this.stunTimer === 0) {
             this.facing = (target.x >= this.x) ? 1 : -1;
         }
 
@@ -320,6 +352,16 @@ class Stickman {
                 this.updateAI(target, difficulty);
             } else {
                 this.handleInputs(keys, mode);
+            }
+        }
+
+        // Apply Sliding physics & particle trail
+        if (this.isSliding) {
+            this.slideTimer--;
+            this.vx = this.facing * 11;
+            particleSystem.createSlideSparks(this.x + this.width / 2, groundY, this.facing);
+            if (this.slideTimer <= 0) {
+                this.isSliding = false;
             }
         }
 
@@ -339,7 +381,8 @@ class Stickman {
             this.isGrounded = false;
         }
 
-        this.vx *= 0.85;
+        // Friction: slower deceleration when sliding
+        this.vx *= this.isSliding ? 0.94 : 0.85;
         if (this.x < 30) this.x = 30;
         if (this.x + this.width > 1024 - 30) this.x = 1024 - 30 - this.width;
 
@@ -360,8 +403,15 @@ class Stickman {
         const reactionDelay = difficulty === 'EASY' ? 25 : difficulty === 'NORMAL' ? 12 : 5;
         const blockProbability = difficulty === 'EASY' ? 0.1 : difficulty === 'NORMAL' ? 0.4 : 0.75;
 
-        if (target.isAttacking && dist < 85 && Math.random() < blockProbability) {
-            this.isBlocking = true;
+        // AI Slide / Block reaction
+        if (target.isAttacking && dist < 90 && Math.random() < blockProbability) {
+            if (this.isGrounded && Math.random() < 0.5) {
+                this.isSliding = true;
+                this.slideTimer = 14;
+                audio.playSlide();
+            } else {
+                this.isBlocking = true;
+            }
             return;
         } else {
             this.isBlocking = false;
@@ -378,7 +428,7 @@ class Stickman {
             }
 
             if (dist <= 75) {
-                if (!this.isAttacking) {
+                if (!this.isAttacking && !this.isSliding) {
                     const rnd = Math.random();
                     if (rnd < 0.5) {
                         this.startAttack('light', 14, 8);
@@ -405,7 +455,6 @@ class Stickman {
         const pid = this.id === 'p1' ? 'p1' : 'p2';
         const binds = keyBindings[pid];
 
-        // Dual Controls in Single Player Mode: P1 can use remapped keys OR Arrow Keys!
         let leftKey = keys[binds.left];
         let rightKey = keys[binds.right];
         let jumpKey = keys[binds.jump];
@@ -421,9 +470,22 @@ class Stickman {
             blockKey = blockKey || keys['ArrowDown'];
         }
 
-        this.isBlocking = blockKey && this.isGrounded && !this.isAttacking;
+        // TRIGGER SLIDE: Pressing S / Down Arrow while moving or grounded
+        if (blockKey && this.isGrounded && !this.isSliding && !this.isAttacking) {
+            if (leftKey || rightKey || Math.abs(this.vx) > 1) {
+                this.isSliding = true;
+                this.slideTimer = 16;
+                if (leftKey) this.facing = -1;
+                if (rightKey) this.facing = 1;
+                audio.playSlide();
+            } else {
+                this.isBlocking = true;
+            }
+        } else if (!blockKey) {
+            this.isBlocking = false;
+        }
 
-        if (!this.isBlocking) {
+        if (!this.isBlocking && !this.isSliding) {
             if (leftKey) this.vx = -this.speed;
             if (rightKey) this.vx = this.speed;
 
@@ -473,11 +535,13 @@ class Stickman {
         };
     }
 
+    // 75% DAMAGE REDUCTION (Taking 25% damage when Blocking OR Sliding)
     takeDamage(amount, knockback, attackerFacing) {
         if (this.invincibleTimer > 0 || this.health <= 0) return;
 
-        if (this.isBlocking) {
-            this.health -= amount * 0.2;
+        if (this.isBlocking || this.isSliding) {
+            const damageTaken = amount * 0.25; // EXACT 75% REDUCTION
+            this.health = Math.max(0, this.health - damageTaken);
             this.vx = attackerFacing * (knockback * 0.4);
             audio.playBlock();
             particleSystem.createHitSparks(this.x + this.width / 2, this.y + 30, '#ffffff');
@@ -485,6 +549,7 @@ class Stickman {
             return;
         }
 
+        // Full Damage Hit
         this.health = Math.max(0, this.health - amount);
         this.stunTimer = (amount > 20) ? 20 : 12;
         this.invincibleTimer = 15;
@@ -521,6 +586,7 @@ class Stickman {
         const hipY = this.y + 55;
         const footY = this.y + this.height;
 
+        // Ground Shadow
         ctx.save();
         ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
         ctx.beginPath();
@@ -528,6 +594,46 @@ class Stickman {
         ctx.fill();
         ctx.restore();
 
+        // SLIDING POSTURE ANIMATION
+        if (this.isSliding) {
+            const slideHeadX = centerX - this.facing * 18;
+            const slideHeadY = footY - 22;
+            const slideHipX = centerX;
+            const slideHipY = footY - 12;
+
+            // Head Glow
+            ctx.shadowColor = this.color;
+            ctx.shadowBlur = 10;
+            ctx.beginPath();
+            ctx.arc(slideHeadX, slideHeadY, 12, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Spine Leaning Back
+            ctx.beginPath();
+            ctx.moveTo(slideHeadX, slideHeadY);
+            ctx.lineTo(slideHipX, slideHipY);
+            ctx.stroke();
+
+            // Legs Extended Forward
+            ctx.beginPath();
+            ctx.moveTo(slideHipX, slideHipY);
+            ctx.lineTo(centerX + this.facing * 30, footY - 4);
+            ctx.moveTo(slideHipX, slideHipY);
+            ctx.lineTo(centerX + this.facing * 20, footY - 8);
+            ctx.stroke();
+
+            // Arms Balancing
+            ctx.beginPath();
+            ctx.moveTo(slideHipX, slideHipY - 6);
+            ctx.lineTo(slideHipX - this.facing * 16, slideHipY - 18);
+            ctx.stroke();
+
+            ctx.restore();
+            return;
+        }
+
+        // STANDARD POSTURES
         ctx.shadowColor = this.color;
         ctx.shadowBlur = 10;
         ctx.beginPath();
@@ -637,7 +743,7 @@ function triggerCameraShake(time, intensity) {
     shakeIntensity = intensity;
 }
 
-// Key Listeners & Rebind Interception
+// Key Listeners
 window.addEventListener('keydown', (e) => {
     if (waitingForRebind) {
         e.preventDefault();
@@ -947,6 +1053,5 @@ function gameLoop() {
     requestAnimationFrame(gameLoop);
 }
 
-// Load saved keybindings on startup
 loadSavedKeys();
 gameLoop();
