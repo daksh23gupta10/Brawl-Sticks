@@ -1,6 +1,6 @@
 /**
  * BRAWL-STICKS: 1v1 & 2v2 Stickman Fighting Game Engine
- * Bulletproof Anti-NaN & Smooth Pass-Through Engine (v2.3.3)
+ * Spectacular Class Signature Moves Rework (v2.4.0)
  */
 
 // ==========================================
@@ -305,15 +305,15 @@ class SoundFX {
             const osc = this.ctx.createOscillator();
             const gain = this.ctx.createGain();
             osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(300, this.ctx.currentTime);
-            osc.frequency.linearRampToValueAtTime(600, this.ctx.currentTime + 0.3);
-            osc.frequency.exponentialRampToValueAtTime(50, this.ctx.currentTime + 0.6);
-            gain.gain.setValueAtTime(0.4, this.ctx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.6);
+            osc.frequency.setValueAtTime(250, this.ctx.currentTime);
+            osc.frequency.linearRampToValueAtTime(700, this.ctx.currentTime + 0.35);
+            osc.frequency.exponentialRampToValueAtTime(40, this.ctx.currentTime + 0.7);
+            gain.gain.setValueAtTime(0.5, this.ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.7);
             osc.connect(gain);
             gain.connect(this.ctx.destination);
             osc.start();
-            osc.stop(this.ctx.currentTime + 0.6);
+            osc.stop(this.ctx.currentTime + 0.7);
         } catch (e) {}
     }
 }
@@ -329,9 +329,9 @@ class DamageText {
         this.y = (typeof y === 'number' && !isNaN(y)) ? y : 0;
         this.text = text || '';
         this.color = color || '#ffffff';
-        this.vy = -1.5;
-        this.life = 35;
-        this.maxLife = 35;
+        this.vy = -1.8;
+        this.life = 40;
+        this.maxLife = 40;
     }
 
     update() {
@@ -344,58 +344,79 @@ class DamageText {
         const alpha = Math.max(0, this.life / this.maxLife);
         ctx.save();
         ctx.globalAlpha = alpha;
-        ctx.font = "900 16px 'Orbitron', sans-serif";
+        ctx.font = "900 17px 'Orbitron', sans-serif";
         ctx.fillStyle = this.color;
         ctx.shadowColor = this.color;
-        ctx.shadowBlur = 10;
+        ctx.shadowBlur = 12;
         ctx.fillText(this.text, this.x, this.y);
         ctx.restore();
     }
 }
 
+// GIANT SUPERNOVA PLASMA ORB PROJECTILE
 class Projectile {
     constructor(x, y, vx, damage, owner) {
         this.x = (typeof x === 'number' && !isNaN(x)) ? x : 0;
         this.y = (typeof y === 'number' && !isNaN(y)) ? y : 0;
-        this.vx = (typeof vx === 'number' && !isNaN(vx)) ? vx : 10;
-        this.damage = (typeof damage === 'number' && !isNaN(damage)) ? damage : 20;
+        this.vx = (typeof vx === 'number' && !isNaN(vx)) ? vx : 12;
+        this.damage = (typeof damage === 'number' && !isNaN(damage)) ? damage : 30;
         this.owner = owner;
-        this.color = (owner && owner.color) ? owner.color : '#00f0ff';
-        this.radius = 18;
+        this.color = (owner && owner.color) ? owner.color : '#aa00ff';
+        this.radius = 26;
         this.active = true;
+        this.rotation = 0;
     }
 
     update() {
         this.x += this.vx;
-        particleSystem.createDust(this.x, this.y);
-        if (this.x < -50 || this.x > 1074 || isNaN(this.x)) this.active = false;
+        this.rotation += 0.2;
+        particleSystem.createPlasmaSparkTrail(this.x, this.y, this.color);
+        if (this.x < -60 || this.x > 1084 || isNaN(this.x)) this.active = false;
     }
 
     draw(ctx) {
         if (!ctx || isNaN(this.x) || isNaN(this.y)) return;
         ctx.save();
+
+        // Outer Glowing Plasma Aura
         ctx.fillStyle = this.color;
         ctx.shadowColor = this.color;
-        ctx.shadowBlur = 20;
+        ctx.shadowBlur = 30;
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
         ctx.fill();
+
+        // Inner White Core
+        ctx.fillStyle = '#ffffff';
+        ctx.shadowColor = '#ffffff';
+        ctx.shadowBlur = 15;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius * 0.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Rotating Energy Ring
+        ctx.strokeStyle = '#00f0ff';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.ellipse(this.x, this.y, this.radius + 6, (this.radius + 6) * 0.4, this.rotation, 0, Math.PI * 2);
+        ctx.stroke();
+
         ctx.restore();
     }
 }
 
 class ShockwaveRing {
-    constructor(x, y, color) {
+    constructor(x, y, color, maxRadius = 180) {
         this.x = (typeof x === 'number' && !isNaN(x)) ? x : 0;
         this.y = (typeof y === 'number' && !isNaN(y)) ? y : 0;
         this.color = color || '#ffd700';
         this.radius = 10;
-        this.maxRadius = 160;
+        this.maxRadius = maxRadius;
         this.active = true;
     }
 
     update() {
-        this.radius += 12;
+        this.radius += 14;
         if (this.radius >= this.maxRadius || isNaN(this.radius)) this.active = false;
     }
 
@@ -408,9 +429,9 @@ class ShockwaveRing {
         ctx.save();
         ctx.globalAlpha = alpha;
         ctx.strokeStyle = this.color;
-        ctx.lineWidth = 6;
+        ctx.lineWidth = 7;
         ctx.shadowColor = this.color;
-        ctx.shadowBlur = 20;
+        ctx.shadowBlur = 24;
         ctx.beginPath();
         ctx.ellipse(this.x, this.y, radX, radY, 0, 0, Math.PI * 2);
         ctx.stroke();
@@ -433,7 +454,7 @@ class Particle {
     update() {
         this.x += this.vx;
         this.y += this.vy;
-        this.vy += 0.2;
+        this.vy += 0.15;
         this.life--;
         if (isNaN(this.x) || isNaN(this.y)) this.life = 0;
     }
@@ -464,16 +485,63 @@ class ParticleSystem {
     createHitSparks(x, y, color) {
         const px = (typeof x === 'number' && !isNaN(x)) ? x : 0;
         const py = (typeof y === 'number' && !isNaN(y)) ? y : 0;
-        for (let i = 0; i < 16; i++) {
+        for (let i = 0; i < 18; i++) {
             const angle = Math.random() * Math.PI * 2;
-            const speed = 2 + Math.random() * 8;
+            const speed = 2 + Math.random() * 9;
             this.particles.push(new Particle(
                 px, py,
                 Math.cos(angle) * speed,
                 Math.sin(angle) * speed - 2,
                 color || '#ffffff',
-                2 + Math.random() * 3,
-                20 + Math.random() * 15
+                2.5 + Math.random() * 3.5,
+                22 + Math.random() * 15
+            ));
+        }
+    }
+
+    createRockDebris(x, y) {
+        const px = (typeof x === 'number' && !isNaN(x)) ? x : 0;
+        const py = (typeof y === 'number' && !isNaN(y)) ? y : 0;
+        for (let i = 0; i < 24; i++) {
+            const angle = -Math.PI / 4 - (Math.random() * Math.PI / 2);
+            const speed = 5 + Math.random() * 12;
+            this.particles.push(new Particle(
+                px + (Math.random() - 0.5) * 40, py,
+                Math.cos(angle) * speed,
+                Math.sin(angle) * speed,
+                Math.random() < 0.5 ? '#ffd700' : '#ff5500',
+                4 + Math.random() * 4,
+                25 + Math.random() * 20
+            ));
+        }
+    }
+
+    createShadowSmoke(x, y) {
+        const px = (typeof x === 'number' && !isNaN(x)) ? x : 0;
+        const py = (typeof y === 'number' && !isNaN(y)) ? y : 0;
+        for (let i = 0; i < 20; i++) {
+            this.particles.push(new Particle(
+                px + (Math.random() - 0.5) * 50,
+                py + (Math.random() - 0.5) * 50,
+                (Math.random() - 0.5) * 4,
+                -Math.random() * 4,
+                Math.random() < 0.5 ? '#aa00ff' : '#00f0ff',
+                5 + Math.random() * 6,
+                25 + Math.random() * 15
+            ));
+        }
+    }
+
+    createPlasmaSparkTrail(x, y, color) {
+        for (let i = 0; i < 4; i++) {
+            this.particles.push(new Particle(
+                x + (Math.random() - 0.5) * 20,
+                y + (Math.random() - 0.5) * 20,
+                (Math.random() - 0.5) * 3,
+                (Math.random() - 0.5) * 3,
+                color || '#aa00ff',
+                3 + Math.random() * 3,
+                12 + Math.random() * 8
             ));
         }
     }
@@ -518,8 +586,8 @@ class ParticleSystem {
         if (p) this.projectiles.push(p);
     }
 
-    addShockwave(x, y, color) {
-        this.shockwaves.push(new ShockwaveRing(x, y, color));
+    addShockwave(x, y, color, maxRadius = 180) {
+        this.shockwaves.push(new ShockwaveRing(x, y, color, maxRadius));
     }
 
     updateAndDraw(ctx) {
@@ -617,7 +685,6 @@ class Stickman {
     update(opponents, allies, keys, difficulty, mode, groundY) {
         this.animFrame++;
 
-        // Bulletproof Safety Safeguards against NaN
         if (isNaN(this.x) || !isFinite(this.x)) this.x = 200;
         if (isNaN(this.y) || !isFinite(this.y)) this.y = 300;
         if (isNaN(this.vx) || !isFinite(this.vx)) this.vx = 0;
@@ -832,36 +899,49 @@ class Stickman {
         }
     }
 
+    // UNIQUE CLASS SIGNATURE SPECIAL MOVES ENGINE
     executeSignatureSpecial(target, damage) {
-        const dmg = (typeof damage === 'number' && !isNaN(damage)) ? damage : 30;
+        const dmg = (typeof damage === 'number' && !isNaN(damage)) ? damage : 35;
 
         if (this.fighterClass === 'NINJA') {
-            particleSystem.createHitSparks(this.x + 20, this.y + 30, this.color);
+            // NINJA: SHADOW TELEPORT HURRICANE SLASH
+            particleSystem.createShadowSmoke(this.x + 20, this.y + 30);
             if (target && typeof target.x === 'number' && !isNaN(target.x)) {
                 const targetFacing = (target.facing === -1) ? -1 : 1;
                 this.x = target.x - (targetFacing * 50);
                 this.facing = (target.x >= this.x) ? 1 : -1;
             }
-            this.startAttack('ultimate', 30, dmg);
-            particleSystem.createHitSparks(this.x + 20, this.y + 30, '#ffffff');
-            particleSystem.addDamageText(this.x, this.y - 20, 'SHADOW TELEPORT KICK!', this.color);
+            this.startAttack('ultimate', 32, dmg);
+            particleSystem.createShadowSmoke(this.x + 20, this.y + 30);
+            particleSystem.addShockwave(this.x + this.width / 2, 460, '#aa00ff', 120);
+            particleSystem.addDamageText(this.x, this.y - 25, 'SHADOW HURRICANE SLASH!', '#00f0ff');
+            triggerCameraShake(12, 10);
         } else if (this.fighterClass === 'BRAWLER') {
-            this.vy = 8;
-            this.startAttack('ultimate', 35, dmg);
-            triggerCameraShake(16, 14);
-            particleSystem.addShockwave(this.x + this.width / 2, 460, this.color);
-            particleSystem.createDust(this.x, 460);
-            particleSystem.addDamageText(this.x, this.y - 20, 'FOOT GROUND SLAM!', '#ffd700');
+            // BRAWLER: EARTHBREAKER FOOT GROUND SLAM
+            this.vy = 10;
+            this.startAttack('ultimate', 36, dmg);
+            triggerCameraShake(18, 16);
+            particleSystem.addShockwave(this.x + this.width / 2, 460, '#ffd700', 200);
+            particleSystem.addShockwave(this.x + this.width / 2, 460, '#ff5500', 140);
+            particleSystem.createRockDebris(this.x + this.width / 2, 460);
+            particleSystem.addDamageText(this.x, this.y - 25, 'EARTHBREAKER FOOT SLAM!', '#ffd700');
         } else if (this.fighterClass === 'WEAVER') {
-            this.startAttack('ultimate', 25, dmg);
-            const projVx = this.facing * 12;
-            particleSystem.addProjectile(new Projectile(this.x + (this.facing * 35), this.y + 30, projVx, dmg, this));
-            particleSystem.addDamageText(this.x, this.y - 20, 'PLASMA ORB BLAST!', '#aa00ff');
+            // ENERGY WEAVER: SUPERNOVA PLASMA SPHERE BURST
+            this.startAttack('ultimate', 28, dmg);
+            const projVx = this.facing * 14;
+            particleSystem.addProjectile(new Projectile(this.x + (this.facing * 40), this.y + 30, projVx, dmg, this));
+            particleSystem.addShockwave(this.x + (this.facing * 40), this.y + 30, '#aa00ff', 90);
+            particleSystem.addDamageText(this.x, this.y - 25, 'SUPERNOVA PLASMA SPHERE!', '#aa00ff');
+            triggerCameraShake(10, 8);
         } else if (this.fighterClass === 'KNIGHT') {
-            this.vx = this.facing * 18;
-            this.startAttack('ultimate', 30, dmg);
-            particleSystem.createSlideSparks(this.x, 460, this.facing, this.color);
-            particleSystem.addDamageText(this.x, this.y - 20, 'PHANTOM BLADE LUNGE!', '#e60000');
+            // SHADOW KNIGHT: PHANTOM BLADE GRAND EXECUTION
+            this.vx = this.facing * 20;
+            this.startAttack('ultimate', 32, dmg);
+            particleSystem.createSlideSparks(this.x, 460, this.facing, '#ff0055');
+            particleSystem.createShadowSmoke(this.x, this.y + 30);
+            particleSystem.addShockwave(this.x + this.width / 2, 460, '#ff0055', 150);
+            particleSystem.addDamageText(this.x, this.y - 25, 'PHANTOM BLADE EXECUTION!', '#ff0055');
+            triggerCameraShake(15, 12);
         }
     }
 
@@ -875,14 +955,14 @@ class Stickman {
 
     getHitbox() {
         if (!this.isAttacking || this.hasHitOpponent) return null;
-        const reach = (this.attackType === 'light') ? 45 : (this.attackType === 'heavy') ? 70 : 90;
+        const reach = (this.attackType === 'light') ? 45 : (this.attackType === 'heavy') ? 70 : 120;
         return {
             x: (this.facing === 1) ? (this.x + this.width) : (this.x - reach),
-            y: this.y + 20,
+            y: this.y + 15,
             width: reach,
-            height: 35,
+            height: 45,
             damage: this.currentAttackDamage || 10,
-            knockback: (this.attackType === 'light') ? 4 : (this.attackType === 'heavy') ? 10 : 16
+            knockback: (this.attackType === 'light') ? 4 : (this.attackType === 'heavy') ? 10 : 20
         };
     }
 
@@ -1058,6 +1138,7 @@ class Stickman {
             rLegX = centerX - runCycle * 16;
         }
 
+        // SPECIAL POSTURE RENDERING FOR ALL CLASS SIGNATURE MOVES
         if (this.isAttacking && this.attackType === 'heavy') {
             rLegX = centerX + this.facing * 56;
             rFootY = shoulderY - 12;
@@ -1071,21 +1152,43 @@ class Stickman {
             ctx.arc(centerX, hipY, 52, -Math.PI / 4, 0, this.facing < 0);
             ctx.stroke();
             ctx.restore();
-        } else if (this.isAttacking && this.attackType === 'ultimate' && this.fighterClass === 'BRAWLER') {
-            rLegX = centerX + this.facing * 12;
-            rFootY = footY + 6;
-            lLegX = centerX - this.facing * 18;
+        } else if (this.isAttacking && this.attackType === 'ultimate') {
+            if (this.fighterClass === 'NINJA') {
+                // Ninja 360 Whirlwind Low Spin Kick
+                lLegX = centerX - this.facing * 35;
+                rLegX = centerX + this.facing * 45;
+                rFootY = footY - 12;
 
-            ctx.save();
-            ctx.strokeStyle = '#ffd700';
-            ctx.shadowColor = '#ffd700';
-            ctx.shadowBlur = 22;
-            ctx.lineWidth = 7;
-            ctx.beginPath();
-            ctx.moveTo(centerX, hipY);
-            ctx.lineTo(rLegX, rFootY);
-            ctx.stroke();
-            ctx.restore();
+                ctx.save();
+                ctx.strokeStyle = '#00f0ff';
+                ctx.shadowColor = '#aa00ff';
+                ctx.shadowBlur = 25;
+                ctx.lineWidth = 6;
+                ctx.beginPath();
+                ctx.arc(centerX, hipY, 48, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.restore();
+            } else if (this.fighterClass === 'BRAWLER') {
+                // Brawler Heel Ground Slam Posture
+                rLegX = centerX + this.facing * 12;
+                rFootY = footY + 6;
+                lLegX = centerX - this.facing * 18;
+
+                ctx.save();
+                ctx.strokeStyle = '#ffd700';
+                ctx.shadowColor = '#ffd700';
+                ctx.shadowBlur = 22;
+                ctx.lineWidth = 7;
+                ctx.beginPath();
+                ctx.moveTo(centerX, hipY);
+                ctx.lineTo(rLegX, rFootY);
+                ctx.stroke();
+                ctx.restore();
+            } else if (this.fighterClass === 'KNIGHT') {
+                // Knight Deep Forward Lunge Stance
+                rLegX = centerX + this.facing * 40;
+                lLegX = centerX - this.facing * 25;
+            }
         }
 
         ctx.beginPath();
@@ -1118,23 +1221,40 @@ class Stickman {
             if (this.attackType === 'light') {
                 rHandX = centerX + this.facing * 45;
                 rHandY = shoulderY - 4;
-            } else if (this.attackType === 'ultimate' && this.fighterClass === 'WEAVER') {
-                rHandX = centerX + this.facing * 40;
-                rHandY = shoulderY - 4;
-            } else if (this.attackType === 'ultimate' && this.fighterClass === 'KNIGHT') {
-                rHandX = centerX + this.facing * 50;
-                rHandY = shoulderY - 8;
+            } else if (this.attackType === 'ultimate') {
+                if (this.fighterClass === 'WEAVER') {
+                    // Weaver Hover Both Hands Charged Blast
+                    lHandX = centerX + this.facing * 35;
+                    lHandY = shoulderY - 6;
+                    rHandX = centerX + this.facing * 45;
+                    rHandY = shoulderY - 4;
+                } else if (this.fighterClass === 'KNIGHT') {
+                    // Knight Giant 140px Crimson Energy Sword Beam
+                    rHandX = centerX + this.facing * 50;
+                    rHandY = shoulderY - 8;
 
-                ctx.save();
-                ctx.strokeStyle = '#e60000';
-                ctx.shadowColor = '#e60000';
-                ctx.shadowBlur = 22;
-                ctx.lineWidth = 6;
-                ctx.beginPath();
-                ctx.moveTo(rHandX, rHandY);
-                ctx.lineTo(rHandX + this.facing * 60, rHandY - 4);
-                ctx.stroke();
-                ctx.restore();
+                    ctx.save();
+                    ctx.strokeStyle = '#ff0055';
+                    ctx.shadowColor = '#ff0055';
+                    ctx.shadowBlur = 30;
+                    ctx.lineWidth = 9;
+                    ctx.beginPath();
+                    ctx.moveTo(rHandX, rHandY);
+                    ctx.lineTo(rHandX + this.facing * 140, rHandY - 10);
+                    ctx.stroke();
+
+                    // White Core Beam
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(rHandX, rHandY);
+                    ctx.lineTo(rHandX + this.facing * 140, rHandY - 10);
+                    ctx.stroke();
+                    ctx.restore();
+                } else if (this.fighterClass === 'NINJA') {
+                    rHandX = centerX + this.facing * 40;
+                    rHandY = shoulderY - 10;
+                }
             }
         }
 
@@ -1649,7 +1769,6 @@ function handleMatchEnd(winningTeam) {
 function checkCombatCollisions() {
     if (gameState !== 'FIGHT') return;
 
-    // Resolve Body Overlap smoothly
     resolveCharacterOverlaps();
 
     fighters.forEach(attacker => {
@@ -1685,8 +1804,9 @@ function checkCombatCollisions() {
             if (defender && defender.team !== proj.owner.team && defender.health > 0) {
                 const dist = Math.hypot(defender.x + defender.width / 2 - proj.x, defender.y + 30 - proj.y);
                 if (dist < proj.radius + 20) {
-                    defender.takeDamage(proj.damage, 14, proj.vx > 0 ? 1 : -1);
+                    defender.takeDamage(proj.damage, 18, proj.vx > 0 ? 1 : -1);
                     particleSystem.createHitSparks(proj.x, proj.y, proj.color);
+                    particleSystem.addShockwave(proj.x, proj.y, proj.color, 120);
                     proj.active = false;
 
                     const teamRemaining = fighters.filter(f => f.team === defender.team && f.health > 0);
