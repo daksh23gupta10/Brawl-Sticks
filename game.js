@@ -942,6 +942,37 @@ class Stickman {
             particleSystem.addShockwave(this.x + this.width / 2, 460, '#ff0055', 150);
             particleSystem.addDamageText(this.x, this.y - 25, 'PHANTOM BLADE EXECUTION!', '#ff0055');
             triggerCameraShake(15, 12);
+        } else if (this.fighterClass === 'STORM') {
+            // STORM WARRIOR: LIGHTNING SPEAR THUNDER STORM
+            this.startAttack('ultimate', 30, dmg);
+            const projVx = this.facing * 16;
+            particleSystem.addProjectile(new Projectile(this.x + (this.facing * 40), this.y + 20, projVx, dmg, this));
+            particleSystem.addShockwave(this.x + this.width / 2, 460, '#00aaff', 160);
+            particleSystem.addDamageText(this.x, this.y - 25, 'LIGHTNING THUNDER STORM!', '#00aaff');
+            triggerCameraShake(14, 11);
+        } else if (this.fighterClass === 'HUNTER') {
+            // ARCANE HUNTER: CELESTIAL ARROW VOLLEY
+            this.startAttack('ultimate', 26, dmg);
+            for (let i = -1; i <= 1; i++) {
+                particleSystem.addProjectile(new Projectile(this.x + (this.facing * 30), this.y + 10 + i * 15, this.facing * (14 + i * 2), dmg * 0.4, this));
+            }
+            particleSystem.addShockwave(this.x + this.width / 2, this.y + 30, '#00ff66', 100);
+            particleSystem.addDamageText(this.x, this.y - 25, 'CELESTIAL ARROW VOLLEY!', '#00ff66');
+            triggerCameraShake(10, 8);
+        } else if (this.fighterClass === 'INFERNO') {
+            // INFERNO BRAWLER: ERUPTING VOLCANIC FLAME PILLAR
+            this.startAttack('ultimate', 34, dmg);
+            triggerCameraShake(16, 14);
+            particleSystem.addShockwave(this.x + this.width / 2, 460, '#ff5500', 180);
+            particleSystem.createHitSparks(this.x + this.width / 2, 380, '#ff2200');
+            particleSystem.addDamageText(this.x, this.y - 25, 'VOLCANIC FLAME PILLAR!', '#ff5500');
+        } else if (this.fighterClass === 'MONK') {
+            // SPIRIT MONK: DRAGON PALM KI BLAST
+            this.startAttack('ultimate', 30, dmg);
+            particleSystem.addShockwave(this.x + (this.facing * 50), this.y + 30, '#38bdf8', 140);
+            particleSystem.createHitSparks(this.x + (this.facing * 50), this.y + 30, '#38bdf8');
+            particleSystem.addDamageText(this.x, this.y - 25, 'DRAGON PALM KI BLAST!', '#38bdf8');
+            triggerCameraShake(12, 10);
         }
     }
 
