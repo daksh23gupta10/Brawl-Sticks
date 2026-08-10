@@ -17,8 +17,11 @@ let p1Color = '#00f0ff';
 let p2Color = '#ff0055';
 let p1Class = 'NINJA';
 let p2Class = 'BRAWLER';
+let p3Class = 'STORM';
+let p4Class = 'KNIGHT';
 let p1Hat = 'NONE';
 let p2Hat = 'NONE';
+let selectedArena = 'VOLCANO';
 
 function loadSavedPreferences() {
     try {
@@ -42,6 +45,8 @@ function loadSavedPreferences() {
                 const parsed = JSON.parse(savedClasses);
                 if (parsed && typeof parsed.p1 === 'string') p1Class = parsed.p1;
                 if (parsed && typeof parsed.p2 === 'string') p2Class = parsed.p2;
+                if (parsed && typeof parsed.p3 === 'string') p3Class = parsed.p3;
+                if (parsed && typeof parsed.p4 === 'string') p4Class = parsed.p4;
             } catch (e) {}
         }
 
@@ -53,14 +58,20 @@ function loadSavedPreferences() {
                 if (parsed && typeof parsed.p2 === 'string') p2Hat = parsed.p2;
             } catch (e) {}
         }
+
+        const savedArena = localStorage.getItem('brawl_sticks_arena');
+        if (savedArena) selectedArena = savedArena;
     } catch (err) {}
 
     if (!p1Color) p1Color = '#00f0ff';
     if (!p2Color) p2Color = '#ff0055';
     if (!p1Class) p1Class = 'NINJA';
     if (!p2Class) p2Class = 'BRAWLER';
+    if (!p3Class) p3Class = 'STORM';
+    if (!p4Class) p4Class = 'KNIGHT';
     if (!p1Hat) p1Hat = 'NONE';
     if (!p2Hat) p2Hat = 'NONE';
+    if (!selectedArena) selectedArena = 'VOLCANO';
 
     updateRebindButtonText();
     syncUIElements();
@@ -70,8 +81,9 @@ function loadSavedPreferences() {
 function savePreferences() {
     try {
         localStorage.setItem('brawl_sticks_colors', JSON.stringify({ p1: p1Color, p2: p2Color }));
-        localStorage.setItem('brawl_sticks_classes', JSON.stringify({ p1: p1Class, p2: p2Class }));
+        localStorage.setItem('brawl_sticks_classes', JSON.stringify({ p1: p1Class, p2: p2Class, p3: p3Class, p4: p4Class }));
         localStorage.setItem('brawl_sticks_hats', JSON.stringify({ p1: p1Hat, p2: p2Hat }));
+        localStorage.setItem('brawl_sticks_arena', selectedArena);
     } catch (e) {}
     applyHUDColors();
 }
@@ -107,6 +119,12 @@ function syncUIElements() {
     document.querySelectorAll('#p2-class-list .class-card').forEach(c => {
         c.classList.toggle('active', c.getAttribute('data-class') === p2Class);
     });
+    document.querySelectorAll('#p3-class-list .class-card').forEach(c => {
+        c.classList.toggle('active', c.getAttribute('data-class') === p3Class);
+    });
+    document.querySelectorAll('#p4-class-list .class-card').forEach(c => {
+        c.classList.toggle('active', c.getAttribute('data-class') === p4Class);
+    });
 
     document.querySelectorAll('#p1-hat-list .hat-btn').forEach(h => {
         h.classList.toggle('active', h.getAttribute('data-hat') === p1Hat);
@@ -114,6 +132,15 @@ function syncUIElements() {
     document.querySelectorAll('#p2-hat-list .hat-btn').forEach(h => {
         h.classList.toggle('active', h.getAttribute('data-hat') === p2Hat);
     });
+
+    document.querySelectorAll('#arena-list .arena-card').forEach(ac => {
+        ac.classList.toggle('active', ac.getAttribute('data-arena') === selectedArena);
+    });
+
+    const p3Group = document.getElementById('p3-class-group');
+    const p4Group = document.getElementById('p4-class-group');
+    if (p3Group) p3Group.classList.toggle('hidden', selectedMode !== 'TEAM2V2');
+    if (p4Group) p4Group.classList.toggle('hidden', selectedMode !== 'TEAM2V2');
 
     const b1 = document.getElementById('p1-class-badge');
     const b2 = document.getElementById('p2-class-badge');
@@ -159,12 +186,24 @@ document.querySelectorAll('#p2-class-list .class-card').forEach(c => {
     c.addEventListener('click', () => { p2Class = c.getAttribute('data-class') || 'BRAWLER'; syncUIElements(); savePreferences(); });
 });
 
+document.querySelectorAll('#p3-class-list .class-card').forEach(c => {
+    c.addEventListener('click', () => { p3Class = c.getAttribute('data-class') || 'STORM'; syncUIElements(); savePreferences(); });
+});
+
+document.querySelectorAll('#p4-class-list .class-card').forEach(c => {
+    c.addEventListener('click', () => { p4Class = c.getAttribute('data-class') || 'KNIGHT'; syncUIElements(); savePreferences(); });
+});
+
 document.querySelectorAll('#p1-hat-list .hat-btn').forEach(h => {
     h.addEventListener('click', () => { p1Hat = h.getAttribute('data-hat') || 'NONE'; syncUIElements(); savePreferences(); });
 });
 
 document.querySelectorAll('#p2-hat-list .hat-btn').forEach(h => {
     h.addEventListener('click', () => { p2Hat = h.getAttribute('data-hat') || 'NONE'; syncUIElements(); savePreferences(); });
+});
+
+document.querySelectorAll('#arena-list .arena-card').forEach(ac => {
+    ac.addEventListener('click', () => { selectedArena = ac.getAttribute('data-arena') || 'VOLCANO'; syncUIElements(); savePreferences(); });
 });
 
 let waitingForRebind = null;
@@ -724,7 +763,7 @@ class Stickman {
             this.facing = (target.x >= this.x) ? 1 : -1;
         }
 
-        if (this.health > 0 && this.stunTimer === 0) {
+        if (this.health > 0 && this.stunTimer === 0 && gameState === 'FIGHT') {
             if (this.isCPU) {
                 this.updateAI(target, difficulty);
             } else {
@@ -1603,6 +1642,8 @@ document.querySelectorAll('.mode-card').forEach(card => {
             if (p3Hud) p3Hud.classList.remove('hidden');
             if (p4Hud) p4Hud.classList.remove('hidden');
         }
+
+        syncUIElements();
     });
 });
 
@@ -1665,9 +1706,9 @@ function setupFighters() {
         fighters.push(new Stickman('p2', 750, 300, p2Color, p2Class, p2Hat, 2, false));
     } else if (selectedMode === 'TEAM2V2') {
         fighters.push(new Stickman('p1', 180, 300, p1Color, p1Class, p1Hat, 1, false));
-        fighters.push(new Stickman('p3', 280, 300, p1Color, 'NINJA', 'NONE', 1, true));
+        fighters.push(new Stickman('p3', 280, 300, p1Color, p3Class, 'NONE', 1, true));
         fighters.push(new Stickman('p2', 720, 300, p2Color, p2Class, p2Hat, 2, true));
-        fighters.push(new Stickman('p4', 820, 300, p2Color, 'BRAWLER', 'NONE', 2, true));
+        fighters.push(new Stickman('p4', 820, 300, p2Color, p4Class, 'NONE', 2, true));
     }
     applyHUDColors();
 }
@@ -1737,11 +1778,28 @@ function startTimer() {
     }, 1000);
 }
 
-function handleRoundEnd(reason) {
+let koZoomX = 512;
+let koZoomY = 300;
+
+function handleRoundEnd(reason, defender = null) {
     if (gameState === 'ROUND_OVER' || gameState === 'MATCH_OVER') return;
     clearInterval(timerInterval);
     gameState = 'ROUND_OVER';
-    slowMoTimer = 45;
+
+    if (reason === 'KO') {
+        slowMoTimer = 120; // 2.0 Seconds of dramatic 0.33x slow-motion KO time dilation
+        if (defender && typeof defender.x === 'number') {
+            koZoomX = defender.x + defender.width / 2;
+            koZoomY = defender.y + 30;
+        } else {
+            koZoomX = 512;
+            koZoomY = 300;
+        }
+        triggerCameraShake(24, 18);
+        audio.playHeavyHit();
+    } else {
+        slowMoTimer = 0;
+    }
 
     const announcerOverlay = document.getElementById('announcer-overlay');
     const announcerText = document.getElementById('announcer-text');
@@ -1776,7 +1834,7 @@ function handleRoundEnd(reason) {
                 startRound();
             }
         }, 1800);
-    }, 1200);
+    }, 1400);
 }
 
 function handleMatchEnd(winningTeam) {
@@ -1821,6 +1879,240 @@ function checkCombatCollisions() {
 
                         const teamRemaining = fighters.filter(f => f.team === defender.team && f.health > 0);
                         if (teamRemaining.length === 0) {
+                            handleRoundEnd('KO', defender);
+                        }
+                    }
+                }
+            });
+        }
+    });
+
+    particleSystem.projectiles.forEach(proj => {
+        if (!proj || !proj.active || !proj.owner) return;
+        fighters.forEach(defender => {
+            if (defender && defender.team !== proj.owner.team && defender.health > 0) {
+                const dist = Math.hypot(defender.x + defender.width / 2 - proj.x, defender.y + 30 - proj.y);
+                if (dist < proj.radius + 20) {
+                    defender.takeDamage(proj.damage, 18, proj.vx > 0 ? 1 : -1);
+                    particleSystem.createHitSparks(proj.x, proj.y, proj.color);
+                    particleSystem.addShockwave(proj.x, proj.y, proj.color, 120);
+                    proj.active = false;
+
+                    const teamRemaining = fighters.filter(f => f.team === defender.team && f.health > 0);
+                    if (teamRemaining.length === 0) {
+                        handleRoundEnd('KO', defender);
+                    }
+                }
+            }
+        });
+    });
+}
+
+// 🏟️ INTERACTIVE 2D STAGE ARENA & HAZARDS ENGINE
+let arenaMeteorites = [];
+let arenaSakuraPetals = [];
+let arenaTimer = 0;
+
+function draw2DArena(ctx) {
+    if (!ctx) return;
+    arenaTimer++;
+
+    if (selectedArena === 'VOLCANO') {
+        // 🌋 VOLCANIC MAGMA PIT ARENA
+        ctx.fillStyle = '#0f0303';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Volcanic Sky Glow
+        const bgGrad = ctx.createLinearGradient(0, 0, 0, groundY);
+        bgGrad.addColorStop(0, '#1c0505');
+        bgGrad.addColorStop(1, '#470b04');
+        ctx.fillStyle = bgGrad;
+        ctx.fillRect(0, 0, canvas.width, groundY);
+
+        // Pulsing Lava Ground Base
+        ctx.fillStyle = '#170c0c';
+        ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
+
+        // Magma Edge Sea
+        ctx.fillStyle = '#ff3300';
+        ctx.shadowColor = '#ff2200';
+        ctx.shadowBlur = 20;
+        ctx.fillRect(0, groundY + 10, 90, canvas.height - groundY - 10);
+        ctx.fillRect(934, groundY + 10, 90, canvas.height - groundY - 10);
+
+        // Glowing Center Runic Compass Circle
+        ctx.strokeStyle = '#ff4400';
+        ctx.shadowColor = '#ff3300';
+        ctx.shadowBlur = 20;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.ellipse(512, groundY, 180, 25, 0, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Falling Fire Meteorite Hazard Spawns
+        if (arenaTimer % 280 === 0 && gameState === 'FIGHT') {
+            const mx = 120 + Math.random() * 784;
+            arenaMeteorites.push({ x: mx, y: -40, vx: (Math.random() - 0.5) * 3, vy: 7 + Math.random() * 4, radius: 18 });
+        }
+
+        // Draw & Update Meteorites
+        for (let i = arenaMeteorites.length - 1; i >= 0; i--) {
+            const m = arenaMeteorites[i];
+            m.x += m.vx;
+            m.y += m.vy;
+
+            ctx.save();
+            ctx.fillStyle = '#ff3300';
+            ctx.shadowColor = '#ff3300';
+            ctx.shadowBlur = 25;
+            ctx.beginPath();
+            ctx.arc(m.x, m.y, m.radius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+
+            if (m.y >= groundY - 10) {
+                particleSystem.addShockwave(m.x, groundY, '#ff3300', 140);
+                particleSystem.createHitSparks(m.x, groundY, '#ff5500');
+                triggerCameraShake(12, 10);
+
+                // Meteorite Impact Damage to nearby fighters
+                fighters.forEach(f => {
+                    if (f && f.health > 0 && Math.abs(f.x + f.width / 2 - m.x) < 70) {
+                        f.takeDamage(15, 12, f.x > m.x ? 1 : -1);
+                        particleSystem.addDamageText(f.x, f.y - 20, 'METEOR STRIKE!', '#ff3300');
+                    }
+                });
+
+                arenaMeteorites.splice(i, 1);
+            }
+        }
+
+    } else if (selectedArena === 'CYBER') {
+        // 🌆 CYBERPUNK NEON ROOFTOP ARENA
+        ctx.fillStyle = '#030511';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Cyber Skyline Skyscrapers
+        ctx.fillStyle = '#091026';
+        for (let i = 0; i < 18; i++) {
+            const bx = i * 60;
+            const bh = 140 + Math.sin(i * 2.5) * 80;
+            ctx.fillRect(bx, groundY - bh, 48, bh);
+        }
+
+        // Neon Grid Floor
+        ctx.fillStyle = '#0a1024';
+        ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
+
+        ctx.strokeStyle = '#00f0ff';
+        ctx.shadowColor = '#00f0ff';
+        ctx.shadowBlur = 15;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(0, groundY);
+        ctx.lineTo(canvas.width, groundY);
+        ctx.stroke();
+
+        // Electric Barrier Fences (Left & Right Perimeter Shock Hazards)
+        for (let xPos of [40, 984]) {
+            ctx.strokeStyle = (Math.floor(arenaTimer / 4) % 2 === 0) ? '#00f0ff' : '#ff00aa';
+            ctx.shadowColor = '#00f0ff';
+            ctx.shadowBlur = 25;
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(xPos, 120);
+            ctx.lineTo(xPos, groundY);
+            ctx.stroke();
+
+            // Check Electric Barrier Hazard Collisions
+            fighters.forEach(f => {
+                if (f && f.health > 0 && Math.abs(f.x + f.width / 2 - xPos) < 25) {
+                    const knockDir = (xPos < 500) ? 1 : -1;
+                    f.takeDamage(10, 14, knockDir);
+                    particleSystem.createHitSparks(f.x + f.width / 2, f.y + 30, '#00f0ff');
+                    particleSystem.addShockwave(f.x + f.width / 2, f.y + 30, '#00f0ff', 90);
+                    particleSystem.addDamageText(f.x, f.y - 20, 'ELECTRIC SHOCK!', '#00f0ff');
+                }
+            });
+        }
+
+    } else {
+        // ⛩️ CELESTIAL SKY DOJO ARENA
+        const skyGrad = ctx.createLinearGradient(0, 0, 0, groundY);
+        skyGrad.addColorStop(0, '#74abdd');
+        skyGrad.addColorStop(1, '#e6f2fc');
+        ctx.fillStyle = skyGrad;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // White Marble Floor Base
+        ctx.fillStyle = '#cbd5e1';
+        ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
+
+        ctx.strokeStyle = '#f59e0b';
+        ctx.shadowColor = '#f59e0b';
+        ctx.shadowBlur = 15;
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(0, groundY);
+        ctx.lineTo(canvas.width, groundY);
+        ctx.stroke();
+
+        // Floating Sakura Petals
+        if (arenaTimer % 15 === 0 && arenaSakuraPetals.length < 35) {
+            arenaSakuraPetals.push({ x: Math.random() * canvas.width, y: -10, vx: 1 + Math.random() * 2, vy: 1 + Math.random() * 1.5 });
+        }
+
+        ctx.fillStyle = '#fda4af';
+        for (let i = arenaSakuraPetals.length - 1; i >= 0; i--) {
+            const p = arenaSakuraPetals[i];
+            p.x += p.vx;
+            p.y += p.vy;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+            ctx.fill();
+            if (p.y > canvas.height || p.x > canvas.width) arenaSakuraPetals.splice(i, 1);
+        }
+    }
+}
+
+function checkCombatCollisions() {
+    if (gameState !== 'FIGHT') return;
+
+    resolveCharacterOverlaps();
+
+    fighters.forEach(attacker => {
+        if (!attacker || attacker.health <= 0) return;
+        const hb = attacker.getHitbox();
+        if (hb) {
+            fighters.forEach(defender => {
+                if (defender && defender.team !== attacker.team && defender.health > 0) {
+                    if (hb.x < defender.x + defender.width &&
+                        hb.x + hb.width > defender.x &&
+                        hb.y < defender.y + defender.height &&
+                        hb.y + hb.height > defender.y) {
+
+                        defender.takeDamage(hb.damage, hb.knockback, attacker.facing);
+                        attacker.hasHitOpponent = true;
+
+                        // COMBO COUNTER TRACKING
+                        attacker.comboHits = (attacker.comboHits || 0) + 1;
+                        attacker.comboDamage = (attacker.comboDamage || 0) + hb.damage;
+                        attacker.comboTimer = 75;
+
+                        let comboText = `${attacker.comboHits} HITS!`;
+                        if (attacker.comboHits === 3) comboText = "3 HITS - RAGE COMBO!";
+                        else if (attacker.comboHits === 5) comboText = "5 HITS - UNSTOPPABLE!";
+                        else if (attacker.comboHits === 8) comboText = "8 HITS - SUPER CANCEL!";
+                        else if (attacker.comboHits >= 10) comboText = `${attacker.comboHits} HITS - GODLIKE!`;
+
+                        particleSystem.addDamageText(attacker.x, attacker.y - 40, comboText, attacker.color);
+
+                        const meterGain = (attacker.attackType === 'light') ? 25 : 35;
+                        attacker.specialMeter = Math.min(100, attacker.specialMeter + meterGain);
+
+                        const teamRemaining = fighters.filter(f => f.team === defender.team && f.health > 0);
+                        if (teamRemaining.length === 0) {
+                            slowMoTimer = 60;
                             handleRoundEnd('KO');
                         }
                     }
@@ -1842,41 +2134,13 @@ function checkCombatCollisions() {
 
                     const teamRemaining = fighters.filter(f => f.team === defender.team && f.health > 0);
                     if (teamRemaining.length === 0) {
+                        slowMoTimer = 60;
                         handleRoundEnd('KO');
                     }
                 }
             }
         });
     });
-}
-
-function drawArena() {
-    if (!ctx) return;
-    ctx.fillStyle = '#060812';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    ctx.save();
-    ctx.strokeStyle = 'rgba(0, 240, 255, 0.12)';
-    ctx.lineWidth = 1;
-    for (let x = 0; x < canvas.width; x += 40) {
-        ctx.beginPath();
-        ctx.moveTo(x, groundY);
-        ctx.lineTo(x, canvas.height);
-        ctx.stroke();
-    }
-
-    ctx.strokeStyle = p1Color;
-    ctx.shadowColor = p1Color;
-    ctx.shadowBlur = 15;
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(0, groundY);
-    ctx.lineTo(canvas.width, groundY);
-    ctx.stroke();
-
-    ctx.fillStyle = 'rgba(10, 15, 30, 0.9)';
-    ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
-    ctx.restore();
 }
 
 function updateHUD() {
@@ -1911,10 +2175,18 @@ function gameLoop() {
     if (!ctx) return;
     ctx.save();
 
+    let isPhysicsStep = true;
     if (slowMoTimer > 0) {
         slowMoTimer--;
-        ctx.scale(1.05, 1.05);
-        ctx.translate(-25, -15);
+        isPhysicsStep = (slowMoTimer % 3 === 0);
+
+        const zoom = 1.35;
+        const focusX = (typeof koZoomX === 'number' && !isNaN(koZoomX)) ? koZoomX : canvas.width / 2;
+        const focusY = (typeof koZoomY === 'number' && !isNaN(koZoomY)) ? koZoomY : 300;
+
+        ctx.translate(focusX, focusY);
+        ctx.scale(zoom, zoom);
+        ctx.translate(-focusX, -focusY);
     }
 
     if (shakeTime > 0) {
@@ -1924,15 +2196,29 @@ function gameLoop() {
         shakeTime--;
     }
 
-    drawArena();
+    draw2DArena(ctx);
 
-    if (gameState === 'FIGHT' || gameState === 'COUNTDOWN' || gameState === 'ROUND_OVER') {
+    if (gameState === 'FIGHT' || gameState === 'ROUND_OVER') {
+        if (isPhysicsStep) {
+            fighters.forEach(f => {
+                const opponents = fighters.filter(o => o.team !== f.team);
+                const allies = fighters.filter(a => a.team === f.team && a.id !== f.id);
+                f.update(opponents, allies, keys, selectedDifficulty, selectedMode, groundY);
+            });
+            checkCombatCollisions();
+        }
+    } else if (gameState === 'COUNTDOWN') {
+        // Lock fighters in starting positions facing each other during countdown
         fighters.forEach(f => {
-            const opponents = fighters.filter(o => o.team !== f.team);
-            const allies = fighters.filter(a => a.team === f.team && a.id !== f.id);
-            f.update(opponents, allies, keys, selectedDifficulty, selectedMode, groundY);
+            f.vx = 0;
+            f.vy = 0;
+            f.isAttacking = false;
+            f.isBlocking = false;
+            f.isSliding = false;
+            f.y = groundY - f.height;
+            const opp = fighters.find(o => o.team !== f.team);
+            if (opp) f.facing = (opp.x >= f.x) ? 1 : -1;
         });
-        checkCombatCollisions();
     }
 
     particleSystem.updateAndDraw(ctx);

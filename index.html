@@ -149,6 +149,34 @@
                             </div>
                         </div>
 
+                        <!-- 🏟️ INTERACTIVE 2D STAGE ARENA SELECTOR -->
+                        <div class="arena-picker-section">
+                            <span class="picker-title cyan-text">SELECT STAGE ARENA & HAZARD:</span>
+                            <div class="arena-card-list" id="arena-list">
+                                <div class="arena-card active" data-arena="VOLCANO">
+                                    <span class="arena-icon">🌋</span>
+                                    <div class="arena-info">
+                                        <span class="arena-name">VOLCANIC MAGMA PIT</span>
+                                        <span class="arena-hazard">Hazard: Falling Fire Meteorites & Lava Burn</span>
+                                    </div>
+                                </div>
+                                <div class="arena-card" data-arena="CYBER">
+                                    <span class="arena-icon">🌆</span>
+                                    <div class="arena-info">
+                                        <span class="arena-name">CYBER ROOFTOP</span>
+                                        <span class="arena-hazard">Hazard: Electric Fences & Plasma Blast</span>
+                                    </div>
+                                </div>
+                                <div class="arena-card" data-arena="TEMPLE">
+                                    <span class="arena-icon">⛩️</span>
+                                    <div class="arena-info">
+                                        <span class="arena-name">CELESTIAL SKY DOJO</span>
+                                        <span class="arena-hazard">Hazard: Falling Sakura & Wind Gusts</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- AI Difficulty Selector -->
                         <div class="difficulty-picker" id="diff-picker">
                             <span class="picker-label">AI DIFFICULTY:</span>
@@ -162,76 +190,58 @@
                             <div class="class-picker-group">
                                 <span class="picker-title cyan-text">P1 CLASS:</span>
                                 <div class="class-card-list" id="p1-class-list">
-                                    <div class="class-card active" data-class="NINJA">
-                                        <span class="class-icon">🥷</span>
-                                        <span class="class-name">NINJA</span>
-                                    </div>
-                                    <div class="class-card" data-class="BRAWLER">
-                                        <span class="class-icon">🥊</span>
-                                        <span class="class-name">BRAWLER</span>
-                                    </div>
-                                    <div class="class-card" data-class="WEAVER">
-                                        <span class="class-icon">🔮</span>
-                                        <span class="class-name">WEAVER</span>
-                                    </div>
-                                    <div class="class-card" data-class="KNIGHT">
-                                        <span class="class-icon">⚔️</span>
-                                        <span class="class-name">KNIGHT</span>
-                                    </div>
-                                    <div class="class-card" data-class="STORM">
-                                        <span class="class-icon">⚡</span>
-                                        <span class="class-name">STORM</span>
-                                    </div>
-                                    <div class="class-card" data-class="HUNTER">
-                                        <span class="class-icon">🏹</span>
-                                        <span class="class-name">HUNTER</span>
-                                    </div>
-                                    <div class="class-card" data-class="INFERNO">
-                                        <span class="class-icon">🔥</span>
-                                        <span class="class-name">INFERNO</span>
-                                    </div>
-                                    <div class="class-card" data-class="MONK">
-                                        <span class="class-icon">☯️</span>
-                                        <span class="class-name">MONK</span>
-                                    </div>
+                                    <div class="class-card active" data-class="NINJA"><span class="class-icon">🥷</span><span class="class-name">NINJA</span></div>
+                                    <div class="class-card" data-class="BRAWLER"><span class="class-icon">🥊</span><span class="class-name">BRAWLER</span></div>
+                                    <div class="class-card" data-class="WEAVER"><span class="class-icon">🔮</span><span class="class-name">WEAVER</span></div>
+                                    <div class="class-card" data-class="KNIGHT"><span class="class-icon">⚔️</span><span class="class-name">KNIGHT</span></div>
+                                    <div class="class-card" data-class="STORM"><span class="class-icon">⚡</span><span class="class-name">STORM</span></div>
+                                    <div class="class-card" data-class="HUNTER"><span class="class-icon">🏹</span><span class="class-name">HUNTER</span></div>
+                                    <div class="class-card" data-class="INFERNO"><span class="class-icon">🔥</span><span class="class-name">INFERNO</span></div>
+                                    <div class="class-card" data-class="MONK"><span class="class-icon">☯️</span><span class="class-name">MONK</span></div>
                                 </div>
                             </div>
 
                             <div class="class-picker-group">
                                 <span class="picker-title magenta-text">P2 / ENEMY CLASS:</span>
                                 <div class="class-card-list" id="p2-class-list">
-                                    <div class="class-card" data-class="NINJA">
-                                        <span class="class-icon">🥷</span>
-                                        <span class="class-name">NINJA</span>
-                                    </div>
-                                    <div class="class-card active" data-class="BRAWLER">
-                                        <span class="class-icon">🥊</span>
-                                        <span class="class-name">BRAWLER</span>
-                                    </div>
-                                    <div class="class-card" data-class="WEAVER">
-                                        <span class="class-icon">🔮</span>
-                                        <span class="class-name">WEAVER</span>
-                                    </div>
-                                    <div class="class-card" data-class="KNIGHT">
-                                        <span class="class-icon">⚔️</span>
-                                        <span class="class-name">KNIGHT</span>
-                                    </div>
-                                    <div class="class-card" data-class="STORM">
-                                        <span class="class-icon">⚡</span>
-                                        <span class="class-name">STORM</span>
-                                    </div>
-                                    <div class="class-card" data-class="HUNTER">
-                                        <span class="class-icon">🏹</span>
-                                        <span class="class-name">HUNTER</span>
-                                    </div>
-                                    <div class="class-card" data-class="INFERNO">
-                                        <span class="class-icon">🔥</span>
-                                        <span class="class-name">INFERNO</span>
-                                    </div>
-                                    <div class="class-card" data-class="MONK">
-                                        <span class="class-icon">☯️</span>
-                                        <span class="class-name">MONK</span>
-                                    </div>
+                                    <div class="class-card" data-class="NINJA"><span class="class-icon">🥷</span><span class="class-name">NINJA</span></div>
+                                    <div class="class-card active" data-class="BRAWLER"><span class="class-icon">🥊</span><span class="class-name">BRAWLER</span></div>
+                                    <div class="class-card" data-class="WEAVER"><span class="class-icon">🔮</span><span class="class-name">WEAVER</span></div>
+                                    <div class="class-card" data-class="KNIGHT"><span class="class-icon">⚔️</span><span class="class-name">KNIGHT</span></div>
+                                    <div class="class-card" data-class="STORM"><span class="class-icon">⚡</span><span class="class-name">STORM</span></div>
+                                    <div class="class-card" data-class="HUNTER"><span class="class-icon">🏹</span><span class="class-name">HUNTER</span></div>
+                                    <div class="class-card" data-class="INFERNO"><span class="class-icon">🔥</span><span class="class-name">INFERNO</span></div>
+                                    <div class="class-card" data-class="MONK"><span class="class-icon">☯️</span><span class="class-name">MONK</span></div>
+                                </div>
+                            </div>
+
+                            <!-- P3 Class (2v2 Team 1 Ally) -->
+                            <div class="class-picker-group team2v2-only hidden" id="p3-class-group">
+                                <span class="picker-title cyan-text">P3 ALLY CLASS (2v2):</span>
+                                <div class="class-card-list" id="p3-class-list">
+                                    <div class="class-card active" data-class="NINJA"><span class="class-icon">🥷</span><span class="class-name">NINJA</span></div>
+                                    <div class="class-card" data-class="BRAWLER"><span class="class-icon">🥊</span><span class="class-name">BRAWLER</span></div>
+                                    <div class="class-card" data-class="WEAVER"><span class="class-icon">🔮</span><span class="class-name">WEAVER</span></div>
+                                    <div class="class-card" data-class="KNIGHT"><span class="class-icon">⚔️</span><span class="class-name">KNIGHT</span></div>
+                                    <div class="class-card" data-class="STORM"><span class="class-icon">⚡</span><span class="class-name">STORM</span></div>
+                                    <div class="class-card" data-class="HUNTER"><span class="class-icon">🏹</span><span class="class-name">HUNTER</span></div>
+                                    <div class="class-card" data-class="INFERNO"><span class="class-icon">🔥</span><span class="class-name">INFERNO</span></div>
+                                    <div class="class-card" data-class="MONK"><span class="class-icon">☯️</span><span class="class-name">MONK</span></div>
+                                </div>
+                            </div>
+
+                            <!-- P4 Class (2v2 Team 2 Ally) -->
+                            <div class="class-picker-group team2v2-only hidden" id="p4-class-group">
+                                <span class="picker-title magenta-text">P4 ENEMY ALLY CLASS (2v2):</span>
+                                <div class="class-card-list" id="p4-class-list">
+                                    <div class="class-card" data-class="NINJA"><span class="class-icon">🥷</span><span class="class-name">NINJA</span></div>
+                                    <div class="class-card" data-class="BRAWLER"><span class="class-icon">🥊</span><span class="class-name">BRAWLER</span></div>
+                                    <div class="class-card" data-class="WEAVER"><span class="class-icon">🔮</span><span class="class-name">WEAVER</span></div>
+                                    <div class="class-card active" data-class="KNIGHT"><span class="class-icon">⚔️</span><span class="class-name">KNIGHT</span></div>
+                                    <div class="class-card" data-class="STORM"><span class="class-icon">⚡</span><span class="class-name">STORM</span></div>
+                                    <div class="class-card" data-class="HUNTER"><span class="class-icon">🏹</span><span class="class-name">HUNTER</span></div>
+                                    <div class="class-card" data-class="INFERNO"><span class="class-icon">🔥</span><span class="class-name">INFERNO</span></div>
+                                    <div class="class-card" data-class="MONK"><span class="class-icon">☯️</span><span class="class-name">MONK</span></div>
                                 </div>
                             </div>
                         </div>
