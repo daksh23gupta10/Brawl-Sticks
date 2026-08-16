@@ -338,6 +338,93 @@ class SoundFX {
         } catch (e) {}
     }
 
+    playSlash() {
+        if (!this.enabled || !this.ctx) return;
+        try {
+            const bufferSize = this.ctx.sampleRate * 0.1;
+            const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+
+            const noise = this.ctx.createBufferSource();
+            noise.buffer = buffer;
+            const filter = this.ctx.createBiquadFilter();
+            filter.type = 'bandpass';
+            filter.frequency.setValueAtTime(1000, this.ctx.currentTime);
+            filter.frequency.exponentialRampToValueAtTime(3000, this.ctx.currentTime + 0.1);
+
+            const gain = this.ctx.createGain();
+            gain.gain.setValueAtTime(0.35, this.ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.1);
+
+            noise.connect(filter);
+            filter.connect(gain);
+            gain.connect(this.ctx.destination);
+            noise.start();
+        } catch (e) {}
+    }
+
+    playExplosion() {
+        if (!this.enabled || !this.ctx) return;
+        try {
+            const bufferSize = this.ctx.sampleRate * 0.35;
+            const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+
+            const noise = this.ctx.createBufferSource();
+            noise.buffer = buffer;
+            const filter = this.ctx.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(800, this.ctx.currentTime);
+            filter.frequency.exponentialRampToValueAtTime(80, this.ctx.currentTime + 0.35);
+
+            const gain = this.ctx.createGain();
+            gain.gain.setValueAtTime(0.6, this.ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.35);
+
+            noise.connect(filter);
+            filter.connect(gain);
+            gain.connect(this.ctx.destination);
+            noise.start();
+        } catch (e) {}
+    }
+
+    playLaser() {
+        if (!this.enabled || !this.ctx) return;
+        try {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(900, this.ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(150, this.ctx.currentTime + 0.2);
+            gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.2);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start();
+            osc.stop(this.ctx.currentTime + 0.2);
+        } catch (e) {}
+    }
+
+    playAnnouncerChime() {
+        if (!this.enabled || !this.ctx) return;
+        try {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(523.25, this.ctx.currentTime); // C5
+            osc.frequency.setValueAtTime(659.25, this.ctx.currentTime + 0.1); // E5
+            osc.frequency.setValueAtTime(783.99, this.ctx.currentTime + 0.2); // G5
+            gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.4);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start();
+            osc.stop(this.ctx.currentTime + 0.4);
+        } catch (e) {}
+    }
+
     playUltimate() {
         if (!this.enabled || !this.ctx) return;
         try {
@@ -353,6 +440,23 @@ class SoundFX {
             gain.connect(this.ctx.destination);
             osc.start();
             osc.stop(this.ctx.currentTime + 0.7);
+        } catch (e) {}
+    }
+
+    playBossRage() {
+        if (!this.enabled || !this.ctx) return;
+        try {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(80, this.ctx.currentTime);
+            osc.frequency.linearRampToValueAtTime(320, this.ctx.currentTime + 0.6);
+            gain.gain.setValueAtTime(0.6, this.ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.6);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start();
+            osc.stop(this.ctx.currentTime + 0.6);
         } catch (e) {}
     }
 }
@@ -732,15 +836,29 @@ class Stickman {
         if (isNaN(this.specialMeter) || !isFinite(this.specialMeter)) this.specialMeter = 0;
 
         if (this.health > 0) {
-            this.specialMeter = Math.min(100, this.specialMeter + 0.18);
+            this.specialMeter = Math.min(100, this.specialMeter + 0.08);
         }
 
-        let baseSpeed = (difficulty === 'EASY') ? 3.8 : (difficulty === 'NORMAL') ? 5.0 : 6.5;
-        let baseJump = (difficulty === 'EASY') ? -11.5 : (difficulty === 'NORMAL') ? -12.8 : -14.0;
+        if (this.isBoss && this.health <= this.maxHealth * 0.5 && !this.bossRageTriggered) {
+            this.bossRageTriggered = true;
+            audio.playBossRage();
+            triggerCameraShake(24, 18);
+            particleSystem.addShockwave(this.x + this.width / 2, this.y + 30, '#ff0033', 200);
+            particleSystem.addDamageText(this.x, this.y - 30, '👑 BOSS RAGE MODE ACTIVATED!', '#ff0033');
+        }
 
-        const speedFactor = (this.fighterClass === 'NINJA') ? 1.2 : (this.fighterClass === 'BRAWLER') ? 0.85 : 1.0;
-        this.speed = baseSpeed * speedFactor;
-        this.jumpForce = baseJump * (this.fighterClass === 'NINJA' ? 1.1 : 1.0);
+        // Drastically reduced movement speed & jump physics for ALL fighters (Human & CPU)
+        let baseSpeed = 2.4;
+        let baseJump = -8.5;
+
+        const speedFactor = (this.fighterClass === 'NINJA') ? 1.12 : (this.fighterClass === 'BRAWLER') ? 0.88 : 1.0;
+        this.speed = baseSpeed * speedFactor * (this.bossRageTriggered ? 1.2 : 1.0);
+        this.jumpForce = baseJump * (this.fighterClass === 'NINJA' ? 1.08 : 1.0);
+        this.gravity = 0.40;
+
+        if (this.bossRageTriggered && Math.random() < 0.3) {
+            particleSystem.createShadowSmoke(this.x + (Math.random() - 0.5) * 30, this.y + 30);
+        }
 
         if (this.stunTimer > 0) this.stunTimer--;
         if (this.invincibleTimer > 0) this.invincibleTimer--;
@@ -773,7 +891,7 @@ class Stickman {
 
         if (this.isSliding) {
             this.slideTimer--;
-            this.vx = this.facing * (this.speed * 1.8);
+            this.vx = this.facing * (this.speed * 1.35);
             particleSystem.createSlideSparks(this.x + this.width / 2, groundY, this.facing, this.color);
             if (this.slideTimer <= 0) {
                 this.isSliding = false;
@@ -796,7 +914,7 @@ class Stickman {
             this.isGrounded = false;
         }
 
-        this.vx *= this.isSliding ? 0.94 : 0.85;
+        this.vx *= this.isSliding ? 0.90 : 0.78;
         if (this.x < 30) this.x = 30;
         if (this.x + this.width > 1024 - 30) this.x = 1024 - 30 - this.width;
 
@@ -814,13 +932,13 @@ class Stickman {
         this.aiDecisionTimer--;
         const dist = Math.abs(target.x - this.x);
 
-        const reactionDelay = difficulty === 'EASY' ? 25 : difficulty === 'NORMAL' ? 12 : 5;
-        const blockProbability = difficulty === 'EASY' ? 0.1 : difficulty === 'NORMAL' ? 0.4 : 0.75;
+        const reactionDelay = difficulty === 'EASY' ? 45 : difficulty === 'NORMAL' ? 30 : 20;
+        const blockProbability = difficulty === 'EASY' ? 0.15 : difficulty === 'NORMAL' ? 0.35 : 0.6;
 
         if (target.isAttacking && dist < 90 && Math.random() < blockProbability) {
-            if (this.isGrounded && Math.random() < 0.5) {
+            if (this.isGrounded && Math.random() < 0.3) {
                 this.isSliding = true;
-                this.slideTimer = 14;
+                this.slideTimer = 18;
                 audio.playSlide();
             } else {
                 this.isBlocking = true;
@@ -833,8 +951,8 @@ class Stickman {
         if (this.aiDecisionTimer <= 0) {
             this.aiDecisionTimer = reactionDelay;
 
-            if (this.specialMeter >= 100 && dist < 120 && Math.random() < 0.8) {
-                this.executeSignatureSpecial(target, 18);
+            if (this.specialMeter >= 100 && dist < 120 && Math.random() < 0.6) {
+                this.executeSignatureSpecial(target, 30);
                 this.specialMeter = 0;
                 audio.playUltimate();
                 return;
@@ -843,20 +961,20 @@ class Stickman {
             if (dist <= 75) {
                 if (!this.isAttacking && !this.isSliding) {
                     const rnd = Math.random();
-                    if (rnd < 0.5) {
-                        this.startAttack('light', 14, 8);
+                    if (rnd < 0.55) {
+                        this.startAttack('light', 24, 8);
                         audio.playPunch();
                     } else {
-                        this.startAttack('heavy', 22, 16);
+                        this.startAttack('heavy', 36, 16);
                         audio.playPunch();
                     }
                 }
             } else {
                 const dir = target.x > this.x ? 1 : -1;
-                const cpuSpeedFactor = difficulty === 'EASY' ? 0.6 : difficulty === 'NORMAL' ? 0.85 : 1.0;
+                const cpuSpeedFactor = difficulty === 'EASY' ? 0.65 : difficulty === 'NORMAL' ? 0.85 : 1.0;
                 this.vx = dir * (this.speed * cpuSpeedFactor);
 
-                if (target.y < this.y - 30 && this.isGrounded && Math.random() < 0.6) {
+                if (target.y < this.y - 30 && this.isGrounded && Math.random() < 0.4) {
                     this.vy = this.jumpForce;
                     this.isGrounded = false;
                     audio.playJump();
@@ -898,7 +1016,7 @@ class Stickman {
         if (blockKey && this.isGrounded && !this.isSliding && !this.isAttacking) {
             if (leftKey || rightKey || Math.abs(this.vx) > 1) {
                 this.isSliding = true;
-                this.slideTimer = 16;
+                this.slideTimer = 18;
                 if (leftKey) this.facing = -1;
                 if (rightKey) this.facing = 1;
                 audio.playSlide();
@@ -925,10 +1043,10 @@ class Stickman {
             }
 
             if (lightKey && !this.isAttacking) {
-                this.startAttack('light', 14, 8);
+                this.startAttack('light', 24, 8);
                 audio.playPunch();
             } else if (heavyKey && !this.isAttacking) {
-                this.startAttack('heavy', 22, 16);
+                this.startAttack('heavy', 36, 16);
                 audio.playPunch();
             } else if (ultKey && !this.isAttacking && this.specialMeter >= 100) {
                 this.executeSignatureSpecial(target, 35);
@@ -951,6 +1069,7 @@ class Stickman {
                 this.facing = (target.x >= this.x) ? 1 : -1;
             }
             this.startAttack('ultimate', 32, dmg);
+            audio.playSlash();
             particleSystem.createShadowSmoke(this.x + 20, this.y + 30);
             particleSystem.addShockwave(this.x + this.width / 2, 460, '#aa00ff', 120);
             particleSystem.addDamageText(this.x, this.y - 25, 'SHADOW HURRICANE SLASH!', '#00f0ff');
@@ -959,6 +1078,7 @@ class Stickman {
             // BRAWLER: EARTHBREAKER FOOT GROUND SLAM
             this.vy = 10;
             this.startAttack('ultimate', 36, dmg);
+            audio.playExplosion();
             triggerCameraShake(18, 16);
             particleSystem.addShockwave(this.x + this.width / 2, 460, '#ffd700', 200);
             particleSystem.addShockwave(this.x + this.width / 2, 460, '#ff5500', 140);
@@ -966,16 +1086,18 @@ class Stickman {
             particleSystem.addDamageText(this.x, this.y - 25, 'EARTHBREAKER FOOT SLAM!', '#ffd700');
         } else if (this.fighterClass === 'WEAVER') {
             // ENERGY WEAVER: SUPERNOVA PLASMA SPHERE BURST
-            this.startAttack('ultimate', 28, dmg);
-            const projVx = this.facing * 14;
+            this.startAttack('ultimate', 38, dmg);
+            audio.playLaser();
+            const projVx = this.facing * 9.0;
             particleSystem.addProjectile(new Projectile(this.x + (this.facing * 40), this.y + 30, projVx, dmg, this));
             particleSystem.addShockwave(this.x + (this.facing * 40), this.y + 30, '#aa00ff', 90);
             particleSystem.addDamageText(this.x, this.y - 25, 'SUPERNOVA PLASMA SPHERE!', '#aa00ff');
             triggerCameraShake(10, 8);
         } else if (this.fighterClass === 'KNIGHT') {
             // SHADOW KNIGHT: PHANTOM BLADE GRAND EXECUTION
-            this.vx = this.facing * 20;
-            this.startAttack('ultimate', 32, dmg);
+            this.vx = this.facing * 12;
+            this.startAttack('ultimate', 42, dmg);
+            audio.playSlash();
             particleSystem.createSlideSparks(this.x, 460, this.facing, '#ff0055');
             particleSystem.createShadowSmoke(this.x, this.y + 30);
             particleSystem.addShockwave(this.x + this.width / 2, 460, '#ff0055', 150);
@@ -983,17 +1105,19 @@ class Stickman {
             triggerCameraShake(15, 12);
         } else if (this.fighterClass === 'STORM') {
             // STORM WARRIOR: LIGHTNING SPEAR THUNDER STORM
-            this.startAttack('ultimate', 30, dmg);
-            const projVx = this.facing * 16;
+            this.startAttack('ultimate', 40, dmg);
+            audio.playLaser();
+            const projVx = this.facing * 10.0;
             particleSystem.addProjectile(new Projectile(this.x + (this.facing * 40), this.y + 20, projVx, dmg, this));
             particleSystem.addShockwave(this.x + this.width / 2, 460, '#00aaff', 160);
             particleSystem.addDamageText(this.x, this.y - 25, 'LIGHTNING THUNDER STORM!', '#00aaff');
             triggerCameraShake(14, 11);
         } else if (this.fighterClass === 'HUNTER') {
             // ARCANE HUNTER: CELESTIAL ARROW VOLLEY
-            this.startAttack('ultimate', 26, dmg);
+            this.startAttack('ultimate', 36, dmg);
+            audio.playLaser();
             for (let i = -1; i <= 1; i++) {
-                particleSystem.addProjectile(new Projectile(this.x + (this.facing * 30), this.y + 10 + i * 15, this.facing * (14 + i * 2), dmg * 0.4, this));
+                particleSystem.addProjectile(new Projectile(this.x + (this.facing * 30), this.y + 10 + i * 15, this.facing * (9.5 + i * 1.5), dmg * 0.4, this));
             }
             particleSystem.addShockwave(this.x + this.width / 2, this.y + 30, '#00ff66', 100);
             particleSystem.addDamageText(this.x, this.y - 25, 'CELESTIAL ARROW VOLLEY!', '#00ff66');
@@ -1001,6 +1125,7 @@ class Stickman {
         } else if (this.fighterClass === 'INFERNO') {
             // INFERNO BRAWLER: ERUPTING VOLCANIC FLAME PILLAR
             this.startAttack('ultimate', 34, dmg);
+            audio.playExplosion();
             triggerCameraShake(16, 14);
             particleSystem.addShockwave(this.x + this.width / 2, 460, '#ff5500', 180);
             particleSystem.createHitSparks(this.x + this.width / 2, 380, '#ff2200');
@@ -1008,6 +1133,7 @@ class Stickman {
         } else if (this.fighterClass === 'MONK') {
             // SPIRIT MONK: DRAGON PALM KI BLAST
             this.startAttack('ultimate', 30, dmg);
+            audio.playLaser();
             particleSystem.addShockwave(this.x + (this.facing * 50), this.y + 30, '#38bdf8', 140);
             particleSystem.createHitSparks(this.x + (this.facing * 50), this.y + 30, '#38bdf8');
             particleSystem.addDamageText(this.x, this.y - 25, 'DRAGON PALM KI BLAST!', '#38bdf8');
@@ -1619,6 +1745,15 @@ if (touchToggleBtn) {
     });
 }
 
+const stepModeSelect = document.getElementById('step-mode-select');
+const stepSetupMatch = document.getElementById('step-setup-match');
+const setupModeTitle = document.getElementById('setup-mode-title');
+const btnBackToModes = document.getElementById('btn-back-to-modes');
+const btnSettingsToggle = document.getElementById('btn-settings-toggle');
+const settingsModal = document.getElementById('settings-modal');
+const btnCloseSettings = document.getElementById('btn-close-settings');
+const btnExitGame = document.getElementById('btn-exit-game');
+
 document.querySelectorAll('.mode-card').forEach(card => {
     card.addEventListener('click', () => {
         document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
@@ -1629,23 +1764,99 @@ document.querySelectorAll('.mode-card').forEach(card => {
         const p3Hud = document.getElementById('p3-hud');
         const p4Hud = document.getElementById('p4-hud');
 
-        if (selectedMode === 'CPU') {
+        const p3ClassGroup = document.getElementById('p3-class-group');
+        const p4ClassGroup = document.getElementById('p4-class-group');
+        const p2ClassGroup = document.getElementById('p2-class-group');
+
+        let modeNameStr = '1 PLAYER vs CPU';
+
+        if (selectedMode === 'ARCADE') {
+            modeNameStr = 'STORY ARCADE MODE';
+            if (p2Label) p2Label.textContent = 'STAGE OPPONENT';
+            if (p3Hud) p3Hud.classList.add('hidden');
+            if (p4Hud) p4Hud.classList.add('hidden');
+            if (p3ClassGroup) p3ClassGroup.classList.add('hidden');
+            if (p4ClassGroup) p4ClassGroup.classList.add('hidden');
+            if (p2ClassGroup) p2ClassGroup.classList.add('hidden');
+        } else if (selectedMode === 'CPU') {
+            modeNameStr = '1 PLAYER vs CPU';
             if (p2Label) p2Label.textContent = 'CPU (ENEMY)';
             if (p3Hud) p3Hud.classList.add('hidden');
             if (p4Hud) p4Hud.classList.add('hidden');
+            if (p3ClassGroup) p3ClassGroup.classList.add('hidden');
+            if (p4ClassGroup) p4ClassGroup.classList.add('hidden');
+            if (p2ClassGroup) p2ClassGroup.classList.remove('hidden');
         } else if (selectedMode === 'LOCAL') {
+            modeNameStr = '1v1 LOCAL VERSUS';
             if (p2Label) p2Label.textContent = 'PLAYER 2';
             if (p3Hud) p3Hud.classList.add('hidden');
             if (p4Hud) p4Hud.classList.add('hidden');
+            if (p3ClassGroup) p3ClassGroup.classList.add('hidden');
+            if (p4ClassGroup) p4ClassGroup.classList.add('hidden');
+            if (p2ClassGroup) p2ClassGroup.classList.remove('hidden');
         } else if (selectedMode === 'TEAM2V2') {
+            modeNameStr = '2v2 TEAM BRAWL';
             if (p2Label) p2Label.textContent = 'RED TEAM 1';
             if (p3Hud) p3Hud.classList.remove('hidden');
             if (p4Hud) p4Hud.classList.remove('hidden');
+            if (p3ClassGroup) p3ClassGroup.classList.remove('hidden');
+            if (p4ClassGroup) p4ClassGroup.classList.remove('hidden');
+            if (p2ClassGroup) p2ClassGroup.classList.remove('hidden');
         }
+
+        if (setupModeTitle) setupModeTitle.textContent = `MODE: ${modeNameStr}`;
+
+        if (stepModeSelect) stepModeSelect.classList.add('hidden');
+        if (stepSetupMatch) stepSetupMatch.classList.remove('hidden');
 
         syncUIElements();
     });
 });
+
+if (btnBackToModes) {
+    btnBackToModes.addEventListener('click', () => {
+        if (stepSetupMatch) stepSetupMatch.classList.add('hidden');
+        if (stepModeSelect) stepModeSelect.classList.remove('hidden');
+    });
+}
+
+if (btnSettingsToggle) {
+    btnSettingsToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        audio.init();
+        if (settingsModal) settingsModal.classList.remove('hidden');
+    });
+}
+
+if (btnCloseSettings) {
+    btnCloseSettings.addEventListener('click', () => {
+        if (settingsModal) settingsModal.classList.add('hidden');
+    });
+}
+
+if (btnExitGame) {
+    btnExitGame.addEventListener('click', () => {
+        const so = document.getElementById('start-overlay');
+        const eo = document.getElementById('exit-overlay');
+        if (so) so.classList.add('hidden');
+        if (eo) eo.classList.remove('hidden');
+        try { window.close(); } catch (e) {}
+    });
+}
+
+const btnReenterGame = document.getElementById('btn-reenter-game');
+if (btnReenterGame) {
+    btnReenterGame.addEventListener('click', () => {
+        const so = document.getElementById('start-overlay');
+        const eo = document.getElementById('exit-overlay');
+        if (eo) eo.classList.add('hidden');
+        if (so) so.classList.remove('hidden');
+        const sms = document.getElementById('step-mode-select');
+        const ssm = document.getElementById('step-setup-match');
+        if (ssm) ssm.classList.add('hidden');
+        if (sms) sms.classList.remove('hidden');
+    });
+}
 
 document.querySelectorAll('.diff-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -1661,6 +1872,7 @@ if (btnStart) {
         audio.init();
         const so = document.getElementById('start-overlay');
         if (so) so.classList.add('hidden');
+        if (selectedMode === 'ARCADE') arcadeStage = 1;
         startMatch();
     });
 }
@@ -1672,6 +1884,7 @@ if (btnRematch) {
         if (go) go.classList.add('hidden');
         team1Wins = 0;
         team2Wins = 0;
+        if (selectedMode === 'ARCADE') arcadeStage = 1;
         updateScoreDots();
         startMatch();
     });
@@ -1696,9 +1909,44 @@ if (soundToggleBtn) {
     });
 }
 
+let arcadeStage = 1;
+const arcadeStages = [
+    { stage: 1, title: 'STAGE 1: SHADOW SHINOBI', class: 'NINJA', arena: 'TEMPLE', color: '#00f0ff', hat: 'BANDANA', hp: 100 },
+    { stage: 2, title: 'STAGE 2: HEAVY BOXER', class: 'BRAWLER', arena: 'CYBER', color: '#ffd700', hat: 'VISOR', hp: 120 },
+    { stage: 3, title: 'STAGE 3: VOLCANIC LORD', class: 'INFERNO', arena: 'VOLCANO', color: '#ff5500', hat: 'COWBOY', hp: 140 },
+    { stage: 4, title: 'STAGE 4: SKY MAGE', class: 'WEAVER', arena: 'TEMPLE', color: '#aa00ff', hat: 'TOPHAT', hp: 150 },
+    { stage: 5, title: 'FINAL BOSS: SHADOW OVERLORD 👑', class: 'KNIGHT', arena: 'VOLCANO', color: '#ff0033', hat: 'CROWN', hp: 350, isBoss: true }
+];
+
+function getArcadeStageInfo() {
+    const idx = Math.max(0, Math.min(arcadeStages.length - 1, (arcadeStage || 1) - 1));
+    return arcadeStages[idx] || arcadeStages[0];
+}
+
 function setupFighters() {
     fighters = [];
-    if (selectedMode === 'CPU') {
+    if (selectedMode === 'ARCADE') {
+        const stageInfo = getArcadeStageInfo();
+        selectedArena = stageInfo.arena || 'VOLCANO';
+        
+        fighters.push(new Stickman('p1', 200, 300, p1Color, p1Class, p1Hat, 1, false));
+        
+        const bossEnemy = new Stickman('p2', 750, 300, stageInfo.color, stageInfo.class, stageInfo.hat, 2, true);
+        bossEnemy.maxHealth = stageInfo.hp || 100;
+        bossEnemy.health = stageInfo.hp || 100;
+        if (stageInfo.isBoss) {
+            bossEnemy.isBoss = true;
+            bossEnemy.bossRageTriggered = false;
+        }
+        fighters.push(bossEnemy);
+
+        const p2Label = document.getElementById('p2-label');
+        if (p2Label) {
+            p2Label.textContent = stageInfo.title;
+            p2Label.style.color = stageInfo.color;
+            p2Label.style.textShadow = `0 0 12px ${stageInfo.color}`;
+        }
+    } else if (selectedMode === 'CPU') {
         fighters.push(new Stickman('p1', 200, 300, p1Color, p1Class, p1Hat, 1, false));
         fighters.push(new Stickman('p2', 750, 300, p2Color, p2Class, p2Hat, 2, true));
     } else if (selectedMode === 'LOCAL') {
@@ -1742,14 +1990,21 @@ function startRound() {
     const mt = document.getElementById('match-timer');
     const rl = document.getElementById('round-label');
     if (mt) mt.textContent = matchTime;
-    if (rl) rl.textContent = `ROUND ${currentRound}`;
+    
+    const stageInfo = getArcadeStageInfo();
+    if (selectedMode === 'ARCADE') {
+        if (rl) rl.textContent = stageInfo.title;
+    } else {
+        if (rl) rl.textContent = `ROUND ${currentRound}`;
+    }
 
     const announcerOverlay = document.getElementById('announcer-overlay');
     const announcerText = document.getElementById('announcer-text');
 
     gameState = 'COUNTDOWN';
     if (announcerOverlay) announcerOverlay.classList.remove('hidden');
-    if (announcerText) announcerText.textContent = `ROUND ${currentRound}`;
+    if (announcerText) announcerText.textContent = (selectedMode === 'ARCADE') ? stageInfo.title : `ROUND ${currentRound}`;
+    audio.playAnnouncerChime();
 
     setTimeout(() => {
         if (announcerText) announcerText.textContent = 'READY...';
@@ -1780,6 +2035,21 @@ function startTimer() {
 
 let koZoomX = 512;
 let koZoomY = 300;
+
+function getColorName(hex) {
+    if (!hex) return 'PLAYER';
+    const h = hex.toLowerCase();
+    if (h === '#00f0ff') return 'CYAN';
+    if (h === '#ff0055' || h === '#e60000') return 'RED';
+    if (h === '#00ff66') return 'GREEN';
+    if (h === '#ffd700') return 'GOLD';
+    if (h === '#aa00ff') return 'PURPLE';
+    if (h === '#ff6600') return 'ORANGE';
+    if (h === '#ff00aa') return 'PINK';
+    if (h === '#ffffff') return 'WHITE';
+    if (h === '#00f5c4') return 'TEAL';
+    return 'FIGHTER';
+}
 
 function handleRoundEnd(reason, defender = null) {
     if (gameState === 'ROUND_OVER' || gameState === 'MATCH_OVER') return;
@@ -1814,24 +2084,40 @@ function handleRoundEnd(reason, defender = null) {
 
     if (announcerText) announcerText.textContent = (reason === 'KO') ? 'K.O.!' : 'TIME OVER!';
 
+    const p1ColorName = getColorName(p1Color);
+    const p2ColorName = getColorName(p2Color);
+
     setTimeout(() => {
         if (roundWinnerTeam === 1) {
             team1Wins++;
-            if (announcerText) announcerText.textContent = 'BLUE TEAM WINS!';
+            if (announcerText) announcerText.textContent = (selectedMode === 'ARCADE') ? 'STAGE CLEARED!' : `${p1ColorName} FIGHTER WINS!`;
         } else if (roundWinnerTeam === 2) {
             team2Wins++;
-            if (announcerText) announcerText.textContent = 'RED TEAM WINS!';
+            if (announcerText) announcerText.textContent = (selectedMode === 'ARCADE') ? 'DEFEATED!' : `${p2ColorName} FIGHTER WINS!`;
         } else {
             if (announcerText) announcerText.textContent = 'DRAW!';
         }
         updateScoreDots();
 
         setTimeout(() => {
-            if (team1Wins >= 2 || team2Wins >= 2) {
-                handleMatchEnd(team1Wins >= 2 ? 1 : 2);
+            if (selectedMode === 'ARCADE') {
+                if (roundWinnerTeam === 1) {
+                    if (arcadeStage < 5) {
+                        arcadeStage++;
+                        startMatch();
+                    } else {
+                        handleMatchEnd(1);
+                    }
+                } else {
+                    handleMatchEnd(2);
+                }
             } else {
-                currentRound++;
-                startRound();
+                if (team1Wins >= 2 || team2Wins >= 2) {
+                    handleMatchEnd(team1Wins >= 2 ? 1 : 2);
+                } else {
+                    currentRound++;
+                    startRound();
+                }
             }
         }, 1800);
     }, 1400);
@@ -1844,14 +2130,32 @@ function handleMatchEnd(winningTeam) {
     const gameOverOverlay = document.getElementById('gameover-overlay');
     const winnerTitle = document.getElementById('winner-title');
 
+    const stageInfo = getArcadeStageInfo();
+    const p1ColorName = getColorName(p1Color);
+    const p2ColorName = getColorName(p2Color);
+
     if (winnerTitle) {
-        winnerTitle.textContent = (winningTeam === 1) ? 'BLUE TEAM WINS MATCH!' : 'RED TEAM WINS MATCH!';
-        winnerTitle.style.color = (winningTeam === 1) ? p1Color : p2Color;
-        winnerTitle.style.textShadow = `0 0 15px ${(winningTeam === 1) ? p1Color : p2Color}`;
+        if (selectedMode === 'ARCADE') {
+            if (winningTeam === 1) {
+                winnerTitle.textContent = '🏆 STORY ARCADE CHAMPION! YOU DEFEATED SHADOW OVERLORD!';
+                winnerTitle.style.color = '#ffd700';
+                winnerTitle.style.textShadow = '0 0 20px #ffd700';
+            } else {
+                winnerTitle.textContent = `DEFEATED ON ${stageInfo.title}`;
+                winnerTitle.style.color = '#ff0055';
+                winnerTitle.style.textShadow = '0 0 15px #ff0055';
+            }
+        } else {
+            const winColorName = (winningTeam === 1) ? p1ColorName : p2ColorName;
+            const winColorHex = (winningTeam === 1) ? p1Color : p2Color;
+            winnerTitle.textContent = `${winColorName} FIGHTER WINS MATCH!`;
+            winnerTitle.style.color = winColorHex;
+            winnerTitle.style.textShadow = `0 0 15px ${winColorHex}`;
+        }
     }
 
     const sr = document.getElementById('stat-rounds');
-    if (sr) sr.textContent = `${team1Wins} - ${team2Wins}`;
+    if (sr) sr.textContent = (selectedMode === 'ARCADE') ? `Stage ${arcadeStage} / 5` : `${team1Wins} - ${team2Wins}`;
     if (gameOverOverlay) gameOverOverlay.classList.remove('hidden');
 }
 

@@ -123,191 +123,238 @@
             <!-- Start Screen Overlay -->
             <div id="start-overlay" class="overlay-screen">
                 <div class="modal-card">
-                    <div class="modal-header">
-                        <h1 class="game-title">BRAWL <span class="neon-highlight">STICKS</span></h1>
-                        <p class="subtitle">Customize Game Mode, Classes, Hats & Key Bindings</p>
+                    <!-- Top Bar Header with Settings Gear -->
+                    <div class="modal-header header-with-gear">
+                        <div class="header-titles">
+                            <h1 class="game-title">BRAWL <span class="neon-highlight">STICKS</span></h1>
+                        </div>
+                        <button id="btn-settings-toggle" class="settings-gear-btn" title="Open Settings & Controls">⚙️ SETTINGS</button>
                     </div>
 
-                    <!-- Scrollable Customization Content -->
-                    <div class="modal-body">
-                        <!-- Mode Selector Cards -->
-                        <div class="mode-selector">
-                            <div class="mode-card active" data-mode="CPU">
-                                <div class="mode-icon">🤖</div>
-                                <h3>1 PLAYER vs CPU</h3>
-                                <p>Fight CPU via Touch, Keys or Mouse</p>
+                    <!-- 📍 STEP 1: MODE SELECTION PAGE -->
+                    <div id="step-mode-select" class="menu-step">
+                        <div class="mode-selector-grid">
+                            <div class="mode-card mode-entry-card" data-mode="ARCADE">
+                                <div class="mode-icon">🏆</div>
+                                <h3 class="gold-text">STORY ARCADE MODE</h3>
+                                <p>5-Stage Tournament Ladder & Final Boss Overlord</p>
+                                <button class="btn-step-action">ENTER ARCADE →</button>
                             </div>
-                            <div class="mode-card" data-mode="LOCAL">
+                            <div class="mode-card mode-entry-card" data-mode="LOCAL">
                                 <div class="mode-icon">⚔️</div>
-                                <h3>1v1 LOCAL</h3>
-                                <p>Player 1 vs Player 2 on 1 keyboard</p>
+                                <h3 class="cyan-text">1v1 LOCAL VERSUS</h3>
+                                <p>Player 1 vs Player 2 on 1 Keyboard</p>
+                                <button class="btn-step-action">SELECT 1v1 LOCAL →</button>
                             </div>
-                            <div class="mode-card" data-mode="TEAM2V2">
+                            <div class="mode-card mode-entry-card" data-mode="CPU">
+                                <div class="mode-icon">🤖</div>
+                                <h3 class="magenta-text">1 PLAYER vs CPU</h3>
+                                <p>Practice vs AI Bot with Custom Difficulty</p>
+                                <button class="btn-step-action">SELECT VS CPU →</button>
+                            </div>
+                            <div class="mode-card mode-entry-card" data-mode="TEAM2V2">
                                 <div class="mode-icon">🔥</div>
-                                <h3>2v2 TEAM BRAWL</h3>
-                                <p>4 Fighters Chaos Arena Battle</p>
+                                <h3 class="orange-text">2v2 TEAM BRAWL</h3>
+                                <p>4 Fighters Chaos Arena Team Battle</p>
+                                <button class="btn-step-action">SELECT 2v2 BRAWL →</button>
                             </div>
                         </div>
+                        <div class="mode-exit-bar">
+                            <button id="btn-exit-game" class="btn btn-secondary exit-btn">🚪 EXIT GAME</button>
+                        </div>
+                    </div>
 
-                        <!-- 🏟️ INTERACTIVE 2D STAGE ARENA SELECTOR -->
-                        <div class="arena-picker-section">
-                            <span class="picker-title cyan-text">SELECT STAGE ARENA & HAZARD:</span>
-                            <div class="arena-card-list" id="arena-list">
-                                <div class="arena-card active" data-arena="VOLCANO">
-                                    <span class="arena-icon">🌋</span>
-                                    <div class="arena-info">
-                                        <span class="arena-name">VOLCANIC MAGMA PIT</span>
-                                        <span class="arena-hazard">Hazard: Falling Fire Meteorites & Lava Burn</span>
+                    <!-- 📍 STEP 2: FIGHTER & MATCH SETUP PAGE -->
+                    <div id="step-setup-match" class="menu-step hidden">
+                        <div class="step-nav-bar">
+                            <button id="btn-back-to-modes" class="btn btn-secondary back-btn">← BACK TO MODE SELECT</button>
+                            <span class="step-mode-badge" id="setup-mode-title">MODE: 1 PLAYER vs CPU</span>
+                        </div>
+
+                        <!-- Scrollable Customization Body -->
+                        <div class="modal-body">
+                            <!-- 🏟️ INTERACTIVE 2D STAGE ARENA SELECTOR -->
+                            <div class="arena-picker-section">
+                                <span class="picker-title cyan-text">SELECT STAGE ARENA & HAZARD:</span>
+                                <div class="arena-card-list" id="arena-list">
+                                    <div class="arena-card active" data-arena="VOLCANO">
+                                        <span class="arena-icon">🌋</span>
+                                        <div class="arena-info">
+                                            <span class="arena-name">VOLCANIC MAGMA PIT</span>
+                                            <span class="arena-hazard">Hazard: Falling Fire Meteorites & Lava Burn</span>
+                                        </div>
+                                    </div>
+                                    <div class="arena-card" data-arena="CYBER">
+                                        <span class="arena-icon">🌆</span>
+                                        <div class="arena-info">
+                                            <span class="arena-name">CYBER ROOFTOP</span>
+                                            <span class="arena-hazard">Hazard: Electric Fences & Plasma Blast</span>
+                                        </div>
+                                    </div>
+                                    <div class="arena-card" data-arena="TEMPLE">
+                                        <span class="arena-icon">⛩️</span>
+                                        <div class="arena-info">
+                                            <span class="arena-name">CELESTIAL SKY DOJO</span>
+                                            <span class="arena-hazard">Hazard: Falling Sakura & Wind Gusts</span>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="arena-card" data-arena="CYBER">
-                                    <span class="arena-icon">🌆</span>
-                                    <div class="arena-info">
-                                        <span class="arena-name">CYBER ROOFTOP</span>
-                                        <span class="arena-hazard">Hazard: Electric Fences & Plasma Blast</span>
+                            </div>
+
+                            <!-- AI Difficulty Selector -->
+                            <div class="difficulty-picker" id="diff-picker">
+                                <span class="picker-label">AI DIFFICULTY:</span>
+                                <button class="diff-btn" data-diff="EASY">EASY</button>
+                                <button class="diff-btn active" data-diff="NORMAL">NORMAL</button>
+                                <button class="diff-btn" data-diff="HARD">HARD</button>
+                            </div>
+
+                            <!-- 🥷 8 CHARACTER CLASSES SELECTOR -->
+                            <div class="class-picker-section">
+                                <div class="class-picker-group">
+                                    <span class="picker-title cyan-text">P1 CLASS:</span>
+                                    <div class="class-card-list" id="p1-class-list">
+                                        <div class="class-card active" data-class="NINJA"><span class="class-icon">🥷</span><span class="class-name">NINJA</span></div>
+                                        <div class="class-card" data-class="BRAWLER"><span class="class-icon">🥊</span><span class="class-name">BRAWLER</span></div>
+                                        <div class="class-card" data-class="WEAVER"><span class="class-icon">🔮</span><span class="class-name">WEAVER</span></div>
+                                        <div class="class-card" data-class="KNIGHT"><span class="class-icon">⚔️</span><span class="class-name">KNIGHT</span></div>
+                                        <div class="class-card" data-class="STORM"><span class="class-icon">⚡</span><span class="class-name">STORM</span></div>
+                                        <div class="class-card" data-class="HUNTER"><span class="class-icon">🏹</span><span class="class-name">HUNTER</span></div>
+                                        <div class="class-card" data-class="INFERNO"><span class="class-icon">🔥</span><span class="class-name">INFERNO</span></div>
+                                        <div class="class-card" data-class="MONK"><span class="class-icon">☯️</span><span class="class-name">MONK</span></div>
                                     </div>
                                 </div>
-                                <div class="arena-card" data-arena="TEMPLE">
-                                    <span class="arena-icon">⛩️</span>
-                                    <div class="arena-info">
-                                        <span class="arena-name">CELESTIAL SKY DOJO</span>
-                                        <span class="arena-hazard">Hazard: Falling Sakura & Wind Gusts</span>
+
+                                <div class="class-picker-group" id="p2-class-group">
+                                    <span class="picker-title magenta-text">P2 / ENEMY CLASS:</span>
+                                    <div class="class-card-list" id="p2-class-list">
+                                        <div class="class-card" data-class="NINJA"><span class="class-icon">🥷</span><span class="class-name">NINJA</span></div>
+                                        <div class="class-card active" data-class="BRAWLER"><span class="class-icon">🥊</span><span class="class-name">BRAWLER</span></div>
+                                        <div class="class-card" data-class="WEAVER"><span class="class-icon">🔮</span><span class="class-name">WEAVER</span></div>
+                                        <div class="class-card" data-class="KNIGHT"><span class="class-icon">⚔️</span><span class="class-name">KNIGHT</span></div>
+                                        <div class="class-card" data-class="STORM"><span class="class-icon">⚡</span><span class="class-name">STORM</span></div>
+                                        <div class="class-card" data-class="HUNTER"><span class="class-icon">🏹</span><span class="class-name">HUNTER</span></div>
+                                        <div class="class-card" data-class="INFERNO"><span class="class-icon">🔥</span><span class="class-name">INFERNO</span></div>
+                                        <div class="class-card" data-class="MONK"><span class="class-icon">☯️</span><span class="class-name">MONK</span></div>
+                                    </div>
+                                </div>
+
+                                <!-- P3 Class (2v2 Team 1 Ally) -->
+                                <div class="class-picker-group team2v2-only hidden" id="p3-class-group">
+                                    <span class="picker-title cyan-text">P3 ALLY CLASS (2v2):</span>
+                                    <div class="class-card-list" id="p3-class-list">
+                                        <div class="class-card active" data-class="NINJA"><span class="class-icon">🥷</span><span class="class-name">NINJA</span></div>
+                                        <div class="class-card" data-class="BRAWLER"><span class="class-icon">🥊</span><span class="class-name">BRAWLER</span></div>
+                                        <div class="class-card" data-class="WEAVER"><span class="class-icon">🔮</span><span class="class-name">WEAVER</span></div>
+                                        <div class="class-card" data-class="KNIGHT"><span class="class-icon">⚔️</span><span class="class-name">KNIGHT</span></div>
+                                        <div class="class-card" data-class="STORM"><span class="class-icon">⚡</span><span class="class-name">STORM</span></div>
+                                        <div class="class-card" data-class="HUNTER"><span class="class-icon">🏹</span><span class="class-name">HUNTER</span></div>
+                                        <div class="class-card" data-class="INFERNO"><span class="class-icon">🔥</span><span class="class-name">INFERNO</span></div>
+                                        <div class="class-card" data-class="MONK"><span class="class-icon">☯️</span><span class="class-name">MONK</span></div>
+                                    </div>
+                                </div>
+
+                                <!-- P4 Class (2v2 Team 2 Ally) -->
+                                <div class="class-picker-group team2v2-only hidden" id="p4-class-group">
+                                    <span class="picker-title magenta-text">P4 ENEMY ALLY CLASS (2v2):</span>
+                                    <div class="class-card-list" id="p4-class-list">
+                                        <div class="class-card" data-class="NINJA"><span class="class-icon">🥷</span><span class="class-name">NINJA</span></div>
+                                        <div class="class-card" data-class="BRAWLER"><span class="class-icon">🥊</span><span class="class-name">BRAWLER</span></div>
+                                        <div class="class-card" data-class="WEAVER"><span class="class-icon">🔮</span><span class="class-name">WEAVER</span></div>
+                                        <div class="class-card active" data-class="KNIGHT"><span class="class-icon">⚔️</span><span class="class-name">KNIGHT</span></div>
+                                        <div class="class-card" data-class="STORM"><span class="class-icon">⚡</span><span class="class-name">STORM</span></div>
+                                        <div class="class-card" data-class="HUNTER"><span class="class-icon">🏹</span><span class="class-name">HUNTER</span></div>
+                                        <div class="class-card" data-class="INFERNO"><span class="class-icon">🔥</span><span class="class-name">INFERNO</span></div>
+                                        <div class="class-card" data-class="MONK"><span class="class-icon">☯️</span><span class="class-name">MONK</span></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 👑 HATS & ACCESSORIES SELECTOR -->
+                            <div class="hat-picker-section">
+                                <div class="hat-picker-group">
+                                    <span class="picker-title cyan-text">P1 HAT:</span>
+                                    <div class="hat-list" id="p1-hat-list">
+                                        <button class="hat-btn active" data-hat="NONE">NONE</button>
+                                        <button class="hat-btn" data-hat="CROWN">👑 CROWN</button>
+                                        <button class="hat-btn" data-hat="SHADES">🕶️ SHADES</button>
+                                        <button class="hat-btn" data-hat="BANDANA">🥷 HEADBAND</button>
+                                        <button class="hat-btn" data-hat="COWBOY">🤠 COWBOY</button>
+                                        <button class="hat-btn" data-hat="VISOR">🪖 VISOR</button>
+                                        <button class="hat-btn" data-hat="TOPHAT">🎩 TOPHAT</button>
+                                    </div>
+                                </div>
+
+                                <div class="hat-picker-group">
+                                    <span class="picker-title magenta-text">P2 HAT:</span>
+                                    <div class="hat-list" id="p2-hat-list">
+                                        <button class="hat-btn active" data-hat="NONE">NONE</button>
+                                        <button class="hat-btn" data-hat="CROWN">👑 CROWN</button>
+                                        <button class="hat-btn" data-hat="SHADES">🕶️ SHADES</button>
+                                        <button class="hat-btn" data-hat="BANDANA">🥷 HEADBAND</button>
+                                        <button class="hat-btn" data-hat="COWBOY">🤠 COWBOY</button>
+                                        <button class="hat-btn" data-hat="VISOR">🪖 VISOR</button>
+                                        <button class="hat-btn" data-hat="TOPHAT">🎩 TOPHAT</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 🎨 COLOR PALETTE -->
+                            <div class="color-picker-section">
+                                <div class="color-picker-group">
+                                    <span class="color-picker-title cyan-text">P1 COLOR:</span>
+                                    <div class="swatch-list" id="p1-color-swatches">
+                                        <span class="swatch active" data-color="#00f0ff" style="background: #00f0ff;"></span>
+                                        <span class="swatch" data-color="#ff0055" style="background: #ff0055;"></span>
+                                        <span class="swatch" data-color="#00ff66" style="background: #00ff66;"></span>
+                                        <span class="swatch" data-color="#ffd700" style="background: #ffd700;"></span>
+                                        <span class="swatch" data-color="#aa00ff" style="background: #aa00ff;"></span>
+                                        <span class="swatch" data-color="#ff6600" style="background: #ff6600;"></span>
+                                        <span class="swatch" data-color="#ff00aa" style="background: #ff00aa;"></span>
+                                        <span class="swatch" data-color="#ffffff" style="background: #ffffff;"></span>
+                                        <span class="swatch" data-color="#00f5c4" style="background: #00f5c4;"></span>
+                                        <span class="swatch" data-color="#e60000" style="background: #e60000;"></span>
+                                    </div>
+                                </div>
+
+                                <div class="color-picker-group">
+                                    <span class="color-picker-title magenta-text">P2 / ENEMY COLOR:</span>
+                                    <div class="swatch-list" id="p2-color-swatches">
+                                        <span class="swatch" data-color="#00f0ff" style="background: #00f0ff;"></span>
+                                        <span class="swatch active" data-color="#ff0055" style="background: #ff0055;"></span>
+                                        <span class="swatch" data-color="#00ff66" style="background: #00ff66;"></span>
+                                        <span class="swatch" data-color="#ffd700" style="background: #ffd700;"></span>
+                                        <span class="swatch" data-color="#aa00ff" style="background: #aa00ff;"></span>
+                                        <span class="swatch" data-color="#ff6600" style="background: #ff6600;"></span>
+                                        <span class="swatch" data-color="#ff00aa" style="background: #ff00aa;"></span>
+                                        <span class="swatch" data-color="#ffffff" style="background: #ffffff;"></span>
+                                        <span class="swatch" data-color="#00f5c4" style="background: #00f5c4;"></span>
+                                        <span class="swatch" data-color="#e60000" style="background: #e60000;"></span>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- AI Difficulty Selector -->
-                        <div class="difficulty-picker" id="diff-picker">
-                            <span class="picker-label">AI DIFFICULTY:</span>
-                            <button class="diff-btn" data-diff="EASY">EASY</button>
-                            <button class="diff-btn active" data-diff="NORMAL">NORMAL</button>
-                            <button class="diff-btn" data-diff="HARD">HARD</button>
+                        <!-- Action Bar for Starting Match -->
+                        <div class="action-buttons">
+                            <button id="btn-start" class="btn btn-primary btn-large">⚔️ FIGHT!</button>
                         </div>
+                    </div>
+                </div>
+            </div>
 
-                        <!-- 🥷 8 CHARACTER CLASSES SELECTOR -->
-                        <div class="class-picker-section">
-                            <div class="class-picker-group">
-                                <span class="picker-title cyan-text">P1 CLASS:</span>
-                                <div class="class-card-list" id="p1-class-list">
-                                    <div class="class-card active" data-class="NINJA"><span class="class-icon">🥷</span><span class="class-name">NINJA</span></div>
-                                    <div class="class-card" data-class="BRAWLER"><span class="class-icon">🥊</span><span class="class-name">BRAWLER</span></div>
-                                    <div class="class-card" data-class="WEAVER"><span class="class-icon">🔮</span><span class="class-name">WEAVER</span></div>
-                                    <div class="class-card" data-class="KNIGHT"><span class="class-icon">⚔️</span><span class="class-name">KNIGHT</span></div>
-                                    <div class="class-card" data-class="STORM"><span class="class-icon">⚡</span><span class="class-name">STORM</span></div>
-                                    <div class="class-card" data-class="HUNTER"><span class="class-icon">🏹</span><span class="class-name">HUNTER</span></div>
-                                    <div class="class-card" data-class="INFERNO"><span class="class-icon">🔥</span><span class="class-name">INFERNO</span></div>
-                                    <div class="class-card" data-class="MONK"><span class="class-icon">☯️</span><span class="class-name">MONK</span></div>
-                                </div>
-                            </div>
-
-                            <div class="class-picker-group">
-                                <span class="picker-title magenta-text">P2 / ENEMY CLASS:</span>
-                                <div class="class-card-list" id="p2-class-list">
-                                    <div class="class-card" data-class="NINJA"><span class="class-icon">🥷</span><span class="class-name">NINJA</span></div>
-                                    <div class="class-card active" data-class="BRAWLER"><span class="class-icon">🥊</span><span class="class-name">BRAWLER</span></div>
-                                    <div class="class-card" data-class="WEAVER"><span class="class-icon">🔮</span><span class="class-name">WEAVER</span></div>
-                                    <div class="class-card" data-class="KNIGHT"><span class="class-icon">⚔️</span><span class="class-name">KNIGHT</span></div>
-                                    <div class="class-card" data-class="STORM"><span class="class-icon">⚡</span><span class="class-name">STORM</span></div>
-                                    <div class="class-card" data-class="HUNTER"><span class="class-icon">🏹</span><span class="class-name">HUNTER</span></div>
-                                    <div class="class-card" data-class="INFERNO"><span class="class-icon">🔥</span><span class="class-name">INFERNO</span></div>
-                                    <div class="class-card" data-class="MONK"><span class="class-icon">☯️</span><span class="class-name">MONK</span></div>
-                                </div>
-                            </div>
-
-                            <!-- P3 Class (2v2 Team 1 Ally) -->
-                            <div class="class-picker-group team2v2-only hidden" id="p3-class-group">
-                                <span class="picker-title cyan-text">P3 ALLY CLASS (2v2):</span>
-                                <div class="class-card-list" id="p3-class-list">
-                                    <div class="class-card active" data-class="NINJA"><span class="class-icon">🥷</span><span class="class-name">NINJA</span></div>
-                                    <div class="class-card" data-class="BRAWLER"><span class="class-icon">🥊</span><span class="class-name">BRAWLER</span></div>
-                                    <div class="class-card" data-class="WEAVER"><span class="class-icon">🔮</span><span class="class-name">WEAVER</span></div>
-                                    <div class="class-card" data-class="KNIGHT"><span class="class-icon">⚔️</span><span class="class-name">KNIGHT</span></div>
-                                    <div class="class-card" data-class="STORM"><span class="class-icon">⚡</span><span class="class-name">STORM</span></div>
-                                    <div class="class-card" data-class="HUNTER"><span class="class-icon">🏹</span><span class="class-name">HUNTER</span></div>
-                                    <div class="class-card" data-class="INFERNO"><span class="class-icon">🔥</span><span class="class-name">INFERNO</span></div>
-                                    <div class="class-card" data-class="MONK"><span class="class-icon">☯️</span><span class="class-name">MONK</span></div>
-                                </div>
-                            </div>
-
-                            <!-- P4 Class (2v2 Team 2 Ally) -->
-                            <div class="class-picker-group team2v2-only hidden" id="p4-class-group">
-                                <span class="picker-title magenta-text">P4 ENEMY ALLY CLASS (2v2):</span>
-                                <div class="class-card-list" id="p4-class-list">
-                                    <div class="class-card" data-class="NINJA"><span class="class-icon">🥷</span><span class="class-name">NINJA</span></div>
-                                    <div class="class-card" data-class="BRAWLER"><span class="class-icon">🥊</span><span class="class-name">BRAWLER</span></div>
-                                    <div class="class-card" data-class="WEAVER"><span class="class-icon">🔮</span><span class="class-name">WEAVER</span></div>
-                                    <div class="class-card active" data-class="KNIGHT"><span class="class-icon">⚔️</span><span class="class-name">KNIGHT</span></div>
-                                    <div class="class-card" data-class="STORM"><span class="class-icon">⚡</span><span class="class-name">STORM</span></div>
-                                    <div class="class-card" data-class="HUNTER"><span class="class-icon">🏹</span><span class="class-name">HUNTER</span></div>
-                                    <div class="class-card" data-class="INFERNO"><span class="class-icon">🔥</span><span class="class-name">INFERNO</span></div>
-                                    <div class="class-card" data-class="MONK"><span class="class-icon">☯️</span><span class="class-name">MONK</span></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 👑 HATS & ACCESSORIES SELECTOR -->
-                        <div class="hat-picker-section">
-                            <div class="hat-picker-group">
-                                <span class="picker-title cyan-text">P1 HAT:</span>
-                                <div class="hat-list" id="p1-hat-list">
-                                    <button class="hat-btn active" data-hat="NONE">NONE</button>
-                                    <button class="hat-btn" data-hat="CROWN">👑 CROWN</button>
-                                    <button class="hat-btn" data-hat="SHADES">🕶️ SHADES</button>
-                                    <button class="hat-btn" data-hat="BANDANA">🥷 HEADBAND</button>
-                                    <button class="hat-btn" data-hat="COWBOY">🤠 COWBOY</button>
-                                    <button class="hat-btn" data-hat="VISOR">🪖 VISOR</button>
-                                    <button class="hat-btn" data-hat="TOPHAT">🎩 TOPHAT</button>
-                                </div>
-                            </div>
-
-                            <div class="hat-picker-group">
-                                <span class="picker-title magenta-text">P2 HAT:</span>
-                                <div class="hat-list" id="p2-hat-list">
-                                    <button class="hat-btn active" data-hat="NONE">NONE</button>
-                                    <button class="hat-btn" data-hat="CROWN">👑 CROWN</button>
-                                    <button class="hat-btn" data-hat="SHADES">🕶️ SHADES</button>
-                                    <button class="hat-btn" data-hat="BANDANA">🥷 HEADBAND</button>
-                                    <button class="hat-btn" data-hat="COWBOY">🤠 COWBOY</button>
-                                    <button class="hat-btn" data-hat="VISOR">🪖 VISOR</button>
-                                    <button class="hat-btn" data-hat="TOPHAT">🎩 TOPHAT</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 🎨 COLOR PALETTE -->
-                        <div class="color-picker-section">
-                            <div class="color-picker-group">
-                                <span class="color-picker-title cyan-text">P1 COLOR:</span>
-                                <div class="swatch-list" id="p1-color-swatches">
-                                    <span class="swatch active" data-color="#00f0ff" style="background: #00f0ff;"></span>
-                                    <span class="swatch" data-color="#ff0055" style="background: #ff0055;"></span>
-                                    <span class="swatch" data-color="#00ff66" style="background: #00ff66;"></span>
-                                    <span class="swatch" data-color="#ffd700" style="background: #ffd700;"></span>
-                                    <span class="swatch" data-color="#aa00ff" style="background: #aa00ff;"></span>
-                                    <span class="swatch" data-color="#ff6600" style="background: #ff6600;"></span>
-                                    <span class="swatch" data-color="#ff00aa" style="background: #ff00aa;"></span>
-                                    <span class="swatch" data-color="#ffffff" style="background: #ffffff;"></span>
-                                    <span class="swatch" data-color="#00f5c4" style="background: #00f5c4;"></span>
-                                    <span class="swatch" data-color="#e60000" style="background: #e60000;"></span>
-                                </div>
-                            </div>
-
-                            <div class="color-picker-group">
-                                <span class="color-picker-title magenta-text">P2 / ENEMY COLOR:</span>
-                                <div class="swatch-list" id="p2-color-swatches">
-                                    <span class="swatch" data-color="#00f0ff" style="background: #00f0ff;"></span>
-                                    <span class="swatch active" data-color="#ff0055" style="background: #ff0055;"></span>
-                                    <span class="swatch" data-color="#00ff66" style="background: #00ff66;"></span>
-                                    <span class="swatch" data-color="#ffd700" style="background: #ffd700;"></span>
-                                    <span class="swatch" data-color="#aa00ff" style="background: #aa00ff;"></span>
-                                    <span class="swatch" data-color="#ff6600" style="background: #ff6600;"></span>
-                                    <span class="swatch" data-color="#ff00aa" style="background: #ff00aa;"></span>
-                                    <span class="swatch" data-color="#ffffff" style="background: #ffffff;"></span>
-                                    <span class="swatch" data-color="#00f5c4" style="background: #00f5c4;"></span>
-                                    <span class="swatch" data-color="#e60000" style="background: #e60000;"></span>
-                                </div>
-                            </div>
+            <!-- ⚙️ SETTINGS MODAL POPUP -->
+            <div id="settings-modal" class="overlay-screen hidden">
+                <div class="modal-card mini-modal settings-modal-card">
+                    <div class="modal-header">
+                        <h1 class="game-title">⚙️ GAME <span class="neon-highlight">SETTINGS</span></h1>
+                        <p class="subtitle">Audio, Controls & Key Rebindings</p>
+                    </div>
+                    <div class="modal-body">
+                        <div class="settings-action-row">
+                            <button id="btn-sound-toggle" class="btn btn-secondary">🔊 SOUND: ON</button>
+                            <button id="btn-touch-toggle" class="btn btn-secondary">📱 TOUCH: AUTO</button>
+                            <button id="btn-reset-keys" class="btn btn-secondary">🔄 RESET KEYS</button>
                         </div>
 
                         <!-- Controls Guide Display -->
@@ -338,13 +385,8 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- FIXED BOTTOM ACTION BAR -->
                     <div class="action-buttons">
-                        <button id="btn-start" class="btn btn-primary">FIGHT!</button>
-                        <button id="btn-touch-toggle" class="btn btn-secondary">📱 TOUCH: AUTO</button>
-                        <button id="btn-reset-keys" class="btn btn-secondary">🔄 RESET KEYS</button>
-                        <button id="btn-sound-toggle" class="btn btn-secondary">🔊 SOUND: ON</button>
+                        <button id="btn-close-settings" class="btn btn-primary">✖ CLOSE SETTINGS</button>
                     </div>
                 </div>
             </div>
@@ -353,18 +395,27 @@
             <div id="gameover-overlay" class="overlay-screen hidden">
                 <div class="modal-card mini-modal">
                     <h1 id="winner-title" class="cyan-text">BLUE TEAM WINS!</h1>
-                    <p id="winner-subtitle">DOMINATING VICTORY</p>
-
-                    <div class="stats-summary">
-                        <div class="stat-box">
+                    <p class="subtitle">Match Finished</p>
+                    <div class="match-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">Final Score:</span>
                             <span class="stat-value" id="stat-rounds">2 - 0</span>
-                            <span class="stat-label">Final Score</span>
                         </div>
                     </div>
+                    <div class="action-buttons vertical-buttons">
+                        <button id="btn-rematch" class="btn btn-primary">🔄 PLAY AGAIN</button>
+                        <button id="btn-menu" class="btn btn-secondary">🏠 MAIN MENU</button>
+                    </div>
+                </div>
+            </div>
 
-                    <div class="action-buttons">
-                        <button id="btn-rematch" class="btn btn-primary">REMATCH</button>
-                        <button id="btn-menu" class="btn btn-secondary">MAIN MENU</button>
+            <!-- 🚪 EXIT GAME OVERLAY -->
+            <div id="exit-overlay" class="overlay-screen hidden">
+                <div class="modal-card mini-modal">
+                    <h1 class="game-title">GAME <span class="neon-highlight">CLOSED</span></h1>
+                    <p class="subtitle" style="margin: 15px 0; font-size: 0.9rem; line-height: 1.5;">Thanks for playing Brawl-Sticks 2D!<br>You can now safely close this browser tab.</p>
+                    <div class="action-buttons vertical-buttons">
+                        <button id="btn-reenter-game" class="btn btn-primary">🔁 RE-ENTER MAIN MENU</button>
                     </div>
                 </div>
             </div>
