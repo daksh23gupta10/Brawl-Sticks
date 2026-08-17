@@ -101,6 +101,18 @@
                 </div>
             </div>
 
+            <!-- 📜 STORY ARCADE CUTSCENE DIALOGUE OVERLAY -->
+            <div id="dialogue-overlay" class="hidden">
+                <div class="dialogue-box">
+                    <div class="dialogue-avatar" id="dialogue-avatar">🥷</div>
+                    <div class="dialogue-content">
+                        <div class="dialogue-speaker" id="dialogue-speaker">STAGE 1: SHADOW SHINOBI</div>
+                        <div class="dialogue-text" id="dialogue-text">"Shadows conceal my blade. Show me your strength!"</div>
+                        <button id="btn-continue-dialogue" class="btn-dialogue-continue">CLICK OR PRESS SPACE TO CONTINUE ▶</button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Announcer Overlay -->
             <div id="announcer-overlay" class="hidden">
                 <h1 id="announcer-text">READY?</h1>
@@ -114,6 +126,7 @@
                     <div class="action-buttons vertical-buttons">
                         <button id="btn-resume" class="btn btn-primary">▶️ RESUME MATCH</button>
                         <button id="btn-restart" class="btn btn-secondary">🔄 RESTART ROUND</button>
+                        <button id="btn-pause-music" class="btn btn-secondary">🎵 MUSIC: ON</button>
                         <button id="btn-pause-sound" class="btn btn-secondary">🔊 SOUND: ON</button>
                         <button id="btn-pause-menu" class="btn btn-secondary">🏠 MAIN MENU</button>
                     </div>
@@ -352,6 +365,7 @@
                     </div>
                     <div class="modal-body">
                         <div class="settings-action-row">
+                            <button id="btn-music-toggle" class="btn btn-secondary">🎵 MUSIC: ON</button>
                             <button id="btn-sound-toggle" class="btn btn-secondary">🔊 SOUND: ON</button>
                             <button id="btn-touch-toggle" class="btn btn-secondary">📱 TOUCH: AUTO</button>
                             <button id="btn-reset-keys" class="btn btn-secondary">🔄 RESET KEYS</button>

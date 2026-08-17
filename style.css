@@ -969,5 +969,93 @@ canvas {
 #game-footer {
     font-size: 0.75rem;
     color: #718096;
-    letter-spacing: 1px;
+    margin-top: 4px;
+}
+
+/* 📜 STORY ARCADE DIALOGUE OVERLAY */
+#dialogue-overlay {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 850px;
+    z-index: 100;
+    pointer-events: auto;
+}
+
+.dialogue-box {
+    background: rgba(10, 14, 28, 0.92);
+    border: 2px solid var(--cyan);
+    border-radius: 12px;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 10px 30px rgba(0, 240, 255, 0.3);
+    animation: dialogueSlideUp 0.3s ease-out;
+}
+
+@keyframes dialogueSlideUp {
+    from { transform: translateY(30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.dialogue-avatar {
+    font-size: 3rem;
+    background: rgba(0, 240, 255, 0.15);
+    border: 2px solid var(--cyan);
+    border-radius: 50%;
+    width: 70px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 0 15px var(--cyan-glow);
+}
+
+.dialogue-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    text-align: left;
+}
+
+.dialogue-speaker {
+    font-family: var(--font-heading);
+    font-size: 1rem;
+    color: var(--gold);
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px #ffd700;
+}
+
+.dialogue-text {
+    font-size: 0.92rem;
+    color: #ffffff;
+    line-height: 1.4;
+    font-style: italic;
+}
+
+.btn-dialogue-continue {
+    align-self: flex-end;
+    background: var(--cyan);
+    color: #000000;
+    font-family: var(--font-heading);
+    font-size: 0.75rem;
+    font-weight: bold;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 12px;
+    cursor: pointer;
+    margin-top: 6px;
+    transition: all 0.2s ease;
+    box-shadow: 0 0 10px var(--cyan-glow);
+}
+
+.btn-dialogue-continue:hover {
+    background: #ffffff;
+    box-shadow: 0 0 20px #ffffff;
+    transform: scale(1.05);
 }

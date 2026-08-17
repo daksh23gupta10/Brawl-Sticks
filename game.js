@@ -242,6 +242,10 @@ class SoundFX {
     constructor() {
         this.ctx = null;
         this.enabled = true;
+        this.isMusicOn = true;
+        this.musicTimer = null;
+        this.stepIndex = 0;
+        this.bassNotes = [110, 110, 130.81, 146.83, 110, 110, 164.81, 146.83];
     }
 
     init() {
@@ -251,6 +255,113 @@ class SoundFX {
                 this.ctx = new AudioCtx();
             } catch (e) {}
         }
+        if (this.ctx && this.ctx.state === 'suspended') {
+            this.ctx.resume();
+        }
+    }
+
+    toggleMusic() {
+        this.isMusicOn = !this.isMusicOn;
+        if (!this.isMusicOn) {
+            this.stopMusic();
+        } else {
+            this.startMusic();
+        }
+        return this.isMusicOn;
+    }
+
+    startMusic(isLowHp = false) {
+        if (!this.isMusicOn || !this.enabled) return;
+        this.stopMusic();
+        this.init();
+        if (!this.ctx) return;
+        if (this.ctx.state === 'suspended') {
+            this.ctx.resume();
+        }
+
+        const tempo = isLowHp ? 140 : 200;
+        this.musicTimer = setInterval(() => {
+            if (!this.isMusicOn || !this.enabled || (gameState !== 'FIGHT' && gameState !== 'COUNTDOWN')) {
+                this.stopMusic();
+                return;
+            }
+            try {
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+                const now = this.ctx.currentTime;
+
+                // 1. Retro Synth Bassline
+                const bassFreq = [110, 110, 130.81, 146.83, 110, 110, 164.81, 146.83][this.stepIndex % 8];
+                const bassOsc = this.ctx.createOscillator();
+                const bassGain = this.ctx.createGain();
+                bassOsc.type = 'sawtooth';
+                bassOsc.frequency.setValueAtTime(bassFreq, now);
+                bassGain.gain.setValueAtTime(0.12, now);
+                bassGain.gain.exponentialRampToValueAtTime(0.005, now + 0.18);
+                bassOsc.connect(bassGain);
+                bassGain.connect(this.ctx.destination);
+                bassOsc.start(now);
+                bassOsc.stop(now + 0.18);
+
+                // 2. Synth Arpeggio Lead
+                const leadFreq = [440, 523.25, 659.25, 523.25, 587.33, 659.25, 783.99, 659.25][this.stepIndex % 8];
+                const leadOsc = this.ctx.createOscillator();
+                const leadGain = this.ctx.createGain();
+                leadOsc.type = 'square';
+                leadOsc.frequency.setValueAtTime(leadFreq, now);
+                leadGain.gain.setValueAtTime(0.06, now);
+                leadGain.gain.exponentialRampToValueAtTime(0.002, now + 0.14);
+                leadOsc.connect(leadGain);
+                leadGain.connect(this.ctx.destination);
+                leadOsc.start(now);
+                leadOsc.stop(now + 0.14);
+
+                // 3. Synth Percussive Hi-Hat
+                if (this.stepIndex % 2 === 1) {
+                    const bufSize = Math.floor(this.ctx.sampleRate * 0.03);
+                    const buffer = this.ctx.createBuffer(1, bufSize, this.ctx.sampleRate);
+                    const d = buffer.getChannelData(0);
+                    for (let i = 0; i < bufSize; i++) d[i] = Math.random() * 2 - 1;
+                    const hatNoise = this.ctx.createBufferSource();
+                    hatNoise.buffer = buffer;
+                    const hatFilter = this.ctx.createBiquadFilter();
+                    hatFilter.type = 'highpass';
+                    hatFilter.frequency.setValueAtTime(5000, now);
+                    const hatGain = this.ctx.createGain();
+                    hatGain.gain.setValueAtTime(0.05, now);
+                    hatGain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
+                    hatNoise.connect(hatFilter);
+                    hatFilter.connect(hatGain);
+                    hatGain.connect(this.ctx.destination);
+                    hatNoise.start(now);
+                }
+
+                this.stepIndex++;
+            } catch (e) {}
+        }, tempo);
+    }
+
+    stopMusic() {
+        if (this.musicTimer) {
+            clearInterval(this.musicTimer);
+            this.musicTimer = null;
+        }
+    }
+
+    playParry() {
+        if (!this.enabled || !this.ctx) return;
+        try {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(880, this.ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(1760, this.ctx.currentTime + 0.12);
+            gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.18);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start();
+            osc.stop(this.ctx.currentTime + 0.18);
+        } catch (e) {}
     }
 
     playPunch() {
@@ -796,6 +907,8 @@ class Stickman {
 
         this.specialMeter = 0;
         this.isBlocking = false;
+        this.parryWindowTimer = 0;
+        this.parryFlashTimer = 0;
         this.isSliding = false;
         this.slideTimer = 0;
         this.isAttacking = false;
@@ -862,6 +975,8 @@ class Stickman {
 
         if (this.stunTimer > 0) this.stunTimer--;
         if (this.invincibleTimer > 0) this.invincibleTimer--;
+        if (this.parryWindowTimer > 0) this.parryWindowTimer--;
+        if (this.parryFlashTimer > 0) this.parryFlashTimer--;
 
         let target = null;
         let minDist = Infinity;
@@ -1021,6 +1136,9 @@ class Stickman {
                 if (rightKey) this.facing = 1;
                 audio.playSlide();
             } else {
+                if (!this.isBlocking) {
+                    this.parryWindowTimer = 6; // 0.1s Perfect Parry Window
+                }
                 this.isBlocking = true;
             }
         } else if (!blockKey) {
@@ -1059,6 +1177,9 @@ class Stickman {
     // UNIQUE CLASS SIGNATURE SPECIAL MOVES ENGINE
     executeSignatureSpecial(target, damage) {
         const dmg = (typeof damage === 'number' && !isNaN(damage)) ? damage : 35;
+        ultCinematicTimer = 30; // 0.5s freeze & 1.35x zoom!
+        ultAttacker = this;
+        ultSkillName = `${this.fighterClass} SIGNATURE SPECIAL`;
 
         if (this.fighterClass === 'NINJA') {
             // NINJA: SHADOW TELEPORT HURRICANE SLASH
@@ -1162,12 +1283,27 @@ class Stickman {
         };
     }
 
-    takeDamage(amount, knockback, attackerFacing) {
+    takeDamage(amount, knockback, attackerFacing, attacker = null) {
         if (this.invincibleTimer > 0 || this.health <= 0) return;
 
         const dmg = (typeof amount === 'number' && !isNaN(amount)) ? amount : 10;
         const kb = (typeof knockback === 'number' && !isNaN(knockback)) ? knockback : 5;
         const face = (attackerFacing === -1) ? -1 : 1;
+
+        if (this.isBlocking && this.parryWindowTimer > 0) {
+            // ⚡ PERFECT PARRY TRIGGERED!
+            this.parryFlashTimer = 18;
+            audio.playParry();
+            particleSystem.createHitSparks(this.x + this.width / 2, this.y + 30, '#ffd700');
+            particleSystem.addShockwave(this.x + this.width / 2, this.y + 30, '#ffd700', 120);
+            particleSystem.addDamageText(this.x, this.y - 25, '⚡ PERFECT PARRY! (0 DMG)', '#ffd700');
+            if (attacker) {
+                attacker.stunTimer = 24;
+                attacker.vx = -face * 6;
+            }
+            triggerCameraShake(8, 6);
+            return;
+        }
 
         if (this.isBlocking || this.isSliding) {
             const damageTaken = dmg * 0.25;
@@ -1976,6 +2112,72 @@ function updateScoreDots() {
     });
 }
 
+const btnMusicToggle = document.getElementById('btn-music-toggle');
+const btnPauseMusic = document.getElementById('btn-pause-music');
+
+function updateMusicButtons() {
+    const txt = audio.isMusicOn ? '🎵 MUSIC: ON' : '🎵 MUSIC: OFF';
+    if (btnMusicToggle) btnMusicToggle.textContent = txt;
+    if (btnPauseMusic) btnPauseMusic.textContent = txt;
+}
+
+if (btnMusicToggle) {
+    btnMusicToggle.addEventListener('click', () => {
+        audio.toggleMusic();
+        updateMusicButtons();
+    });
+}
+if (btnPauseMusic) {
+    btnPauseMusic.addEventListener('click', () => {
+        audio.toggleMusic();
+        updateMusicButtons();
+    });
+}
+
+let ultCinematicTimer = 0;
+let ultAttacker = null;
+let ultSkillName = '';
+
+const arcadeDialogues = {
+    1: { speaker: "STAGE 1: SHADOW SHINOBI 🥷", avatar: "🥷", text: '"Shadows conceal my blade. Show me your true strength!"' },
+    2: { speaker: "STAGE 2: HEAVY BOXER 🥊", avatar: "🥊", text: '"You think you can take my heavy hooks? Let\'s brawl!"' },
+    3: { speaker: "STAGE 3: VOLCANIC LORD 🔥", avatar: "🔥", text: '"Magma burns eternal! Fall before the flames of victory!"' },
+    4: { speaker: "STAGE 4: SKY MAGE 🔮", avatar: "🔮", text: '"The winds and celestial skies bow to my spellwork!"' },
+    5: { speaker: "STAGE 5: SHADOW OVERLORD 👑", avatar: "👑", text: '"Fools think they can claim my throne. I am the Overlord of Shadows!"' }
+};
+
+function triggerArcadeDialogue(stageNum, callback) {
+    const dialogueOverlay = document.getElementById('dialogue-overlay');
+    const dialogueSpeaker = document.getElementById('dialogue-speaker');
+    const dialogueAvatar = document.getElementById('dialogue-avatar');
+    const dialogueText = document.getElementById('dialogue-text');
+    const btnContinue = document.getElementById('btn-continue-dialogue');
+
+    const info = arcadeDialogues[stageNum] || arcadeDialogues[1];
+    if (dialogueSpeaker) dialogueSpeaker.textContent = info.speaker;
+    if (dialogueAvatar) dialogueAvatar.textContent = info.avatar;
+    if (dialogueText) dialogueText.textContent = info.text;
+
+    if (dialogueOverlay) dialogueOverlay.classList.remove('hidden');
+
+    const handleContinue = (e) => {
+        if (e) e.stopPropagation();
+        if (dialogueOverlay) dialogueOverlay.classList.add('hidden');
+        if (btnContinue) btnContinue.removeEventListener('click', handleContinue);
+        window.removeEventListener('keydown', handleSpaceKey);
+        callback();
+    };
+
+    const handleSpaceKey = (e) => {
+        if (e.code === 'Space' || e.code === 'Enter') {
+            handleContinue();
+        }
+    };
+
+    if (btnContinue) btnContinue.addEventListener('click', handleContinue);
+    window.addEventListener('keydown', handleSpaceKey);
+}
+
 function startMatch() {
     currentRound = 1;
     team1Wins = 0;
@@ -1994,10 +2196,16 @@ function startRound() {
     const stageInfo = getArcadeStageInfo();
     if (selectedMode === 'ARCADE') {
         if (rl) rl.textContent = stageInfo.title;
+        triggerArcadeDialogue(arcadeStage, () => {
+            runCountdown(stageInfo);
+        });
     } else {
         if (rl) rl.textContent = `ROUND ${currentRound}`;
+        runCountdown(stageInfo);
     }
+}
 
+function runCountdown(stageInfo) {
     const announcerOverlay = document.getElementById('announcer-overlay');
     const announcerText = document.getElementById('announcer-text');
 
@@ -2013,6 +2221,7 @@ function startRound() {
             setTimeout(() => {
                 if (announcerOverlay) announcerOverlay.classList.add('hidden');
                 gameState = 'FIGHT';
+                audio.startMusic();
                 startTimer();
             }, 600);
         }, 800);
@@ -2480,7 +2689,18 @@ function gameLoop() {
     ctx.save();
 
     let isPhysicsStep = true;
-    if (slowMoTimer > 0) {
+    if (ultCinematicTimer > 0) {
+        ultCinematicTimer--;
+        isPhysicsStep = false;
+
+        const zoom = 1.35;
+        const focusX = (ultAttacker && typeof ultAttacker.x === 'number') ? ultAttacker.x + ultAttacker.width / 2 : canvas.width / 2;
+        const focusY = (ultAttacker && typeof ultAttacker.y === 'number') ? ultAttacker.y + 30 : 300;
+
+        ctx.translate(focusX, focusY);
+        ctx.scale(zoom, zoom);
+        ctx.translate(-focusX, -focusY);
+    } else if (slowMoTimer > 0) {
         slowMoTimer--;
         isPhysicsStep = (slowMoTimer % 3 === 0);
 
@@ -2527,6 +2747,19 @@ function gameLoop() {
 
     particleSystem.updateAndDraw(ctx);
     fighters.forEach(f => f.draw(ctx));
+
+    if (ultCinematicTimer > 0 && ultAttacker) {
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, canvas.width, 35);
+        ctx.fillRect(0, canvas.height - 35, canvas.width, 35);
+
+        ctx.font = '900 18px "Orbitron", sans-serif';
+        ctx.fillStyle = '#ffd700';
+        ctx.shadowColor = '#ffd700';
+        ctx.shadowBlur = 15;
+        ctx.textAlign = 'center';
+        ctx.fillText(`⚡ ${ultAttacker.fighterClass}: ${ultSkillName}`, canvas.width / 2, 24);
+    }
 
     ctx.restore();
     updateHUD();
