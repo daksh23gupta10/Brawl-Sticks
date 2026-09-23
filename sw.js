@@ -3,7 +3,7 @@
  * Enables 100% offline gameplay and instant loading
  */
 
-const CACHE_NAME = 'brawl-sticks-v3.1.0';
+const CACHE_NAME = 'brawl-sticks-v3.2.0';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

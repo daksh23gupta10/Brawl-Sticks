@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Brawl-Sticks | 1v1 & 2v2 Stickman Fighting Game</title>
     <link rel="icon" type="image/svg+xml" href="icon.svg">
     <link rel="manifest" href="manifest.json">
@@ -16,6 +16,11 @@
 </head>
 <body>
     <div id="app-container">
+        <!-- Mobile Landscape Orientation Helper Banner -->
+        <div id="rotate-hint-banner" class="rotate-hint hidden">
+            <span>🔄 Rotate device to Landscape for best arcade view</span>
+        </div>
+
         <!-- Top HUD -->
         <header id="game-hud">
             <!-- Team 1 / P1 HUD -->
