@@ -1184,7 +1184,20 @@ class Stickman {
         }
 
         if (this.health > 0 && this.stunTimer === 0 && gameState === 'FIGHT') {
-            if (this.isCPU) {
+            const hasP2Keys = (
+                !!keys['ArrowLeft'] || !!keys['ArrowRight'] || !!keys['ArrowUp'] || !!keys['ArrowDown'] ||
+                !!keys['Numpad0'] || !!keys['KeyJ'] || !!keys['KeyK'] || !!keys['KeyL'] ||
+                !!keys['gp_p2_left'] || !!keys['gp_p2_right'] || !!keys['gp_p2_jump'] || !!keys['gp_p2_punch']
+            );
+            const shouldUseAI = this.isCPU || (this.id !== 'p1' && !hasP2Keys);
+
+            if (shouldUseAI) {
+                if (!target || target.health <= 0) {
+                    target = (opponents && opponents.length > 0) ? opponents.find(o => o && o.health > 0) : null;
+                    if (!target && Array.isArray(fighters)) {
+                        target = fighters.find(f => f && f.id !== this.id && f.health > 0);
+                    }
+                }
                 this.updateAI(target, difficulty);
             } else {
                 this.handleInputs(keys, mode, target);
@@ -1253,6 +1266,10 @@ class Stickman {
     }
 
     updateAI(target, difficulty) {
+        if (!target || target.health <= 0) {
+            target = (typeof fighters !== 'undefined' && Array.isArray(fighters)) ?
+                fighters.find(f => f && f.id !== this.id && f.health > 0) : null;
+        }
         if (!target || target.health <= 0) return;
         if (this.aiAttackCooldown > 0) this.aiAttackCooldown--;
 
@@ -1262,21 +1279,21 @@ class Stickman {
 
         // Dynamic Difficulty Parameters
         const blockProbability = difficulty === 'EASY' ? 0.20 : difficulty === 'NORMAL' ? 0.45 : 0.70;
-        const cpuSpeedFactor = difficulty === 'EASY' ? 0.85 : difficulty === 'NORMAL' ? 1.05 : 1.25;
-        const attackFrequency = difficulty === 'EASY' ? 24 : difficulty === 'NORMAL' ? 14 : 8;
+        const cpuSpeedFactor = difficulty === 'EASY' ? 0.95 : difficulty === 'NORMAL' ? 1.20 : 1.40;
+        const attackFrequency = difficulty === 'EASY' ? 18 : difficulty === 'NORMAL' ? 10 : 5;
 
         // 1. DEFENSIVE REACTION: Parry / Block / Evasive Dash
         if (target.isAttacking && dist < 100) {
             if (Math.random() < blockProbability) {
                 // Evasive Dash away or slide under
-                if (this.dashCooldown === 0 && Math.random() < 0.35) {
+                if (this.dashCooldown === 0 && Math.random() < 0.40) {
                     this.isDashing = true;
                     this.dashTimer = 14;
                     this.invulnerableTimer = 14;
-                    this.dashCooldown = 40;
+                    this.dashCooldown = 35;
                     this.facing = -dirToTarget;
                     return;
-                } else if (this.isGrounded && Math.random() < 0.3) {
+                } else if (this.isGrounded && Math.random() < 0.35) {
                     this.isSliding = true;
                     this.slideTimer = 18;
                     audio.playSlide();
@@ -1294,7 +1311,7 @@ class Stickman {
         }
 
         // 2. ULTIMATE SPECIAL MOVE
-        if (this.specialMeter >= 100 && dist < 160) {
+        if (this.specialMeter >= 100 && dist < 180) {
             this.executeSignatureSpecial(target, 30);
             this.specialMeter = 0;
             audio.playUltimate();
@@ -1305,7 +1322,7 @@ class Stickman {
         if (dist <= 85) {
             this.facing = dirToTarget;
             // Advance smoothly into melee range rather than freezing cold
-            this.vx = dirToTarget * (this.speed * 0.45);
+            this.vx = dirToTarget * (this.speed * 0.5);
 
             // When in melee range, initiate punch or kick with rhythmic cooldown
             if (!this.isAttacking && !this.isSliding && this.aiAttackCooldown <= 0) {
@@ -1321,28 +1338,28 @@ class Stickman {
             }
 
             // Occasional aerial jump attack if player jumps
-            if (dy < -30 && this.isGrounded && Math.random() < 0.25) {
+            if (dy < -30 && this.isGrounded && Math.random() < 0.35) {
                 this.vy = this.jumpForce;
                 this.isGrounded = false;
                 audio.playJump();
             }
         } else {
-            // 4. PURSUIT & MOVEMENT: Actively chase opponent across arena!
+            // 4. PURSUIT & MOVEMENT: Actively sprint and chase opponent across arena!
             if (!this.isAttacking && !this.isSliding) {
                 this.facing = dirToTarget;
-                this.vx = dirToTarget * (this.speed * cpuSpeedFactor);
+                this.vx = dirToTarget * (this.speed * cpuSpeedFactor * 1.3);
 
-                // Gap-closing dash
-                if (dist > 130 && dist < 280 && this.dashCooldown === 0 && Math.random() < (difficulty === 'EASY' ? 0.02 : 0.045)) {
+                // High-aggression gap-closing dash
+                if (dist > 110 && this.dashCooldown === 0 && Math.random() < (difficulty === 'EASY' ? 0.03 : 0.07)) {
                     this.isDashing = true;
                     this.dashTimer = 14;
                     this.invulnerableTimer = 14;
-                    this.dashCooldown = 35;
+                    this.dashCooldown = 28;
                     this.facing = dirToTarget;
                 }
 
                 // Jump if target is above or jumping
-                if (dy < -35 && this.isGrounded && Math.random() < 0.12) {
+                if ((dy < -35 || (dist > 150 && Math.random() < 0.05)) && this.isGrounded) {
                     this.vy = this.jumpForce;
                     this.isGrounded = false;
                     audio.playJump();
@@ -2111,7 +2128,11 @@ function togglePause() {
 
 const pauseTrigger = document.getElementById('btn-pause-trigger');
 if (pauseTrigger) {
+    let lastPauseTriggerTime = 0;
     const handlePauseClick = (e) => {
+        const now = Date.now();
+        if (now - lastPauseTriggerTime < 350) return;
+        lastPauseTriggerTime = now;
         if (e) {
             e.stopPropagation();
             if (e.cancelable) e.preventDefault();
@@ -2831,12 +2852,41 @@ function getColorName(hex) {
 
 let roundTransitionTimer1 = null;
 let roundTransitionTimer2 = null;
+let roundFailsafeTimer = null;
 let activeRoundWinner = null;
+let roundScoreRecorded = false;
+
+function recordRoundScore() {
+    if (roundScoreRecorded) return;
+    roundScoreRecorded = true;
+    try {
+        if (activeRoundWinner === 1) {
+            team1Wins++;
+            if (!p1TookDamageInRound) {
+                try {
+                    if (typeof CareerManager !== 'undefined' && typeof CareerManager.recordPerfect === 'function') {
+                        CareerManager.recordPerfect();
+                    }
+                } catch (e) {
+                    console.warn('Error recording perfect round:', e);
+                }
+            }
+        } else if (activeRoundWinner === 2) {
+            team2Wins++;
+        }
+        updateScoreDots();
+    } catch (err) {
+        console.error('Error during round score resolution:', err);
+    }
+}
 
 function proceedToNextRoundOrEnd() {
     if (gameState !== 'ROUND_OVER') return;
+    recordRoundScore();
+
     if (roundTransitionTimer1) { clearTimeout(roundTransitionTimer1); roundTransitionTimer1 = null; }
     if (roundTransitionTimer2) { clearTimeout(roundTransitionTimer2); roundTransitionTimer2 = null; }
+    if (roundFailsafeTimer) { clearTimeout(roundFailsafeTimer); roundFailsafeTimer = null; }
 
     const ao = document.getElementById('announcer-overlay');
     if (ao) ao.classList.add('hidden');
@@ -2862,25 +2912,42 @@ function proceedToNextRoundOrEnd() {
     }
 }
 
-const announcerOverlayEl = document.getElementById('announcer-overlay');
-if (announcerOverlayEl) {
-    const handleAnnouncerSkip = (e) => {
+function setupRoundSkipListeners() {
+    const handleRoundSkip = (e) => {
         if (gameState === 'ROUND_OVER') {
             if (e && e.cancelable) e.preventDefault();
             proceedToNextRoundOrEnd();
         }
     };
-    announcerOverlayEl.addEventListener('click', handleAnnouncerSkip);
-    announcerOverlayEl.addEventListener('touchend', handleAnnouncerSkip, { passive: false });
+
+    const announcerOverlayEl = document.getElementById('announcer-overlay');
+    if (announcerOverlayEl) {
+        announcerOverlayEl.addEventListener('click', handleRoundSkip);
+        announcerOverlayEl.addEventListener('touchend', handleRoundSkip, { passive: false });
+    }
+
+    const canvasEl = document.getElementById('gameCanvas');
+    if (canvasEl) {
+        canvasEl.addEventListener('click', handleRoundSkip);
+        canvasEl.addEventListener('touchend', handleRoundSkip, { passive: false });
+    }
+
+    const canvasContainerEl = document.getElementById('canvas-container');
+    if (canvasContainerEl) {
+        canvasContainerEl.addEventListener('click', handleRoundSkip);
+    }
 }
+setupRoundSkipListeners();
 
 function handleRoundEnd(reason, defender = null) {
     if (gameState === 'ROUND_OVER' || gameState === 'MATCH_OVER') return;
     clearInterval(timerInterval);
     gameState = 'ROUND_OVER';
+    roundScoreRecorded = false;
 
     if (roundTransitionTimer1) { clearTimeout(roundTransitionTimer1); roundTransitionTimer1 = null; }
     if (roundTransitionTimer2) { clearTimeout(roundTransitionTimer2); roundTransitionTimer2 = null; }
+    if (roundFailsafeTimer) { clearTimeout(roundFailsafeTimer); roundFailsafeTimer = null; }
 
     if (reason === 'KO') {
         slowMoTimer = 60; // 1.0 Second of dramatic slow-motion KO time dilation
@@ -2914,35 +2981,32 @@ function handleRoundEnd(reason, defender = null) {
     const p1ColorName = getColorName(p1Color);
     const p2ColorName = getColorName(p2Color);
 
+    // After 850ms, update the announcer text to show the winner and record score
     roundTransitionTimer1 = setTimeout(() => {
-        try {
-            if (roundWinnerTeam === 1) {
-                team1Wins++;
-                if (!p1TookDamageInRound) {
-                    try {
-                        if (CareerManager && typeof CareerManager.recordPerfect === 'function') {
-                            CareerManager.recordPerfect();
-                        }
-                    } catch (e) {
-                        console.warn('Error recording perfect round:', e);
-                    }
-                }
-                if (announcerText) announcerText.textContent = (selectedMode === 'ARCADE') ? 'STAGE CLEARED!' : `${p1ColorName} FIGHTER WINS!`;
-            } else if (roundWinnerTeam === 2) {
-                team2Wins++;
-                if (announcerText) announcerText.textContent = (selectedMode === 'ARCADE') ? 'DEFEATED!' : `${p2ColorName} FIGHTER WINS!`;
+        recordRoundScore();
+        if (announcerText) {
+            if (activeRoundWinner === 1) {
+                announcerText.textContent = (selectedMode === 'ARCADE') ? 'STAGE CLEARED!' : `${p1ColorName} FIGHTER WINS!`;
+            } else if (activeRoundWinner === 2) {
+                announcerText.textContent = (selectedMode === 'ARCADE') ? 'DEFEATED!' : `${p2ColorName} FIGHTER WINS!`;
             } else {
-                if (announcerText) announcerText.textContent = 'DRAW!';
+                announcerText.textContent = 'DRAW!';
             }
-            updateScoreDots();
-        } catch (err) {
-            console.error('Error during round score resolution:', err);
         }
 
+        // After another 1100ms, proceed automatically
         roundTransitionTimer2 = setTimeout(() => {
             proceedToNextRoundOrEnd();
         }, 1100);
-    }, 900);
+    }, 850);
+
+    // Hard failsafe: guarantee next round/match progression after 3.2 seconds under all circumstances
+    roundFailsafeTimer = setTimeout(() => {
+        if (gameState === 'ROUND_OVER') {
+            console.warn('Round progression failsafe timer activated');
+            proceedToNextRoundOrEnd();
+        }
+    }, 3200);
 }
 
 function handleMatchEnd(winningTeam) {

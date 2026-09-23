@@ -984,6 +984,13 @@ canvas {
     transform: translate(-50%, -50%);
     pointer-events: none;
     z-index: 50;
+    text-align: center;
+    user-select: none;
+}
+
+#announcer-overlay:not(.hidden) {
+    pointer-events: auto !important;
+    cursor: pointer;
 }
 
 #announcer-text {
@@ -1404,7 +1411,7 @@ canvas {
         height: auto !important;
         min-height: 100dvh !important;
         display: block !important;
-        padding: 6px 4px 30px 4px !important;
+        padding: 4px 4px 20px 4px !important;
     }
     #app-container {
         height: auto !important;
@@ -1422,6 +1429,12 @@ canvas {
         gap: 6px !important;
         grid-template-columns: 1fr auto 1fr !important;
         border-radius: 8px !important;
+        height: auto !important;
+        min-height: 48px !important;
+    }
+    #timer-box {
+        padding: 2px 6px !important;
+        gap: 2px !important;
     }
     .player-name {
         font-size: 0.68rem !important;
@@ -1444,8 +1457,8 @@ canvas {
     }
     #btn-pause-trigger {
         font-size: 0.62rem !important;
-        padding: 4px 6px !important;
-        min-height: 28px !important;
+        padding: 3px 6px !important;
+        min-height: 24px !important;
     }
     #canvas-container {
         width: 100% !important;
@@ -1453,37 +1466,44 @@ canvas {
         aspect-ratio: 16 / 9 !important;
         max-height: 56vw !important;
         border-radius: 8px !important;
-    }
-    /* Touch controls placed right below canvas in portrait for easy thumb reach */
-    .touch-controls-container {
         position: relative !important;
-        height: 170px !important;
+    }
+    .touch-controls-container {
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
         width: 100% !important;
-        pointer-events: auto !important;
-        margin-top: 10px !important;
-        padding: 4px 8px !important;
+        height: 100% !important;
+        pointer-events: none !important;
+        padding: 6px !important;
     }
     #joystick-container {
-        width: 100px !important;
-        height: 100px !important;
-    }
-    #joystick-base {
+        pointer-events: auto !important;
         width: 90px !important;
         height: 90px !important;
+        transform: scale(0.85);
+        transform-origin: bottom left;
+    }
+    #joystick-base {
+        width: 80px !important;
+        height: 80px !important;
     }
     #joystick-thumb {
-        width: 38px !important;
-        height: 38px !important;
+        width: 32px !important;
+        height: 32px !important;
     }
     #touch-actions {
-        gap: 6px !important;
-        margin-bottom: 0 !important;
-        margin-right: 0 !important;
+        pointer-events: auto !important;
+        gap: 5px !important;
+        margin-bottom: 2px !important;
+        margin-right: 2px !important;
+        transform: scale(0.85);
+        transform-origin: bottom right;
     }
     .touch-btn {
-        width: 48px !important;
-        height: 48px !important;
-        font-size: 0.6rem !important;
+        width: 44px !important;
+        height: 44px !important;
+        font-size: 0.58rem !important;
         border-radius: 8px !important;
     }
     /* Modals in mobile portrait */
@@ -1516,19 +1536,52 @@ canvas {
         overflow: hidden !important;
         height: 100dvh !important;
         width: 100dvw !important;
-        padding: 2px !important;
+        padding: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: flex-start !important;
+    }
+    #rotate-hint-banner {
+        display: none !important;
     }
     #app-container {
         height: 100dvh !important;
         width: 100vw !important;
+        justify-content: flex-start !important;
         gap: 2px !important;
     }
+    #game-footer {
+        display: none !important;
+    }
     #game-hud {
-        padding: 2px 12px !important;
+        padding: 2px 10px !important;
         grid-template-columns: 1fr auto 1fr !important;
-        height: 36px !important;
-        min-height: 36px !important;
+        height: 40px !important;
+        min-height: 40px !important;
+        max-height: 42px !important;
+        width: 98% !important;
+        margin: 2px auto !important;
         border-radius: 6px !important;
+        z-index: 100 !important;
+    }
+    #timer-box {
+        flex-direction: row !important;
+        padding: 2px 8px !important;
+        gap: 8px !important;
+        align-items: center !important;
+    }
+    #match-timer {
+        font-size: 1.15rem !important;
+    }
+    #round-label {
+        display: none !important;
+    }
+    #btn-pause-trigger {
+        padding: 3px 8px !important;
+        font-size: 0.65rem !important;
+        min-height: 26px !important;
+        width: auto !important;
+        margin-top: 0 !important;
     }
     .player-name {
         font-size: 0.65rem !important;
@@ -1547,24 +1600,13 @@ canvas {
     .special-bar-wrapper {
         height: 3px !important;
     }
-    #match-timer {
-        font-size: 1.1rem !important;
-    }
-    #round-label {
-        display: none !important;
-    }
-    #btn-pause-trigger {
-        padding: 2px 6px !important;
-        font-size: 0.6rem !important;
-        min-height: 22px !important;
-    }
     #canvas-container {
         flex: 1 !important;
-        height: calc(100dvh - 42px) !important;
-        max-height: calc(100dvh - 42px) !important;
+        height: calc(100dvh - 46px) !important;
+        max-height: calc(100dvh - 46px) !important;
         aspect-ratio: 16 / 9 !important;
         width: auto !important;
-        max-width: calc((100dvh - 42px) * 16 / 9) !important;
+        max-width: calc((100dvh - 46px) * 16 / 9) !important;
         margin: 0 auto !important;
         border-radius: 6px !important;
     }
@@ -1593,6 +1635,10 @@ canvas {
         width: 44px !important;
         height: 44px !important;
         font-size: 0.55rem !important;
+    }
+    #announcer-overlay:not(.hidden) {
+        pointer-events: auto !important;
+        cursor: pointer;
     }
 }
 
