@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Brawl-Sticks | 1v1 & 2v2 Stickman Fighting Game</title>
+    <link rel="icon" type="image/svg+xml" href="icon.svg">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#00f0ff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -25,6 +30,7 @@
                         </div>
                     </div>
                     <div class="bar-container health-bar-wrapper">
+                        <div class="bar-fill health-ghost" id="p1-health-ghost"></div>
                         <div class="bar-fill health-fill" id="p1-health" style="width: 100%; background: #00f0ff;"></div>
                     </div>
                     <div class="bar-container special-bar-wrapper">
@@ -37,6 +43,7 @@
                         <span class="player-name cyan-text">P1 ALLY (CPU)</span>
                     </div>
                     <div class="bar-container health-bar-wrapper">
+                        <div class="bar-fill health-ghost" id="p3-health-ghost"></div>
                         <div class="bar-fill health-fill" id="p3-health" style="width: 100%; background: #00aaff;"></div>
                     </div>
                 </div>
@@ -61,6 +68,7 @@
                         <span class="player-name magenta-text" id="p2-label">CPU (ENEMY)</span>
                     </div>
                     <div class="bar-container health-bar-wrapper right-align-bar">
+                        <div class="bar-fill health-ghost" id="p2-health-ghost"></div>
                         <div class="bar-fill health-fill" id="p2-health" style="width: 100%; background: #ff0055;"></div>
                     </div>
                     <div class="bar-container special-bar-wrapper right-align-bar">
@@ -73,6 +81,7 @@
                         <span class="player-name magenta-text">P2 ALLY (CPU)</span>
                     </div>
                     <div class="bar-container health-bar-wrapper right-align-bar">
+                        <div class="bar-fill health-ghost" id="p4-health-ghost"></div>
                         <div class="bar-fill health-fill" id="p4-health" style="width: 100%; background: #ff4400;"></div>
                     </div>
                 </div>
@@ -94,6 +103,7 @@
 
                 <!-- Touch Action Buttons (Bottom Right) -->
                 <div id="touch-actions">
+                    <button class="touch-btn touch-dash" id="tbtn-dash">💨 DASH</button>
                     <button class="touch-btn touch-punch" id="tbtn-punch">🥊 PUNCH</button>
                     <button class="touch-btn touch-kick" id="tbtn-kick">🦵 KICK</button>
                     <button class="touch-btn touch-slide" id="tbtn-slide">🛡️ SLIDE</button>
@@ -126,6 +136,7 @@
                     <div class="action-buttons vertical-buttons">
                         <button id="btn-resume" class="btn btn-primary">▶️ RESUME MATCH</button>
                         <button id="btn-restart" class="btn btn-secondary">🔄 RESTART ROUND</button>
+                        <button id="btn-pause-trophies" class="btn btn-secondary">🏆 CAREER TROPHIES</button>
                         <button id="btn-pause-music" class="btn btn-secondary">🎵 MUSIC: ON</button>
                         <button id="btn-pause-sound" class="btn btn-secondary">🔊 SOUND: ON</button>
                         <button id="btn-pause-menu" class="btn btn-secondary">🏠 MAIN MENU</button>
@@ -136,12 +147,17 @@
             <!-- Start Screen Overlay -->
             <div id="start-overlay" class="overlay-screen">
                 <div class="modal-card">
-                    <!-- Top Bar Header with Settings Gear -->
+                    <!-- Top Bar Header with Settings Gear, Trophies & Install -->
                     <div class="modal-header header-with-gear">
                         <div class="header-titles">
                             <h1 class="game-title">BRAWL <span class="neon-highlight">STICKS</span></h1>
                         </div>
-                        <button id="btn-settings-toggle" class="settings-gear-btn" title="Open Settings & Controls">⚙️ SETTINGS</button>
+                        <div class="header-action-group">
+                            <span id="gamepad-badge" class="gamepad-status-badge hidden" title="Controller active">🎮 GAMEPAD ACTIVE</span>
+                            <button id="btn-install-app" class="header-action-btn install-btn hidden" title="Install Desktop App">📲 INSTALL APP</button>
+                            <button id="btn-trophies-toggle" class="header-action-btn gold-btn" title="View Career Stats & Trophies">🏆 TROPHIES</button>
+                            <button id="btn-settings-toggle" class="settings-gear-btn" title="Open Settings & Controls">⚙️ SETTINGS</button>
+                        </div>
                     </div>
 
                     <!-- 📍 STEP 1: MODE SELECTION PAGE -->
@@ -295,6 +311,9 @@
                                         <button class="hat-btn" data-hat="COWBOY">🤠 COWBOY</button>
                                         <button class="hat-btn" data-hat="VISOR">🪖 VISOR</button>
                                         <button class="hat-btn" data-hat="TOPHAT">🎩 TOPHAT</button>
+                                        <button class="hat-btn secret-hat locked" data-hat="DEMON" title="Beat Shadow Overlord to Unlock">😈 DEMON</button>
+                                        <button class="hat-btn secret-hat locked" data-hat="HALO" title="Land 10+ Hit Combo to Unlock">😇 HALO</button>
+                                        <button class="hat-btn secret-hat locked" data-hat="VALKYRIE" title="Win with Perfect (0 Damage) to Unlock">🪽 VALKYRIE</button>
                                     </div>
                                 </div>
 
@@ -308,6 +327,9 @@
                                         <button class="hat-btn" data-hat="COWBOY">🤠 COWBOY</button>
                                         <button class="hat-btn" data-hat="VISOR">🪖 VISOR</button>
                                         <button class="hat-btn" data-hat="TOPHAT">🎩 TOPHAT</button>
+                                        <button class="hat-btn secret-hat locked" data-hat="DEMON" title="Beat Shadow Overlord to Unlock">😈 DEMON</button>
+                                        <button class="hat-btn secret-hat locked" data-hat="HALO" title="Land 10+ Hit Combo to Unlock">😇 HALO</button>
+                                        <button class="hat-btn secret-hat locked" data-hat="VALKYRIE" title="Win with Perfect (0 Damage) to Unlock">🪽 VALKYRIE</button>
                                     </div>
                                 </div>
                             </div>
@@ -374,33 +396,113 @@
                         <!-- Controls Guide Display -->
                         <div class="controls-guide">
                             <div class="control-column p1-controls">
-                                <h3 class="cyan-text">PLAYER 1 CONTROLS (Pause: P / ESC)</h3>
+                                <h3 class="cyan-text">PLAYER 1 KEYBOARD</h3>
                                 <div class="key-bind-grid">
                                     <div class="bind-row"><span>Move Left:</span> <button class="rebind-btn" data-player="p1" data-action="left">KeyA</button></div>
                                     <div class="bind-row"><span>Move Right:</span> <button class="rebind-btn" data-player="p1" data-action="right">KeyD</button></div>
                                     <div class="bind-row"><span>Jump:</span> <button class="rebind-btn" data-player="p1" data-action="jump">KeyW</button></div>
                                     <div class="bind-row"><span>Block / Slide:</span> <button class="rebind-btn" data-player="p1" data-action="block">KeyS</button></div>
+                                    <div class="bind-row"><span>Evasive Dash:</span> <button class="rebind-btn" data-player="p1" data-action="dash">Shift (or Double-Tap)</button></div>
                                     <div class="bind-row"><span>Light Punch:</span> <button class="rebind-btn" data-player="p1" data-action="punch">KeyF (Left Click)</button></div>
                                     <div class="bind-row"><span>Heavy Kick:</span> <button class="rebind-btn" data-player="p1" data-action="kick">KeyG (Right Click)</button></div>
                                     <div class="bind-row"><span>Signature Special:</span> <button class="rebind-btn" data-player="p1" data-action="ult">KeyH</button></div>
                                 </div>
                             </div>
                             <div class="control-column p2-controls" id="p2-controls-card">
-                                <h3 class="magenta-text">PLAYER 2 CONTROLS</h3>
+                                <h3 class="magenta-text">PLAYER 2 KEYBOARD</h3>
                                 <div class="key-bind-grid">
                                     <div class="bind-row"><span>Move Left:</span> <button class="rebind-btn" data-player="p2" data-action="left">ArrowLeft</button></div>
                                     <div class="bind-row"><span>Move Right:</span> <button class="rebind-btn" data-player="p2" data-action="right">ArrowRight</button></div>
                                     <div class="bind-row"><span>Jump:</span> <button class="rebind-btn" data-player="p2" data-action="jump">ArrowUp</button></div>
                                     <div class="bind-row"><span>Block / Slide:</span> <button class="rebind-btn" data-player="p2" data-action="block">ArrowDown</button></div>
+                                    <div class="bind-row"><span>Evasive Dash:</span> <button class="rebind-btn" data-player="p2" data-action="dash">Numpad0 / Shift</button></div>
                                     <div class="bind-row"><span>Light Punch:</span> <button class="rebind-btn" data-player="p2" data-action="punch">KeyJ</button></div>
                                     <div class="bind-row"><span>Heavy Kick:</span> <button class="rebind-btn" data-player="p2" data-action="kick">KeyK</button></div>
                                     <div class="bind-row"><span>Signature Special:</span> <button class="rebind-btn" data-player="p2" data-action="ult">KeyL</button></div>
+                                </div>
+                            </div>
+                            <div class="control-column gamepad-controls">
+                                <h3 class="gold-text">🎮 GAMEPAD (XBOX / PS)</h3>
+                                <div class="gamepad-info-box">
+                                    <div class="pad-row"><span>D-Pad / Left Stick:</span> <b>Move / Jump / Crouch</b></div>
+                                    <div class="pad-row"><span>A / ✕ (Cross):</span> <b>Jump</b></div>
+                                    <div class="pad-row"><span>X / ▢ (Square):</span> <b>Punch</b></div>
+                                    <div class="pad-row"><span>Y / △ (Triangle):</span> <b>Kick</b></div>
+                                    <div class="pad-row"><span>B / ○ (Circle):</span> <b>Dash / Slide</b></div>
+                                    <div class="pad-row"><span>RB / R1 / RT:</span> <b>⚡ ULT Signature Move</b></div>
+                                    <div class="pad-row"><span>Start / Options:</span> <b>Pause Game</b></div>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="action-buttons">
                         <button id="btn-close-settings" class="btn btn-primary">✖ CLOSE SETTINGS</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 🏆 CAREER STATS & TROPHIES MODAL POPUP -->
+            <div id="career-modal" class="overlay-screen hidden">
+                <div class="modal-card mini-modal career-modal-card">
+                    <div class="modal-header">
+                        <h1 class="game-title">🏆 CAREER <span class="neon-highlight">STATS & TROPHIES</span></h1>
+                        <p class="subtitle">Match History, Records & Unlockable Cosmetics</p>
+                    </div>
+                    <div class="modal-body">
+                        <!-- Stats Grid -->
+                        <div class="career-stats-grid">
+                            <div class="cstat-card">
+                                <span class="cstat-val cyan-text" id="stat-matches-won">0</span>
+                                <span class="cstat-lbl">Matches Won</span>
+                            </div>
+                            <div class="cstat-card">
+                                <span class="cstat-val gold-text" id="stat-highest-combo">0</span>
+                                <span class="cstat-lbl">Max Combo</span>
+                            </div>
+                            <div class="cstat-card">
+                                <span class="cstat-val magenta-text" id="stat-boss-kills">0</span>
+                                <span class="cstat-lbl">Boss Clears</span>
+                            </div>
+                            <div class="cstat-card">
+                                <span class="cstat-val green-text" id="stat-perfect-rounds">0</span>
+                                <span class="cstat-lbl">Flawless Wins</span>
+                            </div>
+                        </div>
+
+                        <!-- Achievements List -->
+                        <h3 class="gold-text achievements-heading">🏆 TROPHY SHOWCASE & UNLOCKS</h3>
+                        <div class="trophy-list">
+                            <div class="trophy-card locked" id="trophy-boss">
+                                <div class="trophy-icon">😈</div>
+                                <div class="trophy-info">
+                                    <div class="trophy-title">OVERLORD SLAYER</div>
+                                    <div class="trophy-desc">Defeat the Final Boss in Story Arcade Mode</div>
+                                    <div class="trophy-reward">Reward: Unlocks <b>😈 DEMON HORNS</b></div>
+                                </div>
+                                <span class="trophy-status" id="status-trophy-boss">LOCKED</span>
+                            </div>
+                            <div class="trophy-card locked" id="trophy-combo">
+                                <div class="trophy-icon">😇</div>
+                                <div class="trophy-info">
+                                    <div class="trophy-title">COMBO GOD</div>
+                                    <div class="trophy-desc">Unleash a 10+ Hit Godlike Combo</div>
+                                    <div class="trophy-reward">Reward: Unlocks <b>😇 CYBER HALO</b></div>
+                                </div>
+                                <span class="trophy-status" id="status-trophy-combo">LOCKED</span>
+                            </div>
+                            <div class="trophy-card locked" id="trophy-perfect">
+                                <div class="trophy-icon">🪽</div>
+                                <div class="trophy-info">
+                                    <div class="trophy-title">UNTOUCHABLE</div>
+                                    <div class="trophy-desc">Win a round without taking any damage (Flawless)</div>
+                                    <div class="trophy-reward">Reward: Unlocks <b>🪽 VALKYRIE HELM</b></div>
+                                </div>
+                                <span class="trophy-status" id="status-trophy-perfect">LOCKED</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="action-buttons">
+                        <button id="btn-close-career" class="btn btn-primary">✖ CLOSE TROPHIES</button>
                     </div>
                 </div>
             </div>
@@ -442,5 +544,12 @@
     </div>
 
     <script src="game.js"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js').catch(() => {});
+        });
+      }
+    </script>
 </body>
 </html>

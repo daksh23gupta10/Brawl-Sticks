@@ -144,6 +144,10 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
+.health-bar-wrapper {
+    position: relative;
+}
+
 .right-align-bar {
     transform: scaleX(-1);
 }
@@ -151,7 +155,24 @@ body {
 .bar-fill {
     height: 100%;
     width: 100%;
-    transition: width 0.15s ease-out, background-color 0.3s ease;
+}
+
+.health-fill {
+    position: relative;
+    z-index: 2;
+    transition: width 0.1s ease-out;
+}
+
+.health-ghost {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    background: #ffd700;
+    opacity: 0.85;
+    z-index: 1;
+    transition: width 0.45s cubic-bezier(0.2, 0.8, 0.3, 1) 0.15s;
 }
 
 .special-bar-wrapper {
@@ -1059,3 +1080,263 @@ canvas {
     box-shadow: 0 0 20px #ffffff;
     transform: scale(1.05);
 }
+
+/* ==========================================
+   🎮 GAMEPAD, PWA & HEADER ACTIONS
+   ========================================== */
+.header-action-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.header-action-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: var(--text-light);
+    font-family: var(--font-heading);
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.header-action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+}
+
+.header-action-btn.gold-btn {
+    border-color: var(--gold);
+    color: var(--gold);
+    background: rgba(255, 215, 0, 0.12);
+}
+
+.header-action-btn.gold-btn:hover {
+    background: var(--gold);
+    color: #000000;
+    box-shadow: 0 0 16px rgba(255, 215, 0, 0.5);
+}
+
+.header-action-btn.install-btn {
+    border-color: #00ff66;
+    color: #00ff66;
+    background: rgba(0, 255, 102, 0.12);
+}
+
+.header-action-btn.install-btn:hover {
+    background: #00ff66;
+    color: #000000;
+    box-shadow: 0 0 16px rgba(0, 255, 102, 0.5);
+}
+
+.gamepad-status-badge {
+    font-family: var(--font-heading);
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: #00f0ff;
+    background: rgba(0, 240, 255, 0.15);
+    border: 1px solid #00f0ff;
+    border-radius: 20px;
+    padding: 4px 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+    animation: pulseBadge 2s infinite ease-in-out;
+}
+
+@keyframes pulseBadge {
+    0%, 100% { opacity: 0.85; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.04); box-shadow: 0 0 16px rgba(0, 240, 255, 0.6); }
+}
+
+/* ==========================================
+   💨 EVASIVE DASH BUTTON & SECRET HATS
+   ========================================== */
+.touch-dash {
+    background: linear-gradient(135deg, #00f0ff, #aa00ff) !important;
+    border-color: #00f0ff !important;
+    color: #ffffff !important;
+    text-shadow: 0 0 6px #000000;
+}
+
+.secret-hat.locked {
+    opacity: 0.45;
+    position: relative;
+    filter: grayscale(0.8);
+    cursor: not-allowed;
+    border-style: dashed !important;
+}
+
+.secret-hat.locked::after {
+    content: '🔒';
+    position: absolute;
+    top: 2px;
+    right: 4px;
+    font-size: 0.65rem;
+}
+
+/* ==========================================
+   🏆 CAREER STATS & TROPHIES MODAL
+   ========================================== */
+.career-modal-card {
+    max-width: 620px !important;
+    width: 90% !important;
+}
+
+.career-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.cstat-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    padding: 10px 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.cstat-val {
+    font-family: var(--font-heading);
+    font-size: 1.4rem;
+    font-weight: 900;
+}
+
+.cstat-lbl {
+    font-size: 0.72rem;
+    color: #a0aec0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.achievements-heading {
+    font-size: 0.85rem;
+    margin-bottom: 12px;
+    letter-spacing: 1.5px;
+    text-align: left;
+}
+
+.trophy-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 280px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.trophy-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    padding: 10px 14px;
+    transition: all 0.25s ease;
+}
+
+.trophy-card.unlocked {
+    border-color: var(--gold);
+    background: rgba(255, 215, 0, 0.08);
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.15);
+}
+
+.trophy-card.locked {
+    opacity: 0.55;
+    filter: grayscale(0.5);
+}
+
+.trophy-icon {
+    font-size: 2rem;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.trophy-card.unlocked .trophy-icon {
+    border-color: var(--gold);
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
+}
+
+.trophy-info {
+    flex: 1;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.trophy-title {
+    font-family: var(--font-heading);
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.trophy-card.unlocked .trophy-title {
+    color: var(--gold);
+}
+
+.trophy-desc {
+    font-size: 0.78rem;
+    color: #cbd5e1;
+}
+
+.trophy-reward {
+    font-size: 0.72rem;
+    color: var(--cyan);
+}
+
+.trophy-status {
+    font-family: var(--font-heading);
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #a0aec0;
+}
+
+.trophy-card.unlocked .trophy-status {
+    background: var(--gold);
+    color: #000000;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+/* Gamepad Box in Settings */
+.gamepad-info-box {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 215, 0, 0.25);
+    border-radius: 6px;
+    padding: 8px 12px;
+}
+
+.pad-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.78rem;
+    color: #e2e8f0;
+}
+
+.pad-row b {
+    color: var(--gold);
+}
+

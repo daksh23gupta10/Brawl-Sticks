@@ -1,0 +1,20 @@
+{
+  "name": "Brawl-Sticks 2D: Story Arcade & Arena Brawler",
+  "short_name": "Brawl-Sticks",
+  "description": "Fast-paced 2D Stickman Fighting Web Game with Story Arcade, 8 character classes, and Web Audio synth soundtrack.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#060812",
+  "theme_color": "#00f0ff",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["games", "action", "entertainment"]
+}

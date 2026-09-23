@@ -1,53 +1,79 @@
-# ⚔️ Brawl-Sticks 2D: Story Arcade & Arena Brawler (`v3.0.0`)
+# ⚔️ Brawl-Sticks 2D: Story Arcade & Arena Brawler (`v3.5.0`)
 
 A fast-paced, high-performance 2D Stickman Fighting Web Game built using **HTML5 Canvas**, **Vanilla JavaScript**, and **Synthesized Web Audio API**. Play solo in **Story Arcade Mode** through a 5-stage tournament ladder ending in a giant **Final Boss Battle**, practice against smart AI, battle a friend locally, or jump into a 4-fighter **2v2 Team Brawl**!
 
 ![HTML5 Canvas](https://img.shields.io/badge/Engine-HTML5_Canvas-00f0ff?style=for-the-badge)
 ![JavaScript](https://img.shields.io/badge/Logic-Vanilla_JS-ffd700?style=for-the-badge)
 ![Web Audio](https://img.shields.io/badge/Audio-Synthesized_Web_Audio-ff0055?style=for-the-badge)
-![Version](https://img.shields.io/badge/Version-v3.0.0-00ff66?style=for-the-badge)
+![PWA Ready](https://img.shields.io/badge/PWA-100%25_Offline-00ff66?style=for-the-badge)
+![Gamepad](https://img.shields.io/badge/Gamepad-HTML5_API-purple?style=for-the-badge)
+![Version](https://img.shields.io/badge/Version-v3.5.0-00ff66?style=for-the-badge)
 
 ---
 
-## 🌟 Major Features in v3.0.0
+## 🌟 Major Features in v3.5.0
 
-### 📜 1. Story Arcade Pre-Match Dialogue Cutscenes
-* **Pre-Fight Comic Overlays**: Before each stage in Story Arcade Mode, pre-fight dialogue overlays appear featuring character avatar portraits, speaker titles, and stage taunts:
-  * **Stage 1**: `STAGE 1: SHADOW SHINOBI 🥷` -> *"Shadows conceal my blade. Show me your true strength!"*
-  * **Stage 2**: `STAGE 2: HEAVY BOXER 🥊` -> *"You think you can take my heavy hooks? Let's brawl!"*
-  * **Stage 3**: `STAGE 3: VOLCANIC LORD 🔥` -> *"Magma burns eternal! Fall before the flames of victory!"*
-  * **Stage 4**: `STAGE 4: SKY MAGE 🔮` -> *"The winds and celestial skies bow to my spellwork!"*
-  * **Stage 5**: `FINAL BOSS: SHADOW OVERLORD 👑` -> *"Fools think they can claim my throne. I am the Overlord of Shadows!"*
+### 🎮 1. HTML5 Gamepad & Controller API Support
+* **Plug-and-Play**: Connect Xbox, PlayStation, or generic USB/Bluetooth controllers anytime.
+* **Status Badge**: Glowing `🎮 GAMEPAD CONNECTED` status indicator in the top navigation bar.
+* **Full Mapping**: Move, jump, light attack, heavy attack, block/parry, evasive dash, cinematic ultimate, and pause directly from your gamepad.
 
 ---
 
-### ⚡ 2. Perfect Parry & Counter-Attack System
-* **Frame-Perfect Counter**: Tapping Block (`S` / `Down Arrow`) initiates a **6-frame (0.1s) Perfect Parry Window**.
-* **Zero Damage & Attacker Stun**: Timed blocks take **0 damage**, trigger a bright golden parry shockwave, play a metallic chime (`audio.playParry()`), and **stun the attacker for 24 frames** for a guaranteed counter-strike opportunity!
+### ⚡ 2. Ghost Health (Damage Trail Lag Bar)
+* **Fighting Game Polish**: Health bars now feature an underlying golden "ghost trail" (`#ffd700`) that holds and smoothly shrinks over 450ms when damage is taken.
+* Works seamlessly across 1v1, Story Arcade, and 2v2 modes.
 
 ---
 
-### 🎬 3. Ultimate Move Cinematic Camera Zoom & Letterbox Bars
-* **Cinematic Focus**: Activating a Signature Special (`⚡ ULT`) triggers a 30-frame (0.5s) cinematic freeze.
-* **1.35x Camera Zoom & Skill Banner**: Zooms in 1.35x on the attacker with top and bottom dark letterbox bars and glowing skill callout text (e.g. `⚡ NINJA: SHADOW HURRICANE SLASH!`).
+### 📱 3. Progressive Web App (PWA) & 100% Offline Capability
+* **Installable**: One-click install via the `INSTALL APP` button or browser install prompt.
+* **100% Offline**: Integrated `sw.js` cache-first Service Worker caches all game assets, canvas renderer, styles, and synth sound engine for zero-connection play.
+* **Custom App Icon**: Includes 512×512 high-resolution neon vector clash icon and standalone landscape manifest.
 
 ---
 
-### 🎵 4. Multi-Layer Web Audio Synthwave Music Engine
-* **Retro Synth Beats**: Multi-oscillator 80s synthwave basslines, arpeggios, and hi-hat percussion generated procedurally with Web Audio API.
-* **Dynamic Low-HP Tempo**: Automatically speeds up tempo when fighters enter low HP for high-intensity climaxes!
-* **Toggle Controls**: Toggle **`🎵 MUSIC: ON / OFF`** in both Settings gear modal and Pause menu.
+### 🏆 4. Career Stats & Trophies System with Secret Unlockable Hats
+* **Persistent Career Records**: Tracks Matches Played, Matches Won, Win Rate %, Boss Clears, Highest Combo Hits, and Flawless/Perfect Rounds in `localStorage`.
+* **Trophy Achievements**:
+  * 🩸 **First Blood**: Win your first match.
+  * 👑 **Overlord Slayer**: Defeat the Stage 5 Shadow Overlord in Arcade Mode &rarr; **Unlocks Secret Hat: DEMON (Crimson Glowing Horns)**!
+  * 🌟 **Untouchable Master**: Win a round without taking any damage &rarr; **Unlocks Secret Hat: HALO (Golden Glowing Halo)**!
+  * 🔥 **Combo Legend**: Pull off an 8+ hit combo &rarr; **Unlocks Secret Hat: VALKYRIE (Cyan Winged Helm)**!
+* **Showcase Modal**: View career metrics and unlocked trophies by clicking `🏆 TROPHIES` in the top header or pause menu.
 
 ---
 
-### 🏆 5. Single-Player Story Arcade Mode & Final Boss
-* **5-Stage Tournament Ladder**: Culminating in **`SHADOW OVERLORD` 👑** (`350 HP`, Crimson Shadow Knight with Crown).
-* **Boss Rage Mode**: At 50% HP (<= 175 HP), triggers **BOSS RAGE MODE** with pitch-shifted roar, red/purple shadow aura, +20% movement speed, +40% attack damage, and shockwave bursts!
+### 💨 5. Evasive Dash & Hit-Stop Micro-Freeze Impact Frames
+* **Evasive Dash**: Press `Shift` (P1), `Numpad 0` (P2), `RB` (Gamepad), or the on-screen `DASH` touch button for 14 frames of invulnerability with fading holographic afterimages.
+* **Hit-Stop Impact Frames**: Heavy strikes and projectile collisions briefly freeze the frame for 2–4 micro-frames, delivering crisp, visceral arcade impact before physics resumes.
 
 ---
 
-### 🥷 6. 8 Unique Character Classes & Signature Specials (`⚡ ULT`)
-Each fighter class has unique max HP, movement speed, jump height, and signature special move:
+### 📜 6. Story Arcade Pre-Match Dialogue Cutscenes
+* **Pre-Fight Comic Overlays**: Pre-fight dialogue overlays featuring character avatar portraits, speaker titles, and stage taunts across all 5 ladder stages.
+* **Final Boss: Shadow Overlord**: 350 HP Shadow Overlord with 2-phase Boss Rage Mode at 50% HP.
+
+---
+
+### ⚡ 7. Perfect Parry & Counter-Attack System
+* **Frame-Perfect Counter**: Tapping Block initiates a **6-frame (0.1s) Perfect Parry Window**.
+* **Zero Damage & Attacker Stun**: Timed blocks take 0 damage, trigger a bright golden shockwave, play a metallic chime, and stun the attacker for 24 frames!
+
+---
+
+### 🎬 8. Ultimate Move Cinematic Camera Zoom
+* Activating a Signature Special (`⚡ ULT`) triggers a 30-frame cinematic freeze with 1.35x zoom and glowing letterbox skill banners.
+
+---
+
+### 🎵 9. Multi-Layer Web Audio Synthwave Music Engine
+* Multi-oscillator 80s synthwave basslines, arpeggios, and hi-hat percussion generated procedurally in real-time.
+* Speeds up tempo dynamically when entering critical low HP!
+
+---
+
+### 🥷 10. 8 Unique Character Classes & Signature Specials (`⚡ ULT`)
 
 | Class Icon & Name | Specialty | Signature Special Move (`⚡ ULT`) |
 | :--- | :--- | :--- |
@@ -62,9 +88,9 @@ Each fighter class has unique max HP, movement speed, jump height, and signature
 
 ---
 
-### 🌋 7. Interactive 2D Stage Arenas & Stage Hazards
+### 🌋 11. Interactive 2D Stage Arenas & Hazards
 * **🌋 VOLCANIC MAGMA PIT**: Magma floor burn edges and falling fire meteorites.
-* **🌆 CYBERPUNK NEON ROOFTOP**: Electric perimeter shock fences (`x <= 40` or `x >= 984`) that zap fighters for damage + shockwaves.
+* **🌆 CYBERPUNK NEON ROOFTOP**: Electric perimeter shock fences that zap fighters on contact.
 * **⛩️ CELESTIAL SKY DOJO**: Floating sky temple with falling sakura cherry blossom petals.
 
 ---
@@ -72,9 +98,10 @@ Each fighter class has unique max HP, movement speed, jump height, and signature
 ## 🎮 Controls & Keybindings
 
 ### Player 1 (Left Side / Blue Team)
-* **Move Left / Right**: `A` / `D` (or Left / Right Arrow keys in 1P mode)
-* **Jump**: `W` (or Up Arrow key)
-* **Block / Slide / Parry**: `S` (or Down Arrow key)
+* **Move Left / Right**: `A` / `D` (or Left / Right Arrow in 1P mode)
+* **Jump**: `W` (or Up Arrow)
+* **Block / Slide / Parry**: `S` (or Down Arrow)
+* **Evasive Dash**: `Left Shift`
 * **Light Punch**: `F` (or Left Mouse Click)
 * **Heavy Kick**: `G` (or Right Mouse Click)
 * **Signature Special (`⚡ ULT`)**: `H`
@@ -83,18 +110,36 @@ Each fighter class has unique max HP, movement speed, jump height, and signature
 * **Move Left / Right**: `Left Arrow` / `Right Arrow`
 * **Jump**: `Up Arrow`
 * **Block / Slide / Parry**: `Down Arrow`
+* **Evasive Dash**: `Numpad 0`
 * **Light Punch**: `J`
 * **Heavy Kick**: `K`
 * **Signature Special (`⚡ ULT`)**: `L`
 
+### 🎮 Gamepad / Controller (Player 1)
+* **Move / Crouch**: Left Analog Stick / D-Pad
+* **Jump**: `A` / `Cross` (Button 0)
+* **Block / Parry**: `B` / `Circle` (Button 1)
+* **Light Attack**: `X` / `Square` (Button 2)
+* **Heavy Attack**: `Y` / `Triangle` (Button 3)
+* **Evasive Dash**: `RB` / `R1` (Button 5)
+* **Signature Special (`⚡ ULT`)**: `RT` / `R2` (Button 7)
+* **Pause / Resume**: `Start` / `Options` (Button 9)
+
 ### General Shortcuts
-* **Pause / Resume Match**: `P` or `ESC` (or click `⏸️ PAUSE` button on HUD)
+* **Pause / Resume Match**: `P` or `ESC` (or HUD `⏸️ PAUSE` button)
 
 ---
 
 ## 📜 Changelog & Version History
 
-### Version 3.0.0 (Latest Release)
+### Version 3.5.0 (Latest Release)
+* **HTML5 Gamepad API**: Plug-and-play Xbox, PlayStation, USB controller support with auto-mapping.
+* **Ghost Health**: Delayed golden damage trail lag bars for fighters.
+* **PWA & Offline Mode**: `manifest.json`, high-res SVG app icon, Service Worker cache-first offline capability, and install button.
+* **Career & Trophies**: Persistent career record tracking and 4 trophies with 3 secret hats (`DEMON`, `HALO`, `VALKYRIE`).
+* **Evasive Dash & Hit-Stop**: Invulnerable dash with fading afterimages and micro-freeze hit-stop impact frames.
+
+### Version 3.0.0
 * Added Story Arcade dialogue cutscenes, Perfect Parry counter system, Ultimate Move cinematics, and multi-layer synthwave Web Audio music engine.
 
 ### Version 2.9.3

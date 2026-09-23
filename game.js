@@ -1,17 +1,138 @@
 /**
  * BRAWL-STICKS: 1v1 & 2v2 Stickman Fighting Game Engine
- * Spectacular Class Signature Moves Rework (v2.4.0)
+ * Story Arcade & Arena Brawler (v3.0.0)
  */
 
 // ==========================================
 // 1. KEY BINDINGS, CLASSES & COSMETICS
 // ==========================================
 const defaultKeyBindings = {
-    p1: { left: 'KeyA', right: 'KeyD', jump: 'KeyW', block: 'KeyS', punch: 'KeyF', kick: 'KeyG', ult: 'KeyH' },
-    p2: { left: 'ArrowLeft', right: 'ArrowRight', jump: 'ArrowUp', block: 'ArrowDown', punch: 'KeyJ', kick: 'KeyK', ult: 'KeyL' }
+    p1: { left: 'KeyA', right: 'KeyD', jump: 'KeyW', block: 'KeyS', dash: 'ShiftLeft', punch: 'KeyF', kick: 'KeyG', ult: 'KeyH' },
+    p2: { left: 'ArrowLeft', right: 'ArrowRight', jump: 'ArrowUp', block: 'ArrowDown', dash: 'Numpad0', punch: 'KeyJ', kick: 'KeyK', ult: 'KeyL' }
 };
 
 let keyBindings = JSON.parse(JSON.stringify(defaultKeyBindings));
+
+// ==========================================
+// 🏆 CAREER MANAGER & TROPHIES ENGINE
+// ==========================================
+const CareerManager = {
+    stats: {
+        matchesWon: 0,
+        matchesPlayed: 0,
+        bossClears: 0,
+        highestCombo: 0,
+        perfectRounds: 0
+    },
+    unlockedHats: ['NONE', 'CROWN', 'SHADES', 'BANDANA', 'COWBOY', 'VISOR', 'TOPHAT'],
+
+    load() {
+        try {
+            const saved = localStorage.getItem('brawl_sticks_career');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                if (parsed.stats) Object.assign(this.stats, parsed.stats);
+                if (Array.isArray(parsed.unlockedHats)) {
+                    this.unlockedHats = Array.from(new Set([...this.unlockedHats, ...parsed.unlockedHats]));
+                }
+            }
+        } catch (e) {}
+        this.updateUI();
+    },
+
+    save() {
+        try {
+            localStorage.setItem('brawl_sticks_career', JSON.stringify({
+                stats: this.stats,
+                unlockedHats: this.unlockedHats
+            }));
+        } catch (e) {}
+        this.updateUI();
+    },
+
+    unlockHat(hatName) {
+        if (!this.unlockedHats.includes(hatName)) {
+            this.unlockedHats.push(hatName);
+            this.save();
+            if (typeof particleSystem !== 'undefined' && particleSystem.addDamageText) {
+                particleSystem.addDamageText(512, 100, `🏆 UNLOCKED HAT: ${hatName}!`, '#ffd700');
+            }
+        }
+    },
+
+    recordMatchResult(isP1Win, isArcadeOverlordBeaten, p1TookDamageInRound) {
+        this.stats.matchesPlayed++;
+        if (isP1Win) this.stats.matchesWon++;
+
+        if (isArcadeOverlordBeaten) {
+            this.stats.bossClears++;
+            this.unlockHat('DEMON');
+        }
+
+        if (isP1Win && !p1TookDamageInRound) {
+            this.stats.perfectRounds++;
+            this.unlockHat('VALKYRIE');
+        }
+
+        this.save();
+    },
+
+    recordCombo(hits) {
+        if (hits > this.stats.highestCombo) {
+            this.stats.highestCombo = hits;
+        }
+        if (hits >= 10) {
+            this.unlockHat('HALO');
+        }
+        this.save();
+    },
+
+    updateUI() {
+        const mWon = document.getElementById('stat-matches-won');
+        const hCombo = document.getElementById('stat-highest-combo');
+        const bKills = document.getElementById('stat-boss-kills');
+        const pRounds = document.getElementById('stat-perfect-rounds');
+
+        if (mWon) mWon.textContent = this.stats.matchesWon;
+        if (hCombo) hCombo.textContent = this.stats.highestCombo;
+        if (bKills) bKills.textContent = this.stats.bossClears;
+        if (pRounds) pRounds.textContent = this.stats.perfectRounds;
+
+        const tBoss = document.getElementById('trophy-boss');
+        const sBoss = document.getElementById('status-trophy-boss');
+        if (tBoss && sBoss) {
+            const hasBoss = this.unlockedHats.includes('DEMON');
+            tBoss.classList.toggle('unlocked', hasBoss);
+            tBoss.classList.toggle('locked', !hasBoss);
+            sBoss.textContent = hasBoss ? 'UNLOCKED' : 'LOCKED';
+        }
+
+        const tCombo = document.getElementById('trophy-combo');
+        const sCombo = document.getElementById('status-trophy-combo');
+        if (tCombo && sCombo) {
+            const hasCombo = this.unlockedHats.includes('HALO');
+            tCombo.classList.toggle('unlocked', hasCombo);
+            tCombo.classList.toggle('locked', !hasCombo);
+            sCombo.textContent = hasCombo ? 'UNLOCKED' : 'LOCKED';
+        }
+
+        const tPerf = document.getElementById('trophy-perfect');
+        const sPerf = document.getElementById('status-trophy-perfect');
+        if (tPerf && sPerf) {
+            const hasPerf = this.unlockedHats.includes('VALKYRIE');
+            tPerf.classList.toggle('unlocked', hasPerf);
+            tPerf.classList.toggle('locked', !hasPerf);
+            sPerf.textContent = hasPerf ? 'UNLOCKED' : 'LOCKED';
+        }
+
+        document.querySelectorAll('.hat-btn.secret-hat').forEach(btn => {
+            const h = btn.getAttribute('data-hat');
+            const isUnlocked = this.unlockedHats.includes(h);
+            btn.classList.toggle('locked', !isUnlocked);
+            btn.style.pointerEvents = isUnlocked ? 'auto' : 'none';
+        });
+    }
+};
 
 let p1Color = '#00f0ff';
 let p2Color = '#ff0055';
@@ -73,6 +194,7 @@ function loadSavedPreferences() {
     if (!p2Hat) p2Hat = 'NONE';
     if (!selectedArena) selectedArena = 'VOLCANO';
 
+    CareerManager.load();
     updateRebindButtonText();
     syncUIElements();
     applyHUDColors();
@@ -195,11 +317,25 @@ document.querySelectorAll('#p4-class-list .class-card').forEach(c => {
 });
 
 document.querySelectorAll('#p1-hat-list .hat-btn').forEach(h => {
-    h.addEventListener('click', () => { p1Hat = h.getAttribute('data-hat') || 'NONE'; syncUIElements(); savePreferences(); });
+    h.addEventListener('click', () => {
+        const hat = h.getAttribute('data-hat') || 'NONE';
+        if (CareerManager.unlockedHats.includes(hat)) {
+            p1Hat = hat;
+            syncUIElements();
+            savePreferences();
+        }
+    });
 });
 
 document.querySelectorAll('#p2-hat-list .hat-btn').forEach(h => {
-    h.addEventListener('click', () => { p2Hat = h.getAttribute('data-hat') || 'NONE'; syncUIElements(); savePreferences(); });
+    h.addEventListener('click', () => {
+        const hat = h.getAttribute('data-hat') || 'NONE';
+        if (CareerManager.unlockedHats.includes(hat)) {
+            p2Hat = hat;
+            syncUIElements();
+            savePreferences();
+        }
+    });
 });
 
 document.querySelectorAll('#arena-list .arena-card').forEach(ac => {
@@ -911,6 +1047,11 @@ class Stickman {
         this.parryFlashTimer = 0;
         this.isSliding = false;
         this.slideTimer = 0;
+        this.isDashing = false;
+        this.dashTimer = 0;
+        this.dashCooldown = 0;
+        this.invulnerableTimer = 0;
+        this.afterimages = [];
         this.isAttacking = false;
         this.attackType = null;
         this.attackTimer = 0;
@@ -931,6 +1072,11 @@ class Stickman {
         this.isBlocking = false;
         this.isSliding = false;
         this.slideTimer = 0;
+        this.isDashing = false;
+        this.dashTimer = 0;
+        this.dashCooldown = 0;
+        this.invulnerableTimer = 0;
+        this.afterimages = [];
         this.isAttacking = false;
         this.attackTimer = 0;
         this.stunTimer = 0;
@@ -1001,6 +1147,29 @@ class Stickman {
                 this.updateAI(target, difficulty);
             } else {
                 this.handleInputs(keys, mode, target);
+            }
+        }
+
+        if (this.dashCooldown > 0) this.dashCooldown--;
+        if (this.invulnerableTimer > 0) this.invulnerableTimer--;
+
+        if (this.afterimages && this.afterimages.length > 0) {
+            for (let i = this.afterimages.length - 1; i >= 0; i--) {
+                this.afterimages[i].opacity -= 0.08;
+                if (this.afterimages[i].opacity <= 0) {
+                    this.afterimages.splice(i, 1);
+                }
+            }
+        }
+
+        if (this.isDashing) {
+            this.dashTimer--;
+            this.vx = this.facing * 14.0;
+            if (this.dashTimer % 2 === 0) {
+                this.afterimages.push({ x: this.x, y: this.y, color: this.color, opacity: 0.65, facing: this.facing });
+            }
+            if (this.dashTimer <= 0) {
+                this.isDashing = false;
             }
         }
 
@@ -1100,12 +1269,13 @@ class Stickman {
 
     handleInputs(keys, mode, target) {
         const pid = this.id === 'p1' ? 'p1' : 'p2';
-        const binds = keyBindings[pid] || defaultKeyBindings.p1;
+        const binds = keyBindings[pid] || defaultKeyBindings[pid] || defaultKeyBindings.p1;
 
         let leftKey = !!keys[binds.left];
         let rightKey = !!keys[binds.right];
         let jumpKey = !!keys[binds.jump];
         let blockKey = !!keys[binds.block];
+        let dashKey = !!keys[binds.dash];
         let lightKey = !!keys[binds.punch];
         let heavyKey = !!keys[binds.kick];
         let ultKey = !!keys[binds.ult];
@@ -1118,14 +1288,35 @@ class Stickman {
                 blockKey = blockKey || !!keys['ArrowDown'];
             }
 
-            leftKey = leftKey || !!keys['touch_left'];
-            rightKey = rightKey || !!keys['touch_right'];
-            jumpKey = jumpKey || !!keys['touch_jump'];
-            blockKey = blockKey || !!keys['touch_block'] || !!keys['touch_slide'];
+            leftKey = leftKey || !!keys['touch_left'] || !!keys['gp_p1_left'];
+            rightKey = rightKey || !!keys['touch_right'] || !!keys['gp_p1_right'];
+            jumpKey = jumpKey || !!keys['touch_jump'] || !!keys['gp_p1_jump'];
+            blockKey = blockKey || !!keys['touch_block'] || !!keys['touch_slide'] || !!keys['gp_p1_block'];
+            dashKey = dashKey || !!keys['ShiftLeft'] || !!keys['ShiftRight'] || !!keys['touch_dash'] || !!keys['gp_p1_dash'];
 
-            lightKey = lightKey || !!keys['mouse_punch'] || !!keys['touch_punch'];
-            heavyKey = heavyKey || !!keys['mouse_kick'] || !!keys['touch_kick'];
-            ultKey = ultKey || !!keys['mouse_ult'] || !!keys['touch_ult'];
+            lightKey = lightKey || !!keys['mouse_punch'] || !!keys['touch_punch'] || !!keys['gp_p1_punch'];
+            heavyKey = heavyKey || !!keys['mouse_kick'] || !!keys['touch_kick'] || !!keys['gp_p1_kick'];
+            ultKey = ultKey || !!keys['mouse_ult'] || !!keys['touch_ult'] || !!keys['gp_p1_ult'];
+        } else if (this.id === 'p2') {
+            leftKey = leftKey || !!keys['gp_p2_left'];
+            rightKey = rightKey || !!keys['gp_p2_right'];
+            jumpKey = jumpKey || !!keys['gp_p2_jump'];
+            blockKey = blockKey || !!keys['gp_p2_block'];
+            dashKey = dashKey || !!keys['Numpad0'] || !!keys['gp_p2_dash'];
+
+            lightKey = lightKey || !!keys['gp_p2_punch'];
+            heavyKey = heavyKey || !!keys['gp_p2_kick'];
+            ultKey = ultKey || !!keys['gp_p2_ult'];
+        }
+
+        if (dashKey && this.dashCooldown <= 0 && !this.isDashing && !this.isAttacking) {
+            this.isDashing = true;
+            this.dashTimer = 12;
+            this.dashCooldown = 40;
+            this.invulnerableTimer = 12;
+            audio.playSlide();
+            particleSystem.createDust(this.x + this.width / 2, this.y + this.height);
+            return;
         }
 
         if (blockKey && this.isGrounded && !this.isSliding && !this.isAttacking) {
@@ -1284,7 +1475,8 @@ class Stickman {
     }
 
     takeDamage(amount, knockback, attackerFacing, attacker = null) {
-        if (this.invincibleTimer > 0 || this.health <= 0) return;
+        if (this.invulnerableTimer > 0 || this.invincibleTimer > 0 || this.health <= 0) return;
+        if (this.id === 'p1') p1TookDamageInRound = true;
 
         const dmg = (typeof amount === 'number' && !isNaN(amount)) ? amount : 10;
         const kb = (typeof knockback === 'number' && !isNaN(knockback)) ? knockback : 5;
@@ -1362,6 +1554,31 @@ class Stickman {
         ctx.fill();
         ctx.restore();
 
+        if (this.afterimages && this.afterimages.length > 0) {
+            this.afterimages.forEach(img => {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, img.opacity);
+                ctx.strokeStyle = img.color;
+                ctx.fillStyle = img.color;
+                ctx.lineWidth = 4;
+                ctx.shadowColor = img.color;
+                ctx.shadowBlur = 15;
+                const ax = img.x + this.width / 2;
+                const ay = img.y + 16;
+                ctx.beginPath();
+                ctx.arc(ax, ay, 13, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(ax, ay + 13);
+                ctx.lineTo(ax, img.y + 55);
+                ctx.lineTo(ax - 10, img.y + this.height);
+                ctx.moveTo(ax, img.y + 55);
+                ctx.lineTo(ax + 10, img.y + this.height);
+                ctx.stroke();
+                ctx.restore();
+            });
+        }
+
         const drawHat = (hx, hy) => {
             if (isNaN(hx) || isNaN(hy)) return;
             ctx.save();
@@ -1405,6 +1622,61 @@ class Stickman {
                 ctx.fillStyle = '#1a1a1a';
                 ctx.fillRect(hx - 14, hy - 13, 28, 4);
                 ctx.fillRect(hx - 9, hy - 28, 18, 15);
+            } else if (this.hat === 'DEMON') {
+                ctx.fillStyle = '#ff0033';
+                ctx.strokeStyle = '#ffffff';
+                ctx.shadowColor = '#ff0033';
+                ctx.shadowBlur = 14;
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.moveTo(hx - 8, hy - 8);
+                ctx.quadraticCurveTo(hx - 20, hy - 22, hx - 14, hy - 28);
+                ctx.quadraticCurveTo(hx - 10, hy - 18, hx - 4, hy - 12);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(hx + 8, hy - 8);
+                ctx.quadraticCurveTo(hx + 20, hy - 22, hx + 14, hy - 28);
+                ctx.quadraticCurveTo(hx + 10, hy - 18, hx + 4, hy - 12);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+            } else if (this.hat === 'HALO') {
+                ctx.strokeStyle = '#ffd700';
+                ctx.shadowColor = '#ffd700';
+                ctx.shadowBlur = 18;
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.ellipse(hx, hy - 24, 16, 5, 0, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+            } else if (this.hat === 'VALKYRIE') {
+                ctx.fillStyle = '#00f0ff';
+                ctx.strokeStyle = '#ffffff';
+                ctx.shadowColor = '#00f0ff';
+                ctx.shadowBlur = 14;
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.moveTo(hx - 10, hy - 4);
+                ctx.lineTo(hx - 24, hy - 20);
+                ctx.lineTo(hx - 16, hy - 8);
+                ctx.lineTo(hx - 26, hy - 12);
+                ctx.lineTo(hx - 12, hy);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(hx + 10, hy - 4);
+                ctx.lineTo(hx + 24, hy - 20);
+                ctx.lineTo(hx + 16, hy - 8);
+                ctx.lineTo(hx + 26, hy - 12);
+                ctx.lineTo(hx + 12, hy);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
             }
             ctx.restore();
         };
@@ -1645,6 +1917,86 @@ let fighters = [];
 let shakeTime = 0;
 let shakeIntensity = 0;
 let slowMoTimer = 0;
+let hitStopTimer = 0;
+let p1TookDamageInRound = false;
+let gamepadConnected = false;
+
+window.addEventListener('gamepadconnected', (e) => {
+    gamepadConnected = true;
+    const badge = document.getElementById('gamepad-badge');
+    if (badge) badge.classList.remove('hidden');
+});
+
+window.addEventListener('gamepaddisconnected', (e) => {
+    const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
+    let anyActive = false;
+    for (let gp of gamepads) if (gp) anyActive = true;
+    gamepadConnected = anyActive;
+    const badge = document.getElementById('gamepad-badge');
+    if (badge) badge.classList.toggle('hidden', !anyActive);
+});
+
+function pollGamepads() {
+    if (!navigator.getGamepads) return;
+    const gamepads = navigator.getGamepads();
+    if (!gamepads) return;
+
+    const gp1 = gamepads[0];
+    if (gp1) {
+        if (!gamepadConnected) {
+            gamepadConnected = true;
+            const badge = document.getElementById('gamepad-badge');
+            if (badge) badge.classList.remove('hidden');
+        }
+        const deadzone = 0.35;
+        const leftStickX = gp1.axes[0] || 0;
+        const leftStickY = gp1.axes[1] || 0;
+        const dpadLeft = gp1.buttons[14] && gp1.buttons[14].pressed;
+        const dpadRight = gp1.buttons[15] && gp1.buttons[15].pressed;
+        const dpadUp = gp1.buttons[12] && gp1.buttons[12].pressed;
+        const dpadDown = gp1.buttons[13] && gp1.buttons[13].pressed;
+
+        keys['gp_p1_left'] = leftStickX < -deadzone || dpadLeft;
+        keys['gp_p1_right'] = leftStickX > deadzone || dpadRight;
+        keys['gp_p1_jump'] = leftStickY < -0.6 || dpadUp || (gp1.buttons[0] && gp1.buttons[0].pressed);
+        keys['gp_p1_block'] = leftStickY > 0.6 || dpadDown;
+
+        keys['gp_p1_punch'] = gp1.buttons[2] && gp1.buttons[2].pressed;
+        keys['gp_p1_kick'] = gp1.buttons[3] && gp1.buttons[3].pressed;
+        keys['gp_p1_dash'] = gp1.buttons[1] && gp1.buttons[1].pressed;
+        keys['gp_p1_ult'] = (gp1.buttons[5] && gp1.buttons[5].pressed) || (gp1.buttons[7] && gp1.buttons[7].pressed);
+
+        if (gp1.buttons[9] && gp1.buttons[9].pressed) {
+            if (!keys['gp_p1_start_pressed']) {
+                keys['gp_p1_start_pressed'] = true;
+                togglePause();
+            }
+        } else {
+            keys['gp_p1_start_pressed'] = false;
+        }
+    }
+
+    const gp2 = gamepads[1];
+    if (gp2) {
+        const deadzone = 0.35;
+        const leftStickX = gp2.axes[0] || 0;
+        const leftStickY = gp2.axes[1] || 0;
+        const dpadLeft = gp2.buttons[14] && gp2.buttons[14].pressed;
+        const dpadRight = gp2.buttons[15] && gp2.buttons[15].pressed;
+        const dpadUp = gp2.buttons[12] && gp2.buttons[12].pressed;
+        const dpadDown = gp2.buttons[13] && gp2.buttons[13].pressed;
+
+        keys['gp_p2_left'] = leftStickX < -deadzone || dpadLeft;
+        keys['gp_p2_right'] = leftStickX > deadzone || dpadRight;
+        keys['gp_p2_jump'] = leftStickY < -0.6 || dpadUp || (gp2.buttons[0] && gp2.buttons[0].pressed);
+        keys['gp_p2_block'] = leftStickY > 0.6 || dpadDown;
+
+        keys['gp_p2_punch'] = gp2.buttons[2] && gp2.buttons[2].pressed;
+        keys['gp_p2_kick'] = gp2.buttons[3] && gp2.buttons[3].pressed;
+        keys['gp_p2_dash'] = gp2.buttons[1] && gp2.buttons[1].pressed;
+        keys['gp_p2_ult'] = (gp2.buttons[5] && gp2.buttons[5].pressed) || (gp2.buttons[7] && gp2.buttons[7].pressed);
+    }
+}
 
 function triggerCameraShake(time, intensity) {
     shakeTime = time;
@@ -1654,10 +2006,12 @@ function triggerCameraShake(time, intensity) {
 function togglePause() {
     if (gameState === 'FIGHT') {
         gameState = 'PAUSED';
+        audio.stopMusic();
         const po = document.getElementById('pause-overlay');
         if (po) po.classList.remove('hidden');
     } else if (gameState === 'PAUSED') {
         gameState = 'FIGHT';
+        audio.startMusic();
         const po = document.getElementById('pause-overlay');
         if (po) po.classList.add('hidden');
     }
@@ -1683,6 +2037,8 @@ if (btnRestart) {
     btnRestart.addEventListener('click', () => {
         const po = document.getElementById('pause-overlay');
         if (po) po.classList.add('hidden');
+        audio.stopMusic();
+        clearInterval(timerInterval);
         startRound();
     });
 }
@@ -1694,6 +2050,8 @@ if (btnPauseMenu) {
         const so = document.getElementById('start-overlay');
         if (po) po.classList.add('hidden');
         if (so) so.classList.remove('hidden');
+        audio.stopMusic();
+        clearInterval(timerInterval);
         gameState = 'START';
     });
 }
@@ -1761,6 +2119,7 @@ const joystickBase = document.getElementById('joystick-base');
 const joystickThumb = document.getElementById('joystick-thumb');
 const touchOverlay = document.getElementById('touch-overlay');
 let isDraggingJoystick = false;
+let joystickTouchId = null;
 let joystickCenter = { x: 0, y: 0 };
 const maxJoystickRadius = 38;
 
@@ -1785,6 +2144,7 @@ function updateJoystick(clientPos) {
 
 function resetJoystick() {
     isDraggingJoystick = false;
+    joystickTouchId = null;
     if (joystickThumb) joystickThumb.style.transform = `translate(0px, 0px)`;
     keys['touch_left'] = false;
     keys['touch_right'] = false;
@@ -1803,8 +2163,10 @@ if (joystickBase) {
 
     joystickBase.addEventListener('touchstart', (e) => {
         e.preventDefault();
-        startJoystickDrag(e.touches[0].clientX, e.touches[0].clientY);
-    });
+        const touch = e.changedTouches[0];
+        joystickTouchId = touch.identifier;
+        startJoystickDrag(touch.clientX, touch.clientY);
+    }, { passive: false });
 
     joystickBase.addEventListener('mousedown', (e) => {
         e.preventDefault();
@@ -1813,19 +2175,38 @@ if (joystickBase) {
 }
 
 window.addEventListener('mousemove', (e) => {
-    if (isDraggingJoystick) {
+    if (isDraggingJoystick && joystickTouchId === null) {
         updateJoystick({ x: e.clientX, y: e.clientY });
     }
 });
 
 window.addEventListener('touchmove', (e) => {
-    if (isDraggingJoystick && e.touches.length > 0) {
-        updateJoystick({ x: e.touches[0].clientX, y: e.touches[0].clientY });
+    if (isDraggingJoystick && joystickTouchId !== null) {
+        for (let i = 0; i < e.touches.length; i++) {
+            if (e.touches[i].identifier === joystickTouchId) {
+                updateJoystick({ x: e.touches[i].clientX, y: e.touches[i].clientY });
+                break;
+            }
+        }
+    }
+}, { passive: false });
+
+window.addEventListener('mouseup', () => { if (isDraggingJoystick && joystickTouchId === null) resetJoystick(); });
+window.addEventListener('touchend', (e) => {
+    if (isDraggingJoystick && joystickTouchId !== null) {
+        let touchStillActive = false;
+        for (let i = 0; i < e.touches.length; i++) {
+            if (e.touches[i].identifier === joystickTouchId) {
+                touchStillActive = true;
+                break;
+            }
+        }
+        if (!touchStillActive) resetJoystick();
     }
 });
-
-window.addEventListener('mouseup', () => { if (isDraggingJoystick) resetJoystick(); });
-window.addEventListener('touchend', (e) => { if (e.touches.length === 0) resetJoystick(); });
+window.addEventListener('touchcancel', () => {
+    if (isDraggingJoystick && joystickTouchId !== null) resetJoystick();
+});
 
 const setupActionButton = (id, keyName) => {
     const btn = document.getElementById(id);
@@ -1853,6 +2234,7 @@ setupActionButton('tbtn-punch', 'touch_punch');
 setupActionButton('tbtn-kick', 'touch_kick');
 setupActionButton('tbtn-slide', 'touch_slide');
 setupActionButton('tbtn-ult', 'touch_ult');
+setupActionButton('tbtn-dash', 'touch_dash');
 
 let touchModeSetting = 'AUTO';
 const touchToggleBtn = document.getElementById('btn-touch-toggle');
@@ -1889,6 +2271,55 @@ const btnSettingsToggle = document.getElementById('btn-settings-toggle');
 const settingsModal = document.getElementById('settings-modal');
 const btnCloseSettings = document.getElementById('btn-close-settings');
 const btnExitGame = document.getElementById('btn-exit-game');
+
+// 🏆 CAREER MODAL & TROPHIES LISTENERS
+const btnTrophiesToggle = document.getElementById('btn-trophies-toggle');
+const btnPauseTrophies = document.getElementById('btn-pause-trophies');
+const careerModal = document.getElementById('career-modal');
+const btnCloseCareer = document.getElementById('btn-close-career');
+
+if (btnTrophiesToggle) {
+    btnTrophiesToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        CareerManager.load();
+        if (careerModal) careerModal.classList.remove('hidden');
+    });
+}
+
+if (btnPauseTrophies) {
+    btnPauseTrophies.addEventListener('click', (e) => {
+        e.stopPropagation();
+        CareerManager.load();
+        if (careerModal) careerModal.classList.remove('hidden');
+    });
+}
+
+if (btnCloseCareer) {
+    btnCloseCareer.addEventListener('click', () => {
+        if (careerModal) careerModal.classList.add('hidden');
+    });
+}
+
+// 📲 PWA INSTALL PROMPT
+let deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    const btnInstall = document.getElementById('btn-install-app');
+    if (btnInstall) btnInstall.classList.remove('hidden');
+});
+
+const btnInstall = document.getElementById('btn-install-app');
+if (btnInstall) {
+    btnInstall.addEventListener('click', async () => {
+        if (deferredInstallPrompt) {
+            deferredInstallPrompt.prompt();
+            const { outcome } = await deferredInstallPrompt.userChoice;
+            deferredInstallPrompt = null;
+            btnInstall.classList.add('hidden');
+        }
+    });
+}
 
 document.querySelectorAll('.mode-card').forEach(card => {
     card.addEventListener('click', () => {
@@ -2033,6 +2464,8 @@ if (btnMenu) {
         const so = document.getElementById('start-overlay');
         if (go) go.classList.add('hidden');
         if (so) so.classList.remove('hidden');
+        audio.stopMusic();
+        clearInterval(timerInterval);
         gameState = 'START';
     });
 }
@@ -2187,6 +2620,7 @@ function startMatch() {
 }
 
 function startRound() {
+    p1TookDamageInRound = false;
     setupFighters();
     matchTime = 60;
     const mt = document.getElementById('match-timer');
@@ -2299,6 +2733,9 @@ function handleRoundEnd(reason, defender = null) {
     setTimeout(() => {
         if (roundWinnerTeam === 1) {
             team1Wins++;
+            if (!p1TookDamageInRound) {
+                CareerManager.recordPerfect();
+            }
             if (announcerText) announcerText.textContent = (selectedMode === 'ARCADE') ? 'STAGE CLEARED!' : `${p1ColorName} FIGHTER WINS!`;
         } else if (roundWinnerTeam === 2) {
             team2Wins++;
@@ -2366,59 +2803,9 @@ function handleMatchEnd(winningTeam) {
     const sr = document.getElementById('stat-rounds');
     if (sr) sr.textContent = (selectedMode === 'ARCADE') ? `Stage ${arcadeStage} / 5` : `${team1Wins} - ${team2Wins}`;
     if (gameOverOverlay) gameOverOverlay.classList.remove('hidden');
-}
 
-function checkCombatCollisions() {
-    if (gameState !== 'FIGHT') return;
-
-    resolveCharacterOverlaps();
-
-    fighters.forEach(attacker => {
-        if (!attacker || attacker.health <= 0) return;
-        const hb = attacker.getHitbox();
-        if (hb) {
-            fighters.forEach(defender => {
-                if (defender && defender.team !== attacker.team && defender.health > 0) {
-                    if (hb.x < defender.x + defender.width &&
-                        hb.x + hb.width > defender.x &&
-                        hb.y < defender.y + defender.height &&
-                        hb.y + hb.height > defender.y) {
-
-                        defender.takeDamage(hb.damage, hb.knockback, attacker.facing);
-                        attacker.hasHitOpponent = true;
-
-                        const meterGain = (attacker.attackType === 'light') ? 25 : 35;
-                        attacker.specialMeter = Math.min(100, attacker.specialMeter + meterGain);
-
-                        const teamRemaining = fighters.filter(f => f.team === defender.team && f.health > 0);
-                        if (teamRemaining.length === 0) {
-                            handleRoundEnd('KO', defender);
-                        }
-                    }
-                }
-            });
-        }
-    });
-
-    particleSystem.projectiles.forEach(proj => {
-        if (!proj || !proj.active || !proj.owner) return;
-        fighters.forEach(defender => {
-            if (defender && defender.team !== proj.owner.team && defender.health > 0) {
-                const dist = Math.hypot(defender.x + defender.width / 2 - proj.x, defender.y + 30 - proj.y);
-                if (dist < proj.radius + 20) {
-                    defender.takeDamage(proj.damage, 18, proj.vx > 0 ? 1 : -1);
-                    particleSystem.createHitSparks(proj.x, proj.y, proj.color);
-                    particleSystem.addShockwave(proj.x, proj.y, proj.color, 120);
-                    proj.active = false;
-
-                    const teamRemaining = fighters.filter(f => f.team === defender.team && f.health > 0);
-                    if (teamRemaining.length === 0) {
-                        handleRoundEnd('KO', defender);
-                    }
-                }
-            }
-        });
-    });
+    const isOverlordBeaten = (selectedMode === 'ARCADE' && winningTeam === 1 && arcadeStage >= 5);
+    CareerManager.recordMatchResult(winningTeam === 1, isOverlordBeaten, p1TookDamageInRound);
 }
 
 // 🏟️ INTERACTIVE 2D STAGE ARENA & HAZARDS ENGINE
@@ -2607,10 +2994,17 @@ function checkCombatCollisions() {
                         defender.takeDamage(hb.damage, hb.knockback, attacker.facing);
                         attacker.hasHitOpponent = true;
 
+                        // HIT-STOP MICRO-FREEZE
+                        hitStopTimer = (hb.damage >= 25) ? 4 : 2;
+
                         // COMBO COUNTER TRACKING
                         attacker.comboHits = (attacker.comboHits || 0) + 1;
                         attacker.comboDamage = (attacker.comboDamage || 0) + hb.damage;
                         attacker.comboTimer = 75;
+
+                        if (attacker.id === 'p1') {
+                            CareerManager.recordCombo(attacker.comboHits);
+                        }
 
                         let comboText = `${attacker.comboHits} HITS!`;
                         if (attacker.comboHits === 3) comboText = "3 HITS - RAGE COMBO!";
@@ -2625,8 +3019,7 @@ function checkCombatCollisions() {
 
                         const teamRemaining = fighters.filter(f => f.team === defender.team && f.health > 0);
                         if (teamRemaining.length === 0) {
-                            slowMoTimer = 60;
-                            handleRoundEnd('KO');
+                            handleRoundEnd('KO', defender);
                         }
                     }
                 }
@@ -2645,10 +3038,16 @@ function checkCombatCollisions() {
                     particleSystem.addShockwave(proj.x, proj.y, proj.color, 120);
                     proj.active = false;
 
+                    // Projectile impact micro-freeze & combo recording
+                    hitStopTimer = 2;
+                    if (proj.owner && proj.owner.id === 'p1') {
+                        proj.owner.comboHits = (proj.owner.comboHits || 0) + 1;
+                        CareerManager.recordCombo(proj.owner.comboHits);
+                    }
+
                     const teamRemaining = fighters.filter(f => f.team === defender.team && f.health > 0);
                     if (teamRemaining.length === 0) {
-                        slowMoTimer = 60;
-                        handleRoundEnd('KO');
+                        handleRoundEnd('KO', defender);
                     }
                 }
             }
@@ -2664,32 +3063,48 @@ function updateHUD() {
 
     if (p1) {
         const p1h = document.getElementById('p1-health');
+        const p1g = document.getElementById('p1-health-ghost');
         const p1s = document.getElementById('p1-special');
-        if (p1h) p1h.style.width = `${Math.max(0, (p1.health / p1.maxHealth) * 100)}%`;
+        const pct = Math.max(0, (p1.health / p1.maxHealth) * 100);
+        if (p1h) p1h.style.width = `${pct}%`;
+        if (p1g) p1g.style.width = `${pct}%`;
         if (p1s) p1s.style.width = `${p1.specialMeter}%`;
     }
     if (p2) {
         const p2h = document.getElementById('p2-health');
+        const p2g = document.getElementById('p2-health-ghost');
         const p2s = document.getElementById('p2-special');
-        if (p2h) p2h.style.width = `${Math.max(0, (p2.health / p2.maxHealth) * 100)}%`;
+        const pct = Math.max(0, (p2.health / p2.maxHealth) * 100);
+        if (p2h) p2h.style.width = `${pct}%`;
+        if (p2g) p2g.style.width = `${pct}%`;
         if (p2s) p2s.style.width = `${p2.specialMeter}%`;
     }
     if (p3) {
         const p3h = document.getElementById('p3-health');
-        if (p3h) p3h.style.width = `${Math.max(0, (p3.health / p3.maxHealth) * 100)}%`;
+        const p3g = document.getElementById('p3-health-ghost');
+        const pct = Math.max(0, (p3.health / p3.maxHealth) * 100);
+        if (p3h) p3h.style.width = `${pct}%`;
+        if (p3g) p3g.style.width = `${pct}%`;
     }
     if (p4) {
         const p4h = document.getElementById('p4-health');
-        if (p4h) p4h.style.width = `${Math.max(0, (p4.health / p4.maxHealth) * 100)}%`;
+        const p4g = document.getElementById('p4-health-ghost');
+        const pct = Math.max(0, (p4.health / p4.maxHealth) * 100);
+        if (p4h) p4h.style.width = `${pct}%`;
+        if (p4g) p4g.style.width = `${pct}%`;
     }
 }
 
 function gameLoop() {
     if (!ctx) return;
+    pollGamepads();
     ctx.save();
 
     let isPhysicsStep = true;
-    if (ultCinematicTimer > 0) {
+    if (hitStopTimer > 0) {
+        hitStopTimer--;
+        isPhysicsStep = false;
+    } else if (ultCinematicTimer > 0) {
         ultCinematicTimer--;
         isPhysicsStep = false;
 
