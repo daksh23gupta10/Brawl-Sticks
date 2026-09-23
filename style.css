@@ -1348,6 +1348,36 @@ canvas {
     color: var(--gold);
 }
 
+/* Custom Futuristic Neon Scrollbars */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: rgba(6, 8, 18, 0.95);
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(0, 240, 255, 0.4);
+    border-radius: 4px;
+    border: 1px solid var(--cyan);
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--cyan);
+    box-shadow: 0 0 10px var(--cyan);
+}
+
+.announcer-skip-hint {
+    font-family: var(--font-heading);
+    font-size: 0.78rem;
+    color: var(--gold);
+    letter-spacing: 2px;
+    margin-top: 12px;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+    animation: pulse 1s infinite alternate;
+    cursor: pointer;
+}
+
 /* ==========================================
    MOBILE & RESPONSIVE LAYOUT OPTIMIZATIONS
    ========================================== */
@@ -1366,141 +1396,203 @@ canvas {
     box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
 }
 
-@media (max-width: 900px), (max-height: 540px) {
+/* 1. Mobile Phone Portrait Mode: Scrollable View with Clean Controls */
+@media (orientation: portrait) and (max-width: 768px) {
     body {
-        padding: 4px;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+        height: auto !important;
+        min-height: 100dvh !important;
+        display: block !important;
+        padding: 6px 4px 30px 4px !important;
     }
     #app-container {
-        gap: 4px;
+        height: auto !important;
+        min-height: 100% !important;
+        max-height: none !important;
+        width: 100% !important;
+        justify-content: flex-start !important;
+        gap: 6px !important;
+    }
+    #rotate-hint-banner {
+        display: flex !important;
     }
     #game-hud {
-        padding: 4px 10px;
-        gap: 8px;
-        grid-template-columns: 1fr auto 1fr;
-        border-radius: 8px;
+        padding: 4px 8px !important;
+        gap: 6px !important;
+        grid-template-columns: 1fr auto 1fr !important;
+        border-radius: 8px !important;
     }
     .player-name {
-        font-size: 0.72rem;
-        letter-spacing: 0.5px;
+        font-size: 0.68rem !important;
     }
     .class-badge {
-        font-size: 0.55rem;
-        padding: 0 4px;
-    }
-    .score-dots .dot {
-        width: 7px;
-        height: 7px;
+        font-size: 0.5rem !important;
+        padding: 0 3px !important;
     }
     .bar-container {
-        height: 10px;
+        height: 10px !important;
     }
     .special-bar-wrapper {
-        height: 4px;
-    }
-    #timer-box {
-        padding: 2px 6px;
-        min-width: 76px;
+        height: 4px !important;
     }
     #match-timer {
-        font-size: 1.25rem;
+        font-size: 1.2rem !important;
     }
     #round-label {
-        font-size: 0.55rem;
-        letter-spacing: 1px;
+        font-size: 0.5rem !important;
     }
     #btn-pause-trigger {
-        font-size: 0.65rem;
-        padding: 4px 6px;
-        width: 100%;
-        min-height: 28px;
+        font-size: 0.62rem !important;
+        padding: 4px 6px !important;
+        min-height: 28px !important;
     }
     #canvas-container {
-        border-radius: 8px;
-        max-height: calc(100dvh - 68px);
-        max-width: calc((100dvh - 68px) * 16 / 9);
+        width: 100% !important;
+        height: auto !important;
+        aspect-ratio: 16 / 9 !important;
+        max-height: 56vw !important;
+        border-radius: 8px !important;
     }
-    
-    /* Touch controls on mobile screens */
+    /* Touch controls placed right below canvas in portrait for easy thumb reach */
     .touch-controls-container {
-        padding: 6px;
+        position: relative !important;
+        height: 170px !important;
+        width: 100% !important;
+        pointer-events: auto !important;
+        margin-top: 10px !important;
+        padding: 4px 8px !important;
     }
     #joystick-container {
-        width: 85px;
-        height: 85px;
+        width: 100px !important;
+        height: 100px !important;
     }
     #joystick-base {
-        width: 75px;
-        height: 75px;
+        width: 90px !important;
+        height: 90px !important;
     }
     #joystick-thumb {
-        width: 32px;
-        height: 32px;
+        width: 38px !important;
+        height: 38px !important;
     }
     #touch-actions {
-        gap: 5px;
-        margin-bottom: 2px;
-        margin-right: 2px;
+        gap: 6px !important;
+        margin-bottom: 0 !important;
+        margin-right: 0 !important;
     }
     .touch-btn {
-        width: 44px;
-        height: 44px;
-        font-size: 0.55rem;
-        border-radius: 8px;
+        width: 48px !important;
+        height: 48px !important;
+        font-size: 0.6rem !important;
+        border-radius: 8px !important;
     }
-
-    /* Modal responsiveness */
+    /* Modals in mobile portrait */
     .modal-card {
-        padding: 10px 14px;
-        width: 98%;
-        height: 98%;
-        max-height: 98dvh;
-    }
-    .game-title {
-        font-size: 1.2rem;
-    }
-    .modal-content-scroll {
-        gap: 10px;
-        padding: 4px;
+        padding: 12px 14px !important;
+        width: 98% !important;
+        height: 96% !important;
+        max-height: 96dvh !important;
     }
     .mode-cards-grid {
-        grid-template-columns: 1fr;
-        gap: 8px;
-    }
-    .mode-card {
-        padding: 8px 12px;
+        grid-template-columns: 1fr !important;
     }
     .fighters-config-grid {
-        grid-template-columns: 1fr 1fr;
-        gap: 8px;
+        grid-template-columns: 1fr 1fr !important;
     }
     .classes-grid {
-        grid-template-columns: repeat(4, 1fr);
-        gap: 4px;
-    }
-    .class-card {
-        padding: 4px;
-        font-size: 0.6rem;
+        grid-template-columns: repeat(4, 1fr) !important;
     }
     .career-stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 6px;
-    }
-    .stat-number {
-        font-size: 1.2rem;
+        grid-template-columns: repeat(2, 1fr) !important;
     }
     .trophies-grid {
-        grid-template-columns: 1fr;
-        gap: 6px;
-    }
-    .trophy-card {
-        padding: 8px;
+        grid-template-columns: 1fr !important;
     }
 }
 
-/* Portrait Mode Helper Banner */
-@media (orientation: portrait) and (max-width: 768px) {
-    #rotate-hint-banner {
-        display: flex !important;
+/* 2. Mobile Landscape Mode: Full Handheld Console Experience */
+@media (orientation: landscape) and (max-height: 550px) {
+    body {
+        overflow: hidden !important;
+        height: 100dvh !important;
+        width: 100dvw !important;
+        padding: 2px !important;
+    }
+    #app-container {
+        height: 100dvh !important;
+        width: 100vw !important;
+        gap: 2px !important;
+    }
+    #game-hud {
+        padding: 2px 12px !important;
+        grid-template-columns: 1fr auto 1fr !important;
+        height: 36px !important;
+        min-height: 36px !important;
+        border-radius: 6px !important;
+    }
+    .player-name {
+        font-size: 0.65rem !important;
+    }
+    .class-badge {
+        font-size: 0.5rem !important;
+        padding: 0 4px !important;
+    }
+    .score-dots .dot {
+        width: 6px !important;
+        height: 6px !important;
+    }
+    .bar-container {
+        height: 8px !important;
+    }
+    .special-bar-wrapper {
+        height: 3px !important;
+    }
+    #match-timer {
+        font-size: 1.1rem !important;
+    }
+    #round-label {
+        display: none !important;
+    }
+    #btn-pause-trigger {
+        padding: 2px 6px !important;
+        font-size: 0.6rem !important;
+        min-height: 22px !important;
+    }
+    #canvas-container {
+        flex: 1 !important;
+        height: calc(100dvh - 42px) !important;
+        max-height: calc(100dvh - 42px) !important;
+        aspect-ratio: 16 / 9 !important;
+        width: auto !important;
+        max-width: calc((100dvh - 42px) * 16 / 9) !important;
+        margin: 0 auto !important;
+        border-radius: 6px !important;
+    }
+    .touch-controls-container {
+        position: absolute !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        padding: 6px 14px !important;
+    }
+    #joystick-container {
+        width: 80px !important;
+        height: 80px !important;
+        transform: scale(0.85);
+        transform-origin: bottom left;
+    }
+    #touch-actions {
+        transform: scale(0.85);
+        transform-origin: bottom right;
+        margin-bottom: 0 !important;
+        margin-right: 0 !important;
+        gap: 6px !important;
+    }
+    .touch-btn {
+        width: 44px !important;
+        height: 44px !important;
+        font-size: 0.55rem !important;
     }
 }
 

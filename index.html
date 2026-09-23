@@ -9,7 +9,7 @@
     <meta name="theme-color" content="#00f0ff">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=4.0.0">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
@@ -131,6 +131,7 @@
             <!-- Announcer Overlay -->
             <div id="announcer-overlay" class="hidden">
                 <h1 id="announcer-text">READY?</h1>
+                <div class="announcer-skip-hint" id="announcer-skip-text">CLICK OR TAP ANYWHERE TO CONTINUE ▶</div>
             </div>
 
             <!-- ⏸️ PAUSE MENU OVERLAY -->
@@ -548,11 +549,20 @@
         </footer>
     </div>
 
-    <script src="game.js"></script>
+    <script src="game.js?v=4.0.0"></script>
     <script>
+      if ('caches' in window) {
+        caches.keys().then((names) => {
+          names.forEach((name) => {
+            if (name !== 'brawl-sticks-v4.0.0') caches.delete(name);
+          });
+        });
+      }
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('./sw.js').catch(() => {});
+          navigator.serviceWorker.register('./sw.js?v=4.0.0').then((reg) => {
+            reg.update();
+          }).catch(() => {});
         });
       }
     </script>

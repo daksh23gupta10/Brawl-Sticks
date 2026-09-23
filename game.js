@@ -77,6 +77,12 @@ const CareerManager = {
         this.save();
     },
 
+    recordPerfect() {
+        this.stats.perfectRounds++;
+        this.unlockHat('VALKYRIE');
+        this.save();
+    },
+
     recordCombo(hits) {
         if (hits > this.stats.highestCombo) {
             this.stats.highestCombo = hits;
@@ -1141,9 +1147,9 @@ class Stickman {
             particleSystem.addDamageText(this.x, this.y - 30, '👑 BOSS RAGE MODE ACTIVATED!', '#ff0033');
         }
 
-        // Drastically reduced movement speed & jump physics for ALL fighters (Human & CPU)
-        let baseSpeed = 2.4;
-        let baseJump = -8.5;
+        // Dynamic fluid arcade movement speed & jump physics for ALL fighters (Human & CPU)
+        let baseSpeed = 4.2;
+        let baseJump = -11.5;
 
         const speedFactor = (this.fighterClass === 'NINJA') ? 1.12 : (this.fighterClass === 'BRAWLER') ? 0.88 : 1.0;
         this.speed = baseSpeed * speedFactor * (this.bossRageTriggered ? 1.2 : 1.0);
@@ -1296,19 +1302,29 @@ class Stickman {
         }
 
         // 3. COMBAT RANGE: ATTACKING & COMBOS
-        if (dist <= 75) {
+        if (dist <= 85) {
             this.facing = dirToTarget;
+            // Advance smoothly into melee range rather than freezing cold
+            this.vx = dirToTarget * (this.speed * 0.45);
+
             // When in melee range, initiate punch or kick with rhythmic cooldown
             if (!this.isAttacking && !this.isSliding && this.aiAttackCooldown <= 0) {
                 this.aiAttackCooldown = attackFrequency;
-                const useHeavy = (Math.random() < (difficulty === 'EASY' ? 0.3 : 0.55)) || (target.stunTimer > 0);
+                const useHeavy = (Math.random() < (difficulty === 'EASY' ? 0.35 : 0.6)) || (target.stunTimer > 0);
                 if (useHeavy) {
-                    this.startAttack('heavy', 32, 16);
+                    this.startAttack('heavy', 30, 16);
                     audio.playPunch();
                 } else {
-                    this.startAttack('light', 22, 9);
+                    this.startAttack('light', 20, 9);
                     audio.playPunch();
                 }
+            }
+
+            // Occasional aerial jump attack if player jumps
+            if (dy < -30 && this.isGrounded && Math.random() < 0.25) {
+                this.vy = this.jumpForce;
+                this.isGrounded = false;
+                audio.playJump();
             }
         } else {
             // 4. PURSUIT & MOVEMENT: Actively chase opponent across arena!
@@ -1316,17 +1332,17 @@ class Stickman {
                 this.facing = dirToTarget;
                 this.vx = dirToTarget * (this.speed * cpuSpeedFactor);
 
-                // Occasional forward gap-closing dash
-                if (dist > 140 && dist < 260 && this.dashCooldown === 0 && Math.random() < (difficulty === 'EASY' ? 0.01 : 0.035)) {
+                // Gap-closing dash
+                if (dist > 130 && dist < 280 && this.dashCooldown === 0 && Math.random() < (difficulty === 'EASY' ? 0.02 : 0.045)) {
                     this.isDashing = true;
                     this.dashTimer = 14;
                     this.invulnerableTimer = 14;
-                    this.dashCooldown = 40;
+                    this.dashCooldown = 35;
                     this.facing = dirToTarget;
                 }
 
-                // Jump if target is above or to jump-kick
-                if (dy < -35 && this.isGrounded && Math.random() < 0.06) {
+                // Jump if target is above or jumping
+                if (dy < -35 && this.isGrounded && Math.random() < 0.12) {
                     this.vy = this.jumpForce;
                     this.isGrounded = false;
                     audio.playJump();
@@ -2072,8 +2088,13 @@ function triggerCameraShake(time, intensity) {
 }
 
 let gameStateBeforePause = 'FIGHT';
+let lastPauseToggleTime = 0;
 
 function togglePause() {
+    const now = Date.now();
+    if (now - lastPauseToggleTime < 320) return;
+    lastPauseToggleTime = now;
+
     if (gameState === 'FIGHT' || gameState === 'COUNTDOWN') {
         gameStateBeforePause = gameState;
         gameState = 'PAUSED';
@@ -2082,7 +2103,7 @@ function togglePause() {
         if (po) po.classList.remove('hidden');
     } else if (gameState === 'PAUSED') {
         gameState = gameStateBeforePause || 'FIGHT';
-        audio.startMusic();
+        if (gameState === 'FIGHT') audio.startMusic();
         const po = document.getElementById('pause-overlay');
         if (po) po.classList.add('hidden');
     }
@@ -2093,35 +2114,42 @@ if (pauseTrigger) {
     const handlePauseClick = (e) => {
         if (e) {
             e.stopPropagation();
-            e.preventDefault();
+            if (e.cancelable) e.preventDefault();
         }
         togglePause();
     };
     pauseTrigger.addEventListener('click', handlePauseClick);
-    pauseTrigger.addEventListener('touchend', handlePauseClick);
+    pauseTrigger.addEventListener('touchend', handlePauseClick, { passive: false });
 }
 
 const btnResume = document.getElementById('btn-resume');
 if (btnResume) {
-    btnResume.addEventListener('click', () => {
+    const handleResume = (e) => {
+        if (e && e.cancelable) e.preventDefault();
         togglePause();
-    });
+    };
+    btnResume.addEventListener('click', handleResume);
+    btnResume.addEventListener('touchend', handleResume, { passive: false });
 }
 
 const btnRestart = document.getElementById('btn-restart');
 if (btnRestart) {
-    btnRestart.addEventListener('click', () => {
+    const handleRestart = (e) => {
+        if (e && e.cancelable) e.preventDefault();
         const po = document.getElementById('pause-overlay');
         if (po) po.classList.add('hidden');
         audio.stopMusic();
         clearInterval(timerInterval);
         startRound();
-    });
+    };
+    btnRestart.addEventListener('click', handleRestart);
+    btnRestart.addEventListener('touchend', handleRestart, { passive: false });
 }
 
 const btnPauseMenu = document.getElementById('btn-pause-menu');
 if (btnPauseMenu) {
-    btnPauseMenu.addEventListener('click', () => {
+    const handlePauseToMenu = (e) => {
+        if (e && e.cancelable) e.preventDefault();
         const po = document.getElementById('pause-overlay');
         const so = document.getElementById('start-overlay');
         if (po) po.classList.add('hidden');
@@ -2129,14 +2157,19 @@ if (btnPauseMenu) {
         audio.stopMusic();
         clearInterval(timerInterval);
         gameState = 'START';
-    });
+    };
+    btnPauseMenu.addEventListener('click', handlePauseToMenu);
+    btnPauseMenu.addEventListener('touchend', handlePauseToMenu, { passive: false });
 }
 
 const pauseSoundBtn = document.getElementById('btn-pause-sound');
 if (pauseSoundBtn) {
     pauseSoundBtn.addEventListener('click', () => {
         audio.enabled = !audio.enabled;
-        pauseSoundBtn.textContent = audio.enabled ? '🔊 SOUND: ON' : 'MUTE SOUND';
+        const txt = audio.enabled ? '🔊 SOUND: ON' : '🔊 SOUND: OFF';
+        pauseSoundBtn.textContent = txt;
+        const stb = document.getElementById('btn-sound-toggle');
+        if (stb) stb.textContent = txt;
     });
 }
 
@@ -2522,7 +2555,8 @@ if (btnStart) {
 
 const btnRematch = document.getElementById('btn-rematch');
 if (btnRematch) {
-    btnRematch.addEventListener('click', () => {
+    const handleRematch = (e) => {
+        if (e && e.cancelable) e.preventDefault();
         const go = document.getElementById('gameover-overlay');
         if (go) go.classList.add('hidden');
         team1Wins = 0;
@@ -2530,12 +2564,15 @@ if (btnRematch) {
         if (selectedMode === 'ARCADE') arcadeStage = 1;
         updateScoreDots();
         startMatch();
-    });
+    };
+    btnRematch.addEventListener('click', handleRematch);
+    btnRematch.addEventListener('touchend', handleRematch, { passive: false });
 }
 
 const btnMenu = document.getElementById('btn-menu');
 if (btnMenu) {
-    btnMenu.addEventListener('click', () => {
+    const handleMenu = (e) => {
+        if (e && e.cancelable) e.preventDefault();
         const go = document.getElementById('gameover-overlay');
         const so = document.getElementById('start-overlay');
         if (go) go.classList.add('hidden');
@@ -2543,14 +2580,19 @@ if (btnMenu) {
         audio.stopMusic();
         clearInterval(timerInterval);
         gameState = 'START';
-    });
+    };
+    btnMenu.addEventListener('click', handleMenu);
+    btnMenu.addEventListener('touchend', handleMenu, { passive: false });
 }
 
 const soundToggleBtn = document.getElementById('btn-sound-toggle');
 if (soundToggleBtn) {
     soundToggleBtn.addEventListener('click', () => {
         audio.enabled = !audio.enabled;
-        soundToggleBtn.textContent = audio.enabled ? '🔊 SOUND: ON' : 'MUTE SOUND';
+        const txt = audio.enabled ? '🔊 SOUND: ON' : '🔊 SOUND: OFF';
+        soundToggleBtn.textContent = txt;
+        const psb = document.getElementById('btn-pause-sound');
+        if (psb) psb.textContent = txt;
     });
 }
 
@@ -2670,9 +2712,15 @@ function triggerArcadeDialogue(stageNum, callback) {
     if (dialogueOverlay) dialogueOverlay.classList.remove('hidden');
 
     const handleContinue = (e) => {
-        if (e) e.stopPropagation();
+        if (e) {
+            e.stopPropagation();
+            if (e.cancelable) e.preventDefault();
+        }
         if (dialogueOverlay) dialogueOverlay.classList.add('hidden');
-        if (btnContinue) btnContinue.removeEventListener('click', handleContinue);
+        if (btnContinue) {
+            btnContinue.removeEventListener('click', handleContinue);
+            btnContinue.removeEventListener('touchend', handleContinue);
+        }
         window.removeEventListener('keydown', handleSpaceKey);
         callback();
     };
@@ -2683,7 +2731,10 @@ function triggerArcadeDialogue(stageNum, callback) {
         }
     };
 
-    if (btnContinue) btnContinue.addEventListener('click', handleContinue);
+    if (btnContinue) {
+        btnContinue.addEventListener('click', handleContinue);
+        btnContinue.addEventListener('touchend', handleContinue, { passive: false });
+    }
     window.addEventListener('keydown', handleSpaceKey);
 }
 
@@ -2778,10 +2829,58 @@ function getColorName(hex) {
     return 'FIGHTER';
 }
 
+let roundTransitionTimer1 = null;
+let roundTransitionTimer2 = null;
+let activeRoundWinner = null;
+
+function proceedToNextRoundOrEnd() {
+    if (gameState !== 'ROUND_OVER') return;
+    if (roundTransitionTimer1) { clearTimeout(roundTransitionTimer1); roundTransitionTimer1 = null; }
+    if (roundTransitionTimer2) { clearTimeout(roundTransitionTimer2); roundTransitionTimer2 = null; }
+
+    const ao = document.getElementById('announcer-overlay');
+    if (ao) ao.classList.add('hidden');
+
+    if (selectedMode === 'ARCADE') {
+        if (activeRoundWinner === 1) {
+            if (arcadeStage < 5) {
+                arcadeStage++;
+                startMatch();
+            } else {
+                handleMatchEnd(1);
+            }
+        } else {
+            handleMatchEnd(2);
+        }
+    } else {
+        if (team1Wins >= 2 || team2Wins >= 2) {
+            handleMatchEnd(team1Wins >= 2 ? 1 : 2);
+        } else {
+            currentRound++;
+            startRound();
+        }
+    }
+}
+
+const announcerOverlayEl = document.getElementById('announcer-overlay');
+if (announcerOverlayEl) {
+    const handleAnnouncerSkip = (e) => {
+        if (gameState === 'ROUND_OVER') {
+            if (e && e.cancelable) e.preventDefault();
+            proceedToNextRoundOrEnd();
+        }
+    };
+    announcerOverlayEl.addEventListener('click', handleAnnouncerSkip);
+    announcerOverlayEl.addEventListener('touchend', handleAnnouncerSkip, { passive: false });
+}
+
 function handleRoundEnd(reason, defender = null) {
     if (gameState === 'ROUND_OVER' || gameState === 'MATCH_OVER') return;
     clearInterval(timerInterval);
     gameState = 'ROUND_OVER';
+
+    if (roundTransitionTimer1) { clearTimeout(roundTransitionTimer1); roundTransitionTimer1 = null; }
+    if (roundTransitionTimer2) { clearTimeout(roundTransitionTimer2); roundTransitionTimer2 = null; }
 
     if (reason === 'KO') {
         slowMoTimer = 60; // 1.0 Second of dramatic slow-motion KO time dilation
@@ -2808,47 +2907,40 @@ function handleRoundEnd(reason, defender = null) {
     let roundWinnerTeam = null;
     if (team1HealthTotal > team2HealthTotal) roundWinnerTeam = 1;
     else if (team2HealthTotal > team1HealthTotal) roundWinnerTeam = 2;
+    activeRoundWinner = roundWinnerTeam;
 
     if (announcerText) announcerText.textContent = (reason === 'KO') ? 'K.O.!' : 'TIME OVER!';
 
     const p1ColorName = getColorName(p1Color);
     const p2ColorName = getColorName(p2Color);
 
-    setTimeout(() => {
-        if (roundWinnerTeam === 1) {
-            team1Wins++;
-            if (!p1TookDamageInRound) {
-                CareerManager.recordPerfect();
-            }
-            if (announcerText) announcerText.textContent = (selectedMode === 'ARCADE') ? 'STAGE CLEARED!' : `${p1ColorName} FIGHTER WINS!`;
-        } else if (roundWinnerTeam === 2) {
-            team2Wins++;
-            if (announcerText) announcerText.textContent = (selectedMode === 'ARCADE') ? 'DEFEATED!' : `${p2ColorName} FIGHTER WINS!`;
-        } else {
-            if (announcerText) announcerText.textContent = 'DRAW!';
-        }
-        updateScoreDots();
-
-        setTimeout(() => {
-            if (selectedMode === 'ARCADE') {
-                if (roundWinnerTeam === 1) {
-                    if (arcadeStage < 5) {
-                        arcadeStage++;
-                        startMatch();
-                    } else {
-                        handleMatchEnd(1);
+    roundTransitionTimer1 = setTimeout(() => {
+        try {
+            if (roundWinnerTeam === 1) {
+                team1Wins++;
+                if (!p1TookDamageInRound) {
+                    try {
+                        if (CareerManager && typeof CareerManager.recordPerfect === 'function') {
+                            CareerManager.recordPerfect();
+                        }
+                    } catch (e) {
+                        console.warn('Error recording perfect round:', e);
                     }
-                } else {
-                    handleMatchEnd(2);
                 }
+                if (announcerText) announcerText.textContent = (selectedMode === 'ARCADE') ? 'STAGE CLEARED!' : `${p1ColorName} FIGHTER WINS!`;
+            } else if (roundWinnerTeam === 2) {
+                team2Wins++;
+                if (announcerText) announcerText.textContent = (selectedMode === 'ARCADE') ? 'DEFEATED!' : `${p2ColorName} FIGHTER WINS!`;
             } else {
-                if (team1Wins >= 2 || team2Wins >= 2) {
-                    handleMatchEnd(team1Wins >= 2 ? 1 : 2);
-                } else {
-                    currentRound++;
-                    startRound();
-                }
+                if (announcerText) announcerText.textContent = 'DRAW!';
             }
+            updateScoreDots();
+        } catch (err) {
+            console.error('Error during round score resolution:', err);
+        }
+
+        roundTransitionTimer2 = setTimeout(() => {
+            proceedToNextRoundOrEnd();
         }, 1100);
     }, 900);
 }
