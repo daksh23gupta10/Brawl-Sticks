@@ -397,6 +397,7 @@
                             <button id="btn-sound-toggle" class="btn btn-secondary">🔊 SOUND: ON</button>
                             <button id="btn-touch-toggle" class="btn btn-secondary">📱 TOUCH: AUTO</button>
                             <button id="btn-reset-keys" class="btn btn-secondary">🔄 RESET KEYS</button>
+                            <button id="btn-force-update" class="btn btn-secondary" style="border-color: #ffd700; color: #ffd700;" title="Instantly clear cache and load newest version">🔄 FORCE UPDATE</button>
                         </div>
 
                         <!-- Controls Guide Display -->
@@ -545,12 +546,28 @@
 
         <!-- Footer -->
         <footer id="game-footer">
-            <span>BRAWL-STICKS • Press P or ESC to Pause Match!</span>
+            <span>BRAWL-STICKS • Press P or ESC to Pause!</span>
+            <button id="btn-footer-update" class="btn-clean-update" title="Click to fetch and run latest version">🔄 Update Game</button>
         </footer>
     </div>
 
     <script src="game.js?v=4.2.0"></script>
     <script>
+      let refreshing = false;
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (!refreshing) {
+            refreshing = true;
+            window.location.reload();
+          }
+        });
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js?v=4.2.0').then((reg) => {
+            reg.update();
+          }).catch(() => {});
+        });
+      }
+
       if ('caches' in window) {
         caches.keys().then((names) => {
           names.forEach((name) => {
@@ -558,13 +575,27 @@
           });
         });
       }
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('./sw.js?v=4.2.0').then((reg) => {
-            reg.update();
-          }).catch(() => {});
-        });
+
+      async function triggerInstantUpdate(btn) {
+        if (btn) btn.textContent = '⏳ Updating...';
+        try {
+          if ('serviceWorker' in navigator) {
+            const regs = await navigator.serviceWorker.getRegistrations();
+            for (let reg of regs) await reg.unregister();
+          }
+          if ('caches' in window) {
+            const keys = await caches.keys();
+            for (let key of keys) await caches.delete(key);
+          }
+        } catch (e) {}
+        window.location.href = window.location.pathname + '?nocache=' + Date.now();
       }
+
+      const fUpdate = document.getElementById('btn-footer-update');
+      if (fUpdate) fUpdate.addEventListener('click', () => triggerInstantUpdate(fUpdate));
+
+      const mUpdate = document.getElementById('btn-force-update');
+      if (mUpdate) mUpdate.addEventListener('click', () => triggerInstantUpdate(mUpdate));
     </script>
 </body>
 </html>
