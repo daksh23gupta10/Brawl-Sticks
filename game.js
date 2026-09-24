@@ -1275,27 +1275,32 @@ class Stickman {
 
         const dist = Math.abs(target.x - this.x);
         const dy = target.y - this.y;
-        const dirToTarget = target.x > this.x ? 1 : -1;
+        const dirToTarget = (target.x >= this.x) ? 1 : -1;
 
-        // Dynamic Difficulty Parameters
-        const blockProbability = difficulty === 'EASY' ? 0.20 : difficulty === 'NORMAL' ? 0.45 : 0.70;
-        const cpuSpeedFactor = difficulty === 'EASY' ? 0.95 : difficulty === 'NORMAL' ? 1.20 : 1.40;
-        const attackFrequency = difficulty === 'EASY' ? 18 : difficulty === 'NORMAL' ? 10 : 5;
+        // Dynamic Difficulty Parameters: High-octane aggression across all tiers
+        const blockProbability = difficulty === 'EASY' ? 0.25 : difficulty === 'NORMAL' ? 0.50 : 0.75;
+        const cpuSpeedFactor = difficulty === 'EASY' ? 1.05 : difficulty === 'NORMAL' ? 1.30 : 1.55;
+        const attackFrequency = difficulty === 'EASY' ? 12 : difficulty === 'NORMAL' ? 6 : 3;
+
+        // Always face target when initiating attacks or chasing
+        if (!this.isAttacking && !this.isSliding) {
+            this.facing = dirToTarget;
+        }
 
         // 1. DEFENSIVE REACTION: Parry / Block / Evasive Dash
-        if (target.isAttacking && dist < 100) {
+        if (target.isAttacking && dist < 95) {
             if (Math.random() < blockProbability) {
                 // Evasive Dash away or slide under
-                if (this.dashCooldown === 0 && Math.random() < 0.40) {
+                if (this.dashCooldown === 0 && Math.random() < 0.45) {
                     this.isDashing = true;
                     this.dashTimer = 14;
                     this.invulnerableTimer = 14;
-                    this.dashCooldown = 35;
+                    this.dashCooldown = 28;
                     this.facing = -dirToTarget;
                     return;
                 } else if (this.isGrounded && Math.random() < 0.35) {
                     this.isSliding = true;
-                    this.slideTimer = 18;
+                    this.slideTimer = 16;
                     audio.playSlide();
                     return;
                 } else {
@@ -1310,56 +1315,76 @@ class Stickman {
             this.isBlocking = false;
         }
 
-        // 2. ULTIMATE SPECIAL MOVE
+        // 2. ULTIMATE SIGNATURE MOVE (Unleashes instantly when meter is full)
         if (this.specialMeter >= 100 && dist < 180) {
+            this.facing = dirToTarget;
             this.executeSignatureSpecial(target, 30);
             this.specialMeter = 0;
             audio.playUltimate();
             return;
         }
 
-        // 3. COMBAT RANGE: ATTACKING & COMBOS
+        // 3. COMBAT RANGE: MELEE ATTACKS & FLUID COMBOS (dist <= 85)
         if (dist <= 85) {
             this.facing = dirToTarget;
-            // Advance smoothly into melee range rather than freezing cold
-            this.vx = dirToTarget * (this.speed * 0.5);
 
-            // When in melee range, initiate punch or kick with rhythmic cooldown
+            // Maintain optimal striking distance: don't crowd or vibrate on top of player
+            if (dist < 35) {
+                this.vx = -dirToTarget * (this.speed * 0.4);
+            } else if (dist > 60) {
+                this.vx = dirToTarget * (this.speed * 0.75);
+            } else {
+                this.vx = 0;
+            }
+
+            // Rapid, rhythmic combo strikes
             if (!this.isAttacking && !this.isSliding && this.aiAttackCooldown <= 0) {
                 this.aiAttackCooldown = attackFrequency;
-                const useHeavy = (Math.random() < (difficulty === 'EASY' ? 0.35 : 0.6)) || (target.stunTimer > 0);
-                if (useHeavy) {
-                    this.startAttack('heavy', 30, 16);
+                this.facing = dirToTarget;
+                const rand = Math.random();
+                if (rand < 0.55) {
+                    this.startAttack('light', 16, 10);
                     audio.playPunch();
-                } else {
-                    this.startAttack('light', 20, 9);
+                } else if (rand < 0.88) {
+                    this.startAttack('heavy', 24, 18);
                     audio.playPunch();
+                } else if (this.isGrounded) {
+                    this.isSliding = true;
+                    this.slideTimer = 18;
+                    audio.playSlide();
                 }
             }
 
-            // Occasional aerial jump attack if player jumps
-            if (dy < -30 && this.isGrounded && Math.random() < 0.35) {
+            // Aerial jump attack if target jumps
+            if (dy < -25 && this.isGrounded && Math.random() < 0.45) {
                 this.vy = this.jumpForce;
                 this.isGrounded = false;
                 audio.playJump();
             }
         } else {
-            // 4. PURSUIT & MOVEMENT: Actively sprint and chase opponent across arena!
+            // 4. PURSUIT & GAP CLOSING: Relentlessly hunt down opponent!
             if (!this.isAttacking && !this.isSliding) {
                 this.facing = dirToTarget;
-                this.vx = dirToTarget * (this.speed * cpuSpeedFactor * 1.3);
+                this.vx = dirToTarget * (this.speed * cpuSpeedFactor);
 
-                // High-aggression gap-closing dash
-                if (dist > 110 && this.dashCooldown === 0 && Math.random() < (difficulty === 'EASY' ? 0.03 : 0.07)) {
+                // Gap-closing dash
+                if (dist > 100 && this.dashCooldown === 0 && Math.random() < (difficulty === 'EASY' ? 0.05 : 0.10)) {
                     this.isDashing = true;
                     this.dashTimer = 14;
                     this.invulnerableTimer = 14;
-                    this.dashCooldown = 28;
+                    this.dashCooldown = 24;
                     this.facing = dirToTarget;
                 }
 
-                // Jump if target is above or jumping
-                if ((dy < -35 || (dist > 150 && Math.random() < 0.05)) && this.isGrounded) {
+                // Slide tackle into opponent
+                if (dist >= 85 && dist <= 140 && this.isGrounded && Math.random() < 0.08) {
+                    this.isSliding = true;
+                    this.slideTimer = 20;
+                    audio.playSlide();
+                }
+
+                // Jump in
+                if ((dy < -30 || (dist > 150 && Math.random() < 0.06)) && this.isGrounded) {
                     this.vy = this.jumpForce;
                     this.isGrounded = false;
                     audio.playJump();
@@ -1564,14 +1589,15 @@ class Stickman {
 
     getHitbox() {
         if (!this.isAttacking || this.hasHitOpponent) return null;
-        const reach = (this.attackType === 'light') ? 45 : (this.attackType === 'heavy') ? 70 : 120;
+        const reach = (this.attackType === 'light') ? 60 : (this.attackType === 'heavy') ? 85 : 140;
+        const startX = (this.facing === 1) ? (this.x) : (this.x + this.width - reach);
         return {
-            x: (this.facing === 1) ? (this.x + this.width) : (this.x - reach),
-            y: this.y + 15,
-            width: reach,
-            height: 45,
+            x: startX,
+            y: this.y + 10,
+            width: reach + 10,
+            height: 52,
             damage: this.currentAttackDamage || 10,
-            knockback: (this.attackType === 'light') ? 4 : (this.attackType === 'heavy') ? 10 : 20
+            knockback: (this.attackType === 'light') ? 5 : (this.attackType === 'heavy') ? 11 : 22
         };
     }
 

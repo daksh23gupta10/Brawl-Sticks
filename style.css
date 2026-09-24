@@ -26,28 +26,36 @@ body {
         radial-gradient(circle at 80% 80%, rgba(255, 0, 85, 0.12) 0%, transparent 60%);
     color: var(--text-light);
     font-family: var(--font-body);
-    height: 100vh;
-    height: 100dvh;
+    min-height: 100vh;
+    min-height: 100dvh;
     width: 100vw;
     width: 100dvw;
     display: flex;
     justify-content: center;
     align-items: center;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: var(--cyan) rgba(6, 8, 18, 0.95);
     padding: 6px;
 }
 
 #app-container {
     width: 100%;
     max-width: 1280px;
-    height: 100%;
-    max-height: 100dvh;
+    min-height: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 6px;
     position: relative;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: var(--cyan) rgba(6, 8, 18, 0.95);
 }
 
 /* Header HUD */
@@ -382,6 +390,11 @@ canvas {
     align-items: center;
     z-index: 100;
     padding: 12px;
+    overflow-x: hidden;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: var(--cyan) rgba(6, 8, 18, 0.95);
 }
 
 .overlay-screen.hidden,
@@ -399,13 +412,17 @@ canvas {
     padding: 14px 20px;
     width: 96%;
     max-width: 880px;
-    height: 94%;
-    max-height: 94%;
+    height: auto;
+    max-height: 94dvh;
     text-align: center;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9);
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: var(--cyan) rgba(6, 8, 18, 0.95);
 }
 
 .mini-modal {
@@ -1356,22 +1373,29 @@ canvas {
 }
 
 /* Custom Futuristic Neon Scrollbars */
+html {
+    scrollbar-width: thin;
+    scrollbar-color: var(--cyan) rgba(6, 8, 18, 0.95);
+}
+
 ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 10px;
+    height: 10px;
 }
 ::-webkit-scrollbar-track {
     background: rgba(6, 8, 18, 0.95);
-    border-radius: 4px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 ::-webkit-scrollbar-thumb {
-    background: rgba(0, 240, 255, 0.4);
-    border-radius: 4px;
-    border: 1px solid var(--cyan);
+    background: linear-gradient(180deg, var(--cyan), #0077aa);
+    border-radius: 6px;
+    border: 1px solid rgba(0, 240, 255, 0.6);
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
 }
 ::-webkit-scrollbar-thumb:hover {
-    background: var(--cyan);
-    box-shadow: 0 0 10px var(--cyan);
+    background: linear-gradient(180deg, #33f3ff, var(--cyan));
+    box-shadow: 0 0 16px var(--cyan);
 }
 
 .announcer-skip-hint {
@@ -1533,13 +1557,15 @@ canvas {
 /* 2. Mobile Landscape Mode: Full Handheld Console Experience */
 @media (orientation: landscape) and (max-height: 550px) {
     body {
-        overflow: hidden !important;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
         height: 100dvh !important;
         width: 100dvw !important;
         padding: 0 !important;
         display: flex !important;
         flex-direction: column !important;
         justify-content: flex-start !important;
+        -webkit-overflow-scrolling: touch;
     }
     #rotate-hint-banner {
         display: none !important;
