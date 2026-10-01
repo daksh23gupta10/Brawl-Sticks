@@ -1,9 +1,9 @@
 /**
- * Brawl-Sticks 2D - Service Worker (v4.2.1)
+ * Brawl-Sticks 2D - Service Worker (v4.2.2)
  * Uses Network-First strategy to guarantee fresh code updates while retaining 100% offline capability
  */
 
-const CACHE_NAME = 'brawl-sticks-v4.2.1';
+const CACHE_NAME = 'brawl-sticks-v4.2.2';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

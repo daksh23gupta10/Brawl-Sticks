@@ -1148,7 +1148,7 @@ class Stickman {
         }
 
         // Dynamic fluid arcade movement speed & jump physics for ALL fighters (Human & CPU)
-        let baseSpeed = 3.78; // Reduced by 10% across all modes
+        let baseSpeed = 3.21; // Reduced by an additional 15% across all modes
         let baseJump = -11.5;
 
         const speedFactor = (this.fighterClass === 'NINJA') ? 1.12 : (this.fighterClass === 'BRAWLER') ? 0.88 : 1.0;
