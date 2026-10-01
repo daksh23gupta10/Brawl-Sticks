@@ -132,7 +132,10 @@ A fast-paced, high-performance 2D Stickman Fighting Web Game built using **HTML5
 
 ## 📜 Changelog & Version History
 
-### Version 3.5.1 (Latest Release)
+### Version 3.5.2 (Latest Release)
+* **Tighter Tactical Movement**: Reduced base ground movement speed by 10% across all game modes (`4.2` -> `3.78` px/frame) for improved spacing and combat control.
+
+### Version 3.5.1
 * **Beginner CPU Difficulty**: Reduced CPU hit speed & aggression. Restricted CPU blocking, parrying, and dodging to Hard mode only (disabled in Easy & Normal).
 * **Faster Ultimate Comeback Charge**: Boosted `⚡ ULT` signature special meter gain when taking damage from +20 to +45.
 
