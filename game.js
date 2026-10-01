@@ -1277,10 +1277,10 @@ class Stickman {
         const dy = target.y - this.y;
         const dirToTarget = (target.x >= this.x) ? 1 : -1;
 
-        // Dynamic Difficulty Parameters: High-octane aggression across all tiers
-        const blockProbability = difficulty === 'EASY' ? 0.25 : difficulty === 'NORMAL' ? 0.50 : 0.75;
-        const cpuSpeedFactor = difficulty === 'EASY' ? 1.05 : difficulty === 'NORMAL' ? 1.30 : 1.55;
-        const attackFrequency = difficulty === 'EASY' ? 12 : difficulty === 'NORMAL' ? 6 : 3;
+        // Dynamic Difficulty Parameters: Lower hit speed & zero blocking/dodging on Easy & Normal
+        const blockProbability = difficulty === 'HARD' ? 0.70 : 0.0; // Block & Dodge ONLY in HARD mode!
+        const cpuSpeedFactor = difficulty === 'EASY' ? 0.70 : difficulty === 'NORMAL' ? 0.88 : 1.40;
+        const attackFrequency = difficulty === 'EASY' ? 32 : difficulty === 'NORMAL' ? 18 : 4;
 
         // Always face target when initiating attacks or chasing
         if (!this.isAttacking && !this.isSliding) {
@@ -1640,7 +1640,7 @@ class Stickman {
         this.invincibleTimer = 15;
         this.vx = face * kb;
         this.vy = -3;
-        this.specialMeter = Math.min(100, this.specialMeter + 20);
+        this.specialMeter = Math.min(100, this.specialMeter + 45);
 
         if (dmg >= 20) {
             audio.playHeavyHit();
