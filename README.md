@@ -132,7 +132,11 @@ A fast-paced, high-performance 2D Stickman Fighting Web Game built using **HTML5
 
 ## 📜 Changelog & Version History
 
-### Version 3.5.0 (Latest Release)
+### Version 3.5.1 (Latest Release)
+* **Beginner CPU Difficulty**: Reduced CPU hit speed & aggression. Restricted CPU blocking, parrying, and dodging to Hard mode only (disabled in Easy & Normal).
+* **Faster Ultimate Comeback Charge**: Boosted `⚡ ULT` signature special meter gain when taking damage from +20 to +45.
+
+### Version 3.5.0
 * **HTML5 Gamepad API**: Plug-and-play Xbox, PlayStation, USB controller support with auto-mapping.
 * **Ghost Health**: Delayed golden damage trail lag bars for fighters.
 * **PWA & Offline Mode**: `manifest.json`, high-res SVG app icon, Service Worker cache-first offline capability, and install button.
