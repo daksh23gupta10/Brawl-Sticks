@@ -9,7 +9,7 @@
     <meta name="theme-color" content="#00f0ff">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="stylesheet" href="style.css?v=4.2.4">
+    <link rel="stylesheet" href="style.css?v=4.2.5">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
@@ -551,7 +551,7 @@
         </footer>
     </div>
 
-    <script src="game.js?v=4.2.4"></script>
+    <script src="game.js?v=4.2.5"></script>
     <script>
       let refreshing = false;
       if ('serviceWorker' in navigator) {
@@ -562,7 +562,7 @@
           }
         });
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('./sw.js?v=4.2.4').then((reg) => {
+          navigator.serviceWorker.register('./sw.js?v=4.2.5').then((reg) => {
             reg.update();
           }).catch(() => {});
         });

@@ -1218,7 +1218,7 @@ class Stickman {
 
         if (this.isDashing) {
             this.dashTimer--;
-            this.vx = this.facing * 14.0;
+            this.vx = this.facing * 10.0; // Reduced leap/dash speed from 14.0 to 10.0
             if (this.dashTimer % 2 === 0) {
                 this.afterimages.push({ x: this.x, y: this.y, color: this.color, opacity: 0.65, facing: this.facing });
             }
@@ -1238,8 +1238,9 @@ class Stickman {
 
         this.vy += this.gravity;
         if (this.isCPU) {
-            if (this.vx > 2.5) this.vx = 2.5;
-            if (this.vx < -2.5) this.vx = -2.5;
+            const maxSpd = this.isDashing ? 10.0 : 2.5;
+            if (this.vx > maxSpd) this.vx = maxSpd;
+            if (this.vx < -maxSpd) this.vx = -maxSpd;
         }
         this.x += this.vx;
         this.y += this.vy;
