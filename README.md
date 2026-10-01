@@ -132,7 +132,11 @@ A fast-paced, high-performance 2D Stickman Fighting Web Game built using **HTML5
 
 ## 📜 Changelog & Version History
 
-### Version 3.5.3 (Latest Release)
+### Version 3.5.4 (Latest Release)
+* **2.5 px/frame CPU Speed Cap**: Specifically set and capped CPU movement speed to `2.5` px/frame max in 1v1 and Story Arcade modes for casual/beginner friendly pacing.
+* **Cache Busting**: Bumped Service Worker & asset query strings to `v4.2.3`.
+
+### Version 3.5.3
 * **15% Additional Speed Reduction**: Reduced base ground movement speed by an additional 15% (`3.78` -> `3.21` px/frame) across all game modes for smooth, readable arcade movement.
 * **Instant Asset Cache Busting**: Updated Service Worker and HTML5 script cache tags to `v4.2.2`.
 
