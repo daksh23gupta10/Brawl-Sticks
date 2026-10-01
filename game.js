@@ -1237,6 +1237,10 @@ class Stickman {
         }
 
         this.vy += this.gravity;
+        if (this.isCPU) {
+            if (this.vx > 2.5) this.vx = 2.5;
+            if (this.vx < -2.5) this.vx = -2.5;
+        }
         this.x += this.vx;
         this.y += this.vy;
 
