@@ -1148,11 +1148,11 @@ class Stickman {
         }
 
         // Dynamic fluid arcade movement speed & jump physics for ALL fighters (Human & CPU)
-        let baseSpeed = 3.21; // Reduced by an additional 15% across all modes
+        let baseSpeed = this.isCPU ? 2.5 : 3.21; // CPU movement speed capped to 2.5px/frame for common users
         let baseJump = -11.5;
 
-        const speedFactor = (this.fighterClass === 'NINJA') ? 1.12 : (this.fighterClass === 'BRAWLER') ? 0.88 : 1.0;
-        this.speed = baseSpeed * speedFactor * (this.bossRageTriggered ? 1.2 : 1.0);
+        const speedFactor = (this.fighterClass === 'NINJA') ? 1.06 : (this.fighterClass === 'BRAWLER') ? 0.92 : 1.0;
+        this.speed = baseSpeed * speedFactor * (this.bossRageTriggered ? 1.15 : 1.0);
         this.jumpForce = baseJump * (this.fighterClass === 'NINJA' ? 1.08 : 1.0);
         this.gravity = 0.40;
 
@@ -1365,7 +1365,7 @@ class Stickman {
             // 4. PURSUIT & GAP CLOSING: Relentlessly hunt down opponent!
             if (!this.isAttacking && !this.isSliding) {
                 this.facing = dirToTarget;
-                this.vx = dirToTarget * (this.speed * cpuSpeedFactor);
+                this.vx = dirToTarget * Math.min(2.5, this.speed * cpuSpeedFactor);
 
                 // Gap-closing dash
                 if (dist > 100 && this.dashCooldown === 0 && Math.random() < (difficulty === 'EASY' ? 0.05 : 0.10)) {
